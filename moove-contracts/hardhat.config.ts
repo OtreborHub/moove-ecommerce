@@ -3,6 +3,9 @@ import type { HardhatUserConfig } from "hardhat/config";
 import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
 import { configVariable } from "hardhat/config";
 
+const INFURA_API_KEY = configVariable("INFURA_API_KEY");
+const PRIVATE_KEY_1 = configVariable("PRIVATE_KEY_1");
+
 const config: HardhatUserConfig = {
   plugins: [hardhatToolboxMochaEthersPlugin],
   solidity: {
@@ -33,8 +36,8 @@ const config: HardhatUserConfig = {
     sepolia: {
       type: "http",
       chainType: "l1",
-      url: configVariable("SEPOLIA_RPC_URL"),
-      accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+      url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [PRIVATE_KEY_1],
     },
   },
 };
