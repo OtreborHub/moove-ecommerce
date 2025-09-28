@@ -179,8 +179,8 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
         if(!auction.ended && appContext.signer !== auction.seller && Math.floor(Date.now() / 1000) < auction.endTime){
             return (
                 <Button size="small" variant="contained" onClick={buyPlaceBid} sx={{mr: 1}}>
-                    {!isPhone && auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH? "Place Bid" : "Buy now"}
-                    {isPhone && auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH? "Bid" : "Buy"}
+                    {!isPhone && (auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH)? "Place Bid" : "Buy now"}
+                    {isPhone && (auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH)? "Bid" : "Buy"}
                 </Button>
             );
         } else if (appContext.signer && auction.ended && appContext.signer !== auction.seller && appContext.signer !== auction.highestBidder && auction.auctionType === AuctionType.CLASSIC){
