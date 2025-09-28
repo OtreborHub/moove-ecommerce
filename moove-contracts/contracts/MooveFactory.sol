@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
@@ -14,8 +13,8 @@ contract MooveFactory is Ownable{
         admins[msg.sender] = true;
     }
 
-    function createCollection(string memory name, string memory symbol) public onlyOwner returns (address) {
-        MooveCollection collection = new MooveCollection(name, symbol, msg.sender);
+    function createCollection(string memory name, string memory symbol, uint maxSupply) public onlyOwner returns (address) {
+        MooveCollection collection = new MooveCollection(name, symbol, maxSupply, msg.sender);
         collections.push(address(collection));
         emit CollectionCreated(address(collection), name, symbol);
         return address(collection);

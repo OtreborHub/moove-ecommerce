@@ -7,6 +7,7 @@ export enum Action {
   RD_ALL_COLL="Lettura collezioni",
   DELETE_COLL="Elimina collezione",
 
-  TRANSFER="Trasferimento Token"
+  TRANSFER="Trasferimento NFT",
+  //PLACE_BID="Piazzamento scommessa"
 
 }

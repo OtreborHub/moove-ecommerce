@@ -1,4 +1,4 @@
-import { Box, Button, FormControl, Grid, TextField } from "@mui/material";
+import { Box, Button, FormControl, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { TrasferFormProps } from "../../utils/Interfaces";
 
@@ -21,7 +21,10 @@ export default function TransferToForm({tokenId, handleSubmit}: TrasferFormProps
 
     return (
         <>
-        <Box component="form" sx={{ mt: 2 }} >
+        <Box component="form">
+            <Typography variant="body2" sx={{ mb: 2 }}>
+                Enter the recipient's Ethereum address to transfer the token. <br/>Make sure the address is correct and belongs to a valid wallet.
+            </Typography>
             <FormControl fullWidth>
                 <TextField
                 fullWidth
@@ -32,7 +35,7 @@ export default function TransferToForm({tokenId, handleSubmit}: TrasferFormProps
                 onChange={handleChange}
                 />
             </FormControl>
-            <Button onClick={submit} variant="contained" fullWidth sx={{mt: 2}}>
+            <Button onClick={submit} variant="contained" fullWidth sx={{mt: 2 , backgroundColor:'#f7a642ff'}}>
                 CONFIRM
             </Button>
         </Box>    

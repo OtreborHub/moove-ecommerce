@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { MintTokenFormProps } from "../../utils/Interfaces";
 import { Box, Button, TextField } from "@mui/material";
+import { formatAddress } from "../../utils/formatValue";
 
-export default function MintTokenForm({handleSubmit: handleMint, signer} : MintTokenFormProps) {
+export default function MintTokenForm({collectionAddress, signer, handleSubmit} : MintTokenFormProps) {
     const [formData, setFormData] = useState({
         to: signer,
         tokenURI: '',
@@ -16,12 +17,12 @@ export default function MintTokenForm({handleSubmit: handleMint, signer} : MintT
 
     const submit = (event: any) => {
         event.preventDefault();
-        handleMint(formData.tokenURI, Number(formData.price));
+        handleSubmit(collectionAddress, formData.tokenURI, Number(formData.price));
     };
 
 
     return (
-        <Box component="form"  onSubmit={submit} sx={{ mt: 2 }} >
+        <Box component="form" onSubmit={submit} sx={{ mt: 2 }} >
             <TextField
                 fullWidth
                 margin="normal"
@@ -29,7 +30,7 @@ export default function MintTokenForm({handleSubmit: handleMint, signer} : MintT
                 name="to"
                 label="To address"
                 disabled
-                value={formData.to}
+                value={formatAddress(formData.to)}
                 onChange={handleChange}
             />
             <TextField

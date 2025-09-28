@@ -2,6 +2,7 @@ import { Contract, ethers, Provider } from "ethers";
 import { FACTORY_ABI } from "../../abi/erc721factory_abi";
 import { ErrorMessage, swalError } from "../enums/Errors";
 import { Action } from "../enums/Actions";
+import Swal from "sweetalert2";
 
 export var factory: Contract;
 
@@ -55,14 +56,14 @@ export async function readCollections() {
   }
 }
 
-export async function writeCreateCollection(name: string, symbol: string) {
+export async function writeCreateCollection(name: string, symbol: string, maxSupply: number) {
   if(factory){
     try{
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const signerContract = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, signer);
 
-      await signerContract.createCollection(name, symbol);
+      await signerContract.createCollection(name, symbol, maxSupply);
       return true;
 
     } catch (error: any) {
@@ -70,4 +71,23 @@ export async function writeCreateCollection(name: string, symbol: string) {
       swalError(ErrorMessage.TR, Action.WC_DATA, error);
     }
   }
+}
+
+// CONTRACT LISTENERS
+
+export function addContractListeners() {
+  factory.on("CollectionCreated", (collectionAddress, name, symbol) => {
+    if (collectionAddress) {
+      Swal.fire({
+        title: "Collection created!",
+        text: "Your NFT collection has been successfully created. The app will now reload to update the data.",
+        icon: "success",
+        confirmButtonColor: "#3085d6"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.reload();
+        }
+      });
+    }
+  })
 }

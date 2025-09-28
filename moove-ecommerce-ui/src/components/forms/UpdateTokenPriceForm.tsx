@@ -1,22 +1,20 @@
-import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField } from "@mui/material";
+import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { SetTokenPriceFormProps } from "../../utils/Interfaces";
 import { ethers } from "ethers";
 
-export default function SetTokenPriceForm({tokenId, tokenPrice, handleSubmit}: SetTokenPriceFormProps) {
+export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}: SetTokenPriceFormProps) {
     const [formData, setFormData] = useState({
         price: tokenPrice,
         unit: "Wei"
     });
 
     const handleChange = (event: any) => {
-        console.log("Change setPrice form")
         const { name, value } = event.target;
         setFormData({...formData, [name]: value });
     };
 
     function submit() {
-        console.log("Submit setPrice form")
         let priceInWei = formData.price;
         if (formData.unit === "ETH") {
             priceInWei = Number(ethers.parseEther(formData.price.toString()));
@@ -31,7 +29,10 @@ export default function SetTokenPriceForm({tokenId, tokenPrice, handleSubmit}: S
 
     return (
         <>
-        <Box component="form" sx={{ mt: 2 }} >
+        <Box component="form">
+            <Typography variant="body2" sx={{ mb: 2 }}>
+                Set the new price for the token and choose the desired unit. <br/>The value will be automatically converted to <b>wei</b> before being sent to the smart contract.
+            </Typography>
             <Grid container spacing={2}>
                 <Grid size={9}>
                     <FormControl fullWidth>
@@ -66,7 +67,7 @@ export default function SetTokenPriceForm({tokenId, tokenPrice, handleSubmit}: S
                 </Grid>
             </Grid>
         </Box>    
-            <Button onClick={submit} variant="contained" fullWidth sx={{mt: 2}}>
+            <Button onClick={submit} variant="contained" fullWidth sx={{mt: 2, backgroundColor:'#f7a642ff'}}>
                 CONFIRM
             </Button>
         </>

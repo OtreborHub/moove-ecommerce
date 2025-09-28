@@ -4,13 +4,13 @@ import { Action } from "./Actions";
 export enum ErrorMessage {
 
     //WALLET FRONTEND ERRORS
-    WALLET_ERROR="Benvenuto! ]Per favore connetti il tuo wallet sulla rete Sepolia Testnet per accedere all'applicativo",
+    WALLET_ERROR="Please connect your wallet. Be sure is operating on the Sepolia Testnet.",
     //NO_DNA_TOKEN="Il tuo portafoglio non contiene DNA.]Acquista Token DNA per avere accesso alla governance!",
     NOT_MEMBER="Il tuo portafoglio non appartiene al registro dei membri.]Acquista parte delle shares DnA ed inizia la tua avventura con noi!",
     APPROVE_ISTRUCTION="Per prima cosa approva una quantità di DNA Token che DNA Administration potrà usare per l'acquisto degli share,]successivamente puoi spenderli per acquistare Shares.",
     DELETE_ERROR = "Non puoi eliminare una collezione che contiene NFT. ]Per favore trasferisci o distruggi tutti gli NFT prima di procedere.",
     DELETE_CONFIRM_ERROR = "Please write the name of the collection correctly to confirm.",
-    CREATE_COLL_CONFIRM_ERROR = "Please write the name and the symbol of the collection correctly to confirm.",
+    CREATE_COLL_CONFIRM_ERROR = "Please write the collection data correctly to confirm.",
     
     //GENERIC ERRORS
     RD="Error reading contract data",
@@ -19,7 +19,7 @@ export enum ErrorMessage {
 
     // Contract Messages
     IF="Insufficient funds",
-    IA="Insufficient allowance",
+    AE="Auction ended",
 
     SENDER_NOT_OWNER="Sender must be the owner",
     SENDER_NOT_MEMBER="Sender must be a member",
@@ -74,11 +74,6 @@ export function swalError(errorMessage: ErrorMessage, action?: Action, error?: a
             title = "Operazione non permessa";
             break;
 
-        case ErrorMessage.IA:
-            title = "Saldo approvato insufficiente!";
-            text = "Verifica di aver prima approvato i DNA che stai trasformando in Shares!";
-            break;
-
         case ErrorMessage.SENDER_NOT_OWNER:
         case ErrorMessage.SENDER_NOT_MEMBER:
             title = "Utente non autorizzato alla funzionalità";
@@ -95,7 +90,6 @@ export function swalError(errorMessage: ErrorMessage, action?: Action, error?: a
 
         case ErrorMessage.IO:
             title = "Parametri di input non validi";
-            
             break;
 
         case ErrorMessage.PROP_TRANSFER: 
@@ -110,6 +104,16 @@ export function swalError(errorMessage: ErrorMessage, action?: Action, error?: a
         case ErrorMessage.CREATE_COLL_CONFIRM_ERROR:
             title = "Collection data mismatch";
             text = outputMessage;
+            break;
+
+        case ErrorMessage.WALLET_ERROR:
+            title = "Connect wallet"
+            text = outputMessage;
+            break;
+
+        case ErrorMessage.AE:
+            title = "Auction already ended";
+            text = "Wait for seller to finalize the auction to proceed to withdraw or look for other active auctions";
             break;
 
         default: 

@@ -23,6 +23,11 @@ export const FACTORY_ABI = [
 				"internalType": "string",
 				"name": "symbol",
 				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "maxSupply",
+				"type": "uint256"
 			}
 		],
 		"name": "createCollection",

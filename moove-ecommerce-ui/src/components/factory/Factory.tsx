@@ -1,21 +1,24 @@
-import { Box, Button } from "@mui/material";
-import { useState } from "react";
+import { Box, Button, useMediaQuery } from "@mui/material";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAppContext } from "../../Context";
 import collections_logo from "../../assets/collections.png";
-import { FactoryProps } from "../../utils/Interfaces";
 import { writeMintNFT } from "../../utils/bridges/MooveCollectionsBridge";
 import { writeCreateCollection } from "../../utils/bridges/MooveFactoryBridge";
 import Loader from "../commons/Loader";
 import CreateCollectionForm from "../forms/CreateCollectionForm";
-import Auctions from "../marketplace/Auctions";
-import TableCollection from "./TableCollections";
+import TableCollection from "./FactoryTableCollections";
 
 export function Factory() {
+    const isMobile = useMediaQuery('(max-width: 1400px)');
+    const isPhone = useMediaQuery('(max-width: 650px)');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const MySwal = withReactContent(Swal);
     const appContext = useAppContext();
+
+    useEffect(() => {
+    }, [])
 
     function createCollection() {
         MySwal.fire({
@@ -26,10 +29,10 @@ export function Factory() {
         });   
     }
 
-    async function handleSubmit(name: string, symbol: string){
+    async function handleSubmit(name: string, symbol: string, maxSupply:number){
       try {
         setIsLoading(true);
-        const success = await writeCreateCollection(name, symbol);
+        const success = await writeCreateCollection(name, symbol, maxSupply);
         setIsLoading(false);
         if(success){
           Swal.fire({
@@ -45,9 +48,9 @@ export function Factory() {
       }
     }
 
-    async function handleMint(tokenURI: string, price: number){
+    async function handleMint(collectionAddress: string, tokenURI: string, price: number){
       setIsLoading(true);
-      var success = await writeMintNFT(appContext.shownCollection.address, tokenURI, price)
+      var success = await writeMintNFT(collectionAddress, tokenURI, price)
       setIsLoading(false);
       if(success){
         MySwal.fire({
@@ -77,20 +80,11 @@ export function Factory() {
     return (
         <>
         {/* COLLECTIONS */}
-        <Box display="flex" justifyContent="center" margin={"auto"} flexDirection={"column"} alignItems="center" maxWidth="75%" gap={2}>
+        <Box display="flex" justifyContent="center" margin={"auto"} flexDirection={"column"} alignItems="center" maxWidth={isMobile ? "90%":  isPhone ? "100%": "75%"} gap={2}>
             <img src={collections_logo} alt="Logo" style={{ maxHeight: '100px' }} />
             <Button variant="contained" size="large"  onClick={createCollection} sx={{ borderRadius:'10px', backgroundColor:'#f7a642ff'}}> Create new collection </Button>
-            <TableCollection collectionsInfo={appContext.collections} handleMint={handleMint} handleDisable={handleDisable}/>
+            <TableCollection collections={appContext.collections} handleMint={handleMint} handleDisable={handleDisable}/>
         </Box>
-
-        {/* {Manipolare il maxWidth con la larghezza dello schermo} */}
-        {/* <Box sx={{ maxWidth: "75%", margin: "2rem auto" }}> 
-            
-        </Box> */}
-
-        {/* AUCTIONS */}
-        <Auctions/>
-        
         <Loader loading={isLoading} />    
         </>
     );

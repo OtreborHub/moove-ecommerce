@@ -9,7 +9,7 @@ import { Factory } from './components/factory/Factory';
 import { Marketplace } from './components/marketplace/Marketplace';
 import Navbar from './components/commons/Navbar';
 import { useAppContext } from './Context';
-import getMooveFactory_ContractInstance, { readCollections, readIsAdmin } from './utils/bridges/MooveFactoryBridge';
+import getMooveFactory_ContractInstance, { addContractListeners, readCollections, readIsAdmin } from './utils/bridges/MooveFactoryBridge';
 import { Role } from './utils/enums/Role';
 import { Sections } from './utils/enums/Sections';
 
@@ -30,9 +30,16 @@ function App() {
     //Gestire con gli eventi dal contratto
     if(appContext.collectionAddresses.length === 0){
       initCollections();
+      //connectWallet();
     }
 
-  }, [appContext.provider, appContext.signer]);
+  }, [appContext.signer]);
+
+  async function initCollections(){
+    getMooveFactory_ContractInstance(appContext.provider);
+    const collections = await readCollections();
+    appContext.updateCollectionAddresses(collections ? collections : []);
+  }
 
   const handleChanges = () => {
     console.log(window.ethereum.chainId);
@@ -62,39 +69,35 @@ function App() {
         appContext.updateSigner(signer.address);
         console.log(`address: ${signer.address}`);
 
-        setAccountBalance();
+        setAccountBalance(signer.address);
         appContext.updateChainId(parseInt(window.ethereum.chainId));
 
         const isAdmin = await readIsAdmin();
         appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
-
-        if(!isAdmin){
-          appContext.updateSection(Sections.MARKETPLACE);
+        appContext.updateSection(Sections.MARKETPLACE);
+        if(isAdmin){
+          addContractListeners()
         }
 
       } catch (err) {
-        alert('Connessione rifiutata');
+        disconnect();
       }
     } else {
-      alert('MetaMask non installato');
+      disconnect();
     }
   }
 
-  async function setAccountBalance(){
-    if(!appContext.provider || !appContext.signer) return;
+  async function setAccountBalance(address: string){
+    if(!appContext.provider || !address) return;
 
-    await appContext.provider.getBalance(appContext.signer).then((balance: bigint) => {
+    await appContext.provider.getBalance(address ? address : appContext.signer).then((balance: bigint) => {
       const bal = parseFloat(ethers.formatEther(balance));
       console.log(`balance available: ${bal.toFixed(18)} ETH`);
       appContext.updateBalance(bal);
     });
   }
 
-  async function initCollections(){
-    getMooveFactory_ContractInstance(appContext.provider);
-    const collections = await readCollections();
-    appContext.updateCollectionAddresses(collections ? collections : []);
-  }
+
 
   return (
     <div className="App" id="app">
@@ -155,14 +158,14 @@ function App() {
       <div className="main-div primary-bg-color">
         <Box>
             {appContext.section === Sections.MARKETPLACE && !appContext.shownCollection.name &&
-              <Marketplace collectionAddresses={appContext.collectionAddresses} />
+              <Marketplace connectWallet={connectWallet} collectionAddresses={appContext.collectionAddresses} />
             }
-            {appContext.signer && appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY && !appContext.shownCollection.name &&
+            {appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY && !appContext.shownCollection.name &&
               <Factory/>
             }
-            {appContext.shownCollection.address && (
-              <Collection/>
-            )}
+            {appContext.shownCollection.address && 
+              <Collection collection={appContext.shownCollection} connectWallet={connectWallet}/>
+            }
         </Box>      
       </div>
     </div>

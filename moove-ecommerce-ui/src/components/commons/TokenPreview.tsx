@@ -1,30 +1,75 @@
 import { Card, CardActionArea, CardContent, CardMedia, Typography } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import moove_logo from "../../assets/moove.png";
 import { useAppContext } from "../../Context";
+import { formatPrice } from "../../utils/formatValue";
 import { TokenProps } from "../../utils/Interfaces";
 import Token from "./Token";
-import { Role } from "../../utils/enums/Role";
-import { formatAddress, formatPrice } from "../../utils/formatValue";
 
-export default function TokenPreview({token, connectWallet, handleBuy, handleCreateAuction, handleTransfer, handleTokenPrice}: TokenProps) {
+export default function TokenPreview({token, isLoading, connectWallet, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice: handleTokenPrice}: TokenProps) {
+  const [imageUrl, setImageUrl] = useState(moove_logo);
+  const [hovered, setHovered] = useState(false);
   const MySwal = withReactContent(Swal);
   const appContext = useAppContext();
 
   // const [metadata,setMetadata] = useState("");
 
   useEffect(() => {
-        //fetchMetadata();
-        //Aggiungere chiamata al recupero del tokenURI e metadati
-        //readTokenMetadata
+
+      init();
+      
+      if(appContext.shownNFT > 0 && appContext.shownNFT === token.id) {
+        openTokenDetail();
+        appContext.updateShownNFT(0);
+      }
+
     }, []);
 
-  //TOKEN IMAGE - Recuperare da metadati nel TokenURI
-  //const cid = "bafybeidqrqzgkmrx2bda7ozag2d7bhavfbs7yrtjza5xdoppcf4tepdpji";
-  //const imageUrl = `https://ipfs.infura.io/ipfs/${cid}`;
 
+  async function init(){
+    fetchMetadata();
+    fillTokenAuction();
+  }  
+
+  function fillTokenAuction(){
+    if(appContext.auctions.length > 0){
+      appContext.auctions.map((auction) => {
+        if(auction.collection.address === appContext.shownCollection.address && auction.tokenId === token.id){
+          token.auction = auction;
+        }
+      });
+    }
+  }
+
+  async function fetchMetadata(){
+    const metadataUrl = `https://${token.URI}.ipfs.nftstorage.link`;
+    try {
+      isLoading(true)
+      
+      const response = await fetch(metadataUrl);
+      if (!response.ok) {
+        throw new Error(`Errore nel fetch: ${response.status}`);
+      }
+
+      const metadata = await response.json();
+      console.log("Name:", metadata.name);
+      console.log("Cid:", metadata.cid);
+      console.log("Attrbitues:", metadata.attributes[0]);
+
+      const imageCIDFetched = metadata.cid;
+      const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCIDFetched}`;
+
+      setImageUrl(imageUrlFetched);
+      token.imageCid = imageCIDFetched;
+      token.metadata = metadata;
+      isLoading(false);
+
+    } catch (error) {
+      console.error("Errore nel recupero dei metadati:", error);
+    }
+  }
   //TOKEN METADATA
   //const cid = "bafybeigq3ahv6jwzql75rlqxh7wewj6km4me5hw65qbtj2uei3dqa2zl7i";
   //const metadataUrl = `https://ipfs.infura.io/ipfs/${cid}`;
@@ -46,7 +91,7 @@ export default function TokenPreview({token, connectWallet, handleBuy, handleCre
 
   function closeAndHandleCreateAuction(){
     MySwal.close();
-    handleCreateAuction();
+    handleCreateAuction(token.id);
   }
 
   function closeAndHandleTransfer(){
@@ -62,21 +107,21 @@ export default function TokenPreview({token, connectWallet, handleBuy, handleCre
   function openTokenDetail(){
       MySwal.fire({
           html: <Token 
+            isLoading={isLoading}
             signer={appContext.signer}
-            role={appContext.role}
             collection={appContext.shownCollection}
             token={token} 
             connectWallet={closeAndHandleConnectWallet} 
             handleBuy={handleBuy}
             handleCreateAuction={closeAndHandleCreateAuction}
+            handleUpdatePrice={closeAndHandleTokenPrice}
             handleTransfer={closeAndHandleTransfer}
-            handleTokenPrice={closeAndHandleTokenPrice}
             />,
           showConfirmButton: false,
           showCloseButton: true,
           customClass: {
-            //Comandare sulla base della grandezza dello schermo per avere un popup adeguatoNM
-            popup: 'mui-swal-popup-large'
+            //Comandare sulla base della grandezza dello schermo per avere un popup adeguato
+            popup: 'my-fullscreen-swal'
           }
       }); 
   }
@@ -84,23 +129,31 @@ export default function TokenPreview({token, connectWallet, handleBuy, handleCre
   
   return (
     <Card sx={{ 
-        maxWidth: 345, 
-        zIndex: 1, 
-        border: appContext.signer === token.owner && appContext.role === Role.MEMBER ? "2px solid #31e43dff": "" }}>
+      position: "relative",
+      width: "100%",
+      height: "100%",
+      overflow: "hidden",
+      borderRadius: 2,
+      boxShadow: 3,
+      cursor: "pointer"  
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}  
+        >
       <CardActionArea onClick={openTokenDetail}>
-        { appContext.signer === token.owner && appContext.role === Role.MEMBER &&
-          <Typography sx={{ textAlign: "right", color: "green", marginTop: "0.2rem", marginRight: "0.5rem" }}>
-            owned
-          </Typography>
-        }
-        
         <CardMedia
           component="img"
-          height="140"
-          src={moove_logo}
+          sx={{
+            width: '100%',
+            maxHeight: 500,              
+            objectFit: 'contain',        
+            borderRadius: 2,
+            backgroundColor: '#f0f0f0'   // Optional: per sfondo neutro se l'immagine è piccola
+          }}
+          src={imageUrl}
           alt={"NFT Image not available..."}
         />
-        <CardContent sx={{ textAlign: "left"}}>
+        {/* <CardContent sx={{ textAlign: "left"}}>
           <Typography gutterBottom variant="body2" component="div">
             {appContext.shownCollection.symbol}#{token.id}
           </Typography>
@@ -110,7 +163,60 @@ export default function TokenPreview({token, connectWallet, handleBuy, handleCre
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             Owner: {formatAddress(token.owner)}
           </Typography>
-        </CardContent>
+        </CardContent> */}
+
+        <CardContent
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          bgcolor: hovered ? "rgba(255, 255, 255, 0.4)" : "transparent",
+          opacity: hovered ? 1 : 0,
+          transition: "opacity 0.3s ease, background-color 0.3s ease",
+          pointerEvents: "none",
+          px: 2,
+          py: 1,
+        }}
+      >
+        <Typography
+          variant="subtitle1"
+          component="div"
+          sx={{ fontWeight: "bold", color: "text.primary" }}
+        >
+          {appContext.shownCollection.symbol}#{token.id}
+        </Typography>
+      </CardContent>
+
+      {/* Hover: Info in basso */}
+      <CardContent
+        sx={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          width: "100%",
+          bgcolor: hovered ? "rgba(255, 255, 255, 0.41)" : "transparent",
+          opacity: hovered ? 1 : 0,
+          transition: "opacity 0.3s ease, background-color 0.3s ease",
+          pointerEvents: "none",
+          px: 2,
+          py: 1.5,
+        }}
+      >
+        <Typography
+          variant="body1"
+          sx={{ color: "text.secondary", mb: 0.5 }}
+        >
+          Buy for {formatPrice(token.price, "wei")} wei
+        </Typography>
+        <Typography
+          variant="caption"
+          sx={{ color: "text.secondary" }}
+        >
+          Click to show details
+        </Typography>
+      </CardContent>
+
       </CardActionArea>
     </Card>
   );

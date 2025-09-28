@@ -1,91 +1,56 @@
+import { Box, Button, Grid, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { CollectionProps } from "../../utils/Interfaces";
-import CollectionDTO from "../../utils/DTO/CollectionDTO";
-import { Box, Button, Typography } from "@mui/material";
-import { useAppContext } from "../../Context";
-import { payBuyNFT, readTokenData, transferTo, writeMintNFT, writeTokenPrice } from "../../utils/bridges/MooveCollectionsBridge";
-import TokenDTO from "../../utils/DTO/TokenDTO";
-import Loader from "./Loader";
-import { Role } from "../../utils/enums/Role";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import MintTokenForm from "../forms/MintTokenForm";
-import { readIsAdmin } from "../../utils/bridges/MooveFactoryBridge";
-import { ethers } from "ethers";
+import { useAppContext } from "../../Context";
+import { payableBuyNFT, readTokenData, transferTo, writeCreateAuction, writeMintNFT, writeTokenPrice } from "../../utils/bridges/MooveCollectionsBridge";
+import CollectionDTO from "../../utils/DTO/CollectionDTO";
+import TokenDTO from "../../utils/DTO/TokenDTO";
+import { Role } from "../../utils/enums/Role";
+import { CollectionProps } from "../../utils/Interfaces";
 import CreateAuctionForm from "../forms/CreateAuctionForm";
+import MintTokenForm from "../forms/MintTokenForm";
+import UpdateTokenPriceForm from "../forms/UpdateTokenPriceForm";
+import Loader from "./Loader";
 import TokenPreview from "./TokenPreview";
-import TransferTo from "../forms/TransferToForm";
-import SetTokenPriceForm from "../forms/SetTokenPriceForm";
+import TransferToForm from "../forms/TransferToForm";
 
-export default function Collection() {
+export default function Collection({collection, connectWallet} : CollectionProps) {
   const [tokens, setTokens] = useState<TokenDTO[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const MySwal = withReactContent(Swal);
   const appContext = useAppContext();
 
   useEffect(() => {
-    initCollectionDetail();
+    init();
   }, []);
 
-  async function initCollectionDetail(){
+  async function init(){
     var tokensData = [];
-    console.log("Init collection detail for collection: ", appContext.shownCollection.address);
     setIsLoading(true);
-    //Sostituire con chiamata ad tokenIds e ciclare da 1 a tokenIds
-    for(let idx=1; idx<=appContext.shownCollection.totalSupply; idx++){
-      const tokenData = await readTokenData(idx, appContext.shownCollection.address);
+    for(let idx=1; idx<=collection.tokenIds; idx++){
+      const tokenData = await readTokenData(collection.address, idx);
+      
       if (tokenData) {
         tokensData.push(tokenData);
       } else {
         console.log(`Token data for tokenId ${idx} is undefined`);
         break;
-        
       }
+
     }
     setTokens(tokensData);
     setIsLoading(false);
+
   }
 
-  async function connectWallet() {
-    if (window.ethereum) {
-      try {
-          const provider = new ethers.BrowserProvider(window.ethereum);
-          appContext.updateProvider(provider);
-
-          const signer = await provider.getSigner();
-          appContext.updateSigner(signer.address);
-          console.log(`address: ${signer.address}`);
-
-          setAccountBalance();
-          appContext.updateChainId(parseInt(window.ethereum.chainId));
-
-          const isAdmin = await readIsAdmin();
-          appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
-          return true;
-
-      } catch (err) {
-          alert('Connessione rifiutata');
-          return false;
-      }
-    } else {
-      alert('MetaMask non installato');
-      return false;
-    }
-  }
-
-  async function setAccountBalance(){
-    if(!appContext.provider || !appContext.signer) return;
-
-    await appContext.provider.getBalance(appContext.signer).then((balance: bigint) => {
-        const bal = parseFloat(ethers.formatEther(balance));
-        console.log(`balance available: ${bal.toFixed(18)} ETH`);
-        appContext.updateBalance(bal);
-    });
+  function loadingPropagation(value: boolean){
+    setIsLoading(value);
   }
 
   async function handleBuy(tokenId: number, tokenPrice: number){
     setIsLoading(true)
-    var success = await payBuyNFT(appContext.shownCollection.address, tokenId, tokenPrice);
+    var success = await payableBuyNFT(collection.address, tokenId, tokenPrice);
     setIsLoading(false);
     if(success){
       MySwal.fire({
@@ -97,19 +62,33 @@ export default function Collection() {
     }
   }
 
-  function showCreateAuctionForm(){
+  function showCreateAuctionForm(tokenId: number){
     MySwal.fire({
         title: "Create Auction",
-        html: <CreateAuctionForm />,
+        html: <CreateAuctionForm tokenId={tokenId} collectionSymbol={collection.symbol} handleSubmit={handleCreateAuction}/>,
         showConfirmButton: false,
         showCloseButton: true,
     });
   }
 
+  async function handleCreateAuction(tokenId: number, auctionType: number, startPrice: number, duration: number, minIncrement: number){
+    setIsLoading(true);
+    const success = await writeCreateAuction(collection.address, tokenId, auctionType, startPrice, duration, minIncrement);
+    setIsLoading(false);
+    if(success){
+      MySwal.fire({
+        title: "Create Auction",
+        text: "The auction creation request was successful!",
+        icon: "success",
+        confirmButtonColor: "#3085d6",
+      });
+    }
+  }
+
   function showTransferForm(tokenId: number){
     MySwal.fire({
         title: "Trasfer NFT",
-        html: <TransferTo tokenId={tokenId} handleSubmit={handleTrasferFrom}/>,
+        html: <TransferToForm tokenId={tokenId} handleSubmit={handleTrasferFrom}/>,
         showConfirmButton: false,
         showCloseButton: true,
     });
@@ -117,7 +96,7 @@ export default function Collection() {
 
   async function handleTrasferFrom(tokenId: number, addressTo: string){
     setIsLoading(true);
-    var success = await transferTo(appContext.shownCollection.address, tokenId, addressTo);
+    var success = await transferTo(collection.address, addressTo, tokenId);
     setIsLoading(false);
     if(success){
       MySwal.fire({
@@ -132,7 +111,7 @@ export default function Collection() {
   function showSetTokenPriceForm(tokenId: number, tokenPrice: number){
     MySwal.fire({
         title: "Update Price",
-        html: <SetTokenPriceForm tokenId={tokenId} tokenPrice={tokenPrice} handleSubmit={handleSetTokenPrice} />,
+        html: <UpdateTokenPriceForm tokenId={tokenId} tokenPrice={tokenPrice} handleSubmit={handleSetTokenPrice} />,
         showConfirmButton: false,
         showCloseButton: true,
     });
@@ -140,7 +119,7 @@ export default function Collection() {
 
   async function handleSetTokenPrice(tokenId: number, price: number){
     setIsLoading(true);
-    var success = await writeTokenPrice(appContext.shownCollection.address, tokenId, price);
+    var success = await writeTokenPrice(collection.address, tokenId, price);
     setIsLoading(false);
     if(success){
       MySwal.fire({
@@ -155,15 +134,15 @@ export default function Collection() {
   function showMintTokenForm(){
     MySwal.fire({
         title: "Mint a new NFT",
-        html: <MintTokenForm handleSubmit={handleMint} signer={appContext.signer}/>,
+        html: <MintTokenForm collectionAddress={collection.address} handleSubmit={handleMint} signer={appContext.signer}/>,
         showConfirmButton: false,
         showCloseButton: true,
     });
   }
 
-  async function handleMint(tokenURI: string, price: number){
+  async function handleMint(collectionAddress: string, tokenURI: string, price: number){
     setIsLoading(true);
-    var success = await writeMintNFT(appContext.shownCollection.address, tokenURI, price)
+    var success = await writeMintNFT(collectionAddress, tokenURI, price)
     setIsLoading(false);
     if(success){
       MySwal.fire({
@@ -188,28 +167,35 @@ export default function Collection() {
         }
       </Box>
       
-      <Box display="flex" textAlign={"center"} justifyContent={"center"} justifySelf={"center"} flexDirection={"column"} p={3} minWidth={"75%"} sx={{ backgroundColor: "#43434345"}}>
+      <Box display="flex" textAlign={"left"} justifyContent={"left"} justifySelf={"center"} flexDirection={"column"} p={3} minWidth={"90%"} sx={{ backgroundColor: "#43434345"}}>
         
-        <Box textAlign={"center"} display={"flex"} flexDirection={"column"}>
-          <Typography variant="h5" color="#f7a642ff"> <b>{appContext.shownCollection.name.toUpperCase()}</b> </Typography>
-          <Typography variant="body2" color="#f7a642ff"> {appContext.shownCollection.address} </Typography>
+        <Box textAlign={"left"} display={"flex"} flexDirection={"column"} ml={2}>
+          <Typography variant="h5" color="#f7a642ff"> <b>{collection.name.toUpperCase()}</b> </Typography>
+          <Typography variant="body2" color="#f7a642ff"> {collection.address} </Typography>
         </Box>
 
-        <Box display={"flex"} justifyContent={"center"} flexDirection={"row"} margin={2} gap={2}>
-        {tokens.length > 0 && tokens.map((token, index) => (
-            <TokenPreview 
-              key={index} 
-              token={token} 
-              connectWallet={connectWallet} 
-              handleBuy={handleBuy} 
-              handleCreateAuction={showCreateAuctionForm}
-              handleTransfer={showTransferForm}
-              handleTokenPrice={showSetTokenPriceForm}/>
-        ))}
-        </Box>
+        {/* <Box display={"flex"} justifyContent={"left"} margin={2}> */}
+          <Grid container spacing={1} zIndex={1} m={2}>
+          {tokens.length > 0 && tokens.map((token, index) => (
+            <Grid
+              size={{xs:6, sm:6, md:4, lg:2.4 }} 
+              key={index}
+            >
+              <TokenPreview 
+                token={token} 
+                isLoading={loadingPropagation}
+                connectWallet={connectWallet} 
+                handleBuy={handleBuy} 
+                handleCreateAuction={showCreateAuctionForm}
+                handleTransfer={showTransferForm}
+                handleUpdatePrice={showSetTokenPriceForm}/>
+              </Grid>
+          ))}
+          </Grid>
+        {/* </Box> */}
 
         {tokens.length === 0 && !isLoading &&
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, marginTop: 5 }}>
+          <Typography variant="h6" component="div" alignSelf="center" sx={{ flexGrow: 1, marginTop: 5, marginBottom: 5 }}>
             No tokens found for this collection.
           </Typography>
         }

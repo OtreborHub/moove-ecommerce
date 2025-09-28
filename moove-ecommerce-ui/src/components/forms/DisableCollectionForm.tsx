@@ -39,7 +39,7 @@ export default function DeleteCollectionForm({ collectionName, handleSubmit }: D
             
             <Box mt={2}>
             <Button type="submit" variant="contained" color="error" fullWidth onClick={submit}>
-                Disable collection
+                Disable
             </Button>
             </Box>
       </Box>

@@ -1,17 +1,18 @@
+//import sfondoCollection1 from "../assets/sfondoCollection1.png";
+// import sfondoCollection2 from "../assets/sfondoCollection2.png";
+// import sfondoCollection1 from "../assets/sfondoCollection1cutted.png";
+// import sfondoCollection3 from "../assets/Moove-1.png";
+import sfondoEVang from "../assets/E-Vanguards.png";
+import sfondoMooveVang from "../assets/Moove_Vanguards.png";
+
+
+
 export default function getCoverImage(index: number) {
-    const covers = [
-        "https://img.freepik.com/vettori-gratuito/set-di-loghi-di-criptovaluta-popolari_69286-369.jpg?",
-        "https://sm.mashable.com/t/mashable_in/photo/default/new-project-35_vakg.1248.jpg",
-    ];
 
     switch(index) {
-        case 0:
-            return covers[1];
         case 1:
-            return covers[0];
-        case 2:
-            return covers[1];
+            return sfondoEVang;
         default:
-            return covers[0];
+            return sfondoMooveVang;
     }
 }

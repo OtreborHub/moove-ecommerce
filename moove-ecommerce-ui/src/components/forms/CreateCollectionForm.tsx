@@ -8,7 +8,7 @@ export default function CreateCollectionForm({handleSubmit} : CreateCollectionFo
     const [formData, setFormData] = useState({
         name: '',
         symbol: '',
-        // maxSupply: 0,   
+        maxSupply: 0,   
     });
     
 const handleChange = (event: any) => {
@@ -18,10 +18,10 @@ const handleChange = (event: any) => {
 
   const submit = (event : any) => {
     event.preventDefault();
-    if(formData.name === '' || formData.symbol === ''){
+    if(formData.name === '' || formData.symbol === '' || formData.maxSupply <= 0){
       swalError(ErrorMessage.CREATE_COLL_CONFIRM_ERROR, Action.ADD_COLL);
     }else{
-      handleSubmit(formData.name, formData.symbol);
+      handleSubmit(formData.name, formData.symbol, formData.maxSupply);
     }
   };
 
@@ -40,15 +40,27 @@ const handleChange = (event: any) => {
             value={formData.name}
             onChange={handleChange}
         />
-        <TextField
-            fullWidth
-            margin="normal"
-            id="symbol"
-            name="symbol"
-            label="Collection Symbol"
-            value={formData.symbol}
-            onChange={handleChange}
-        />
+        <Box display={"flex"} flexDirection={"row"} gap={2}>
+          <TextField
+              fullWidth
+              margin="normal"
+              id="symbol"
+              name="symbol"
+              label="Collection Symbol"
+              value={formData.symbol}
+              onChange={handleChange}
+          />
+          <TextField
+              fullWidth
+              margin="normal"
+              type="number"
+              id="maxSupply"
+              name="maxSupply"
+              label="Max Supply"
+              value={formData.maxSupply}
+              onChange={handleChange}
+          />
+        </Box>
         <Box mt={2}>
           <Button type="submit" variant="contained" sx={{ backgroundColor:'#f7a642ff'}} fullWidth onClick={submit}>
             Create collection
