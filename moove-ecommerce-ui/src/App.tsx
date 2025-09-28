@@ -22,11 +22,6 @@ declare global {
 function App() {
   const appContext = useAppContext();
   useEffect(() => {
-
-    //Events
-    window.ethereum.on('chainChanged', handleChanges);
-    window.ethereum.on('accountsChanged', handleAccountChanges);
-
     //Gestire con gli eventi dal contratto
     if(appContext.collectionAddresses.length === 0){
       initCollections();
@@ -76,8 +71,12 @@ function App() {
         appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
         appContext.updateSection(Sections.MARKETPLACE);
         if(isAdmin){
-          addContractListeners()
+          addContractListeners();
         }
+
+        //Events
+        window.ethereum.on('chainChanged', handleChanges);
+        window.ethereum.on('accountsChanged', handleAccountChanges);
 
       } catch (err) {
         disconnect();

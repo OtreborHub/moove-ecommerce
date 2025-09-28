@@ -10,7 +10,6 @@ import { formatToRomeTime, formatAuctionType } from "../../utils/formatValue";
 import { AuctionProps } from '../../utils/Interfaces';
 import Loader from '../commons/Loader';
 import PlaceBidForm from '../forms/PlaceBidForm';
-import { tokenToString } from 'typescript';
 
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
 const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the price suits you.</>
