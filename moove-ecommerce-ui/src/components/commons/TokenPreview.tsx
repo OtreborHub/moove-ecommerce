@@ -70,19 +70,6 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
       console.error("Errore nel recupero dei metadati:", error);
     }
   }
-  //TOKEN METADATA
-  //const cid = "bafybeigq3ahv6jwzql75rlqxh7wewj6km4me5hw65qbtj2uei3dqa2zl7i";
-  //const metadataUrl = `https://ipfs.infura.io/ipfs/${cid}`;
-
-  //  const fetchMetadata = async () => {
-  //     try {
-  //       const res = await fetch(metadataUrl);
-  //       const json = await res.json();
-  //       setMetadata(json);
-  //     } catch (err) {
-  //       console.error("Errore nel fetch del metadata IPFS:", err);
-  //     }
-  //   };
 
   function closeAndHandleConnectWallet(){
     MySwal.close();

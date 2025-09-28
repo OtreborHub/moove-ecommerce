@@ -59,21 +59,13 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
         setIsLoading(true);
         var auctionDTOs: AuctionDTO[] = [];
         for (const collection of collectionData) {
-            //Ciclare fino a tokenIds 
             for(let idx = 1; idx < collection.tokenIds; idx++){
                 var auctionResponse = await readAuction(collection.address, idx);
                 if(auctionResponse && auctionResponse.tokenId !== 0){
-
-                    //Pretend to be ended for the front-end
-                    // const nowInSeconds = Math.floor(Date.now() / 1000);
-                    // auctionResponse.ended = auctionResponse.ended || nowInSeconds >= auctionResponse.endTime;
-
                     auctionResponse.collection = collection;
                     auctionDTOs.push(auctionResponse);
                 }
-                // else if(!auctionResponse || (auctionResponse && auctionResponse.tokenId === 0)){
-                //    break;
-                // }
+
             }
         }
 

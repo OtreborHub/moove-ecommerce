@@ -4,12 +4,13 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import moove_logo from "../../assets/moove.png";
 import { useAppContext } from "../../Context";
-import { retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from '../../utils/bridges/MooveCollectionsBridge';
+import { readTokenData, retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from '../../utils/bridges/MooveCollectionsBridge';
 import { AuctionStatus, AuctionType, getAuctionStatus } from '../../utils/enums/Auction';
 import { formatToRomeTime, formatAuctionType } from "../../utils/formatValue";
 import { AuctionProps } from '../../utils/Interfaces';
 import Loader from '../commons/Loader';
 import PlaceBidForm from '../forms/PlaceBidForm';
+import { tokenToString } from 'typescript';
 
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
 const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the price suits you.</>
@@ -20,11 +21,13 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
     const isPhone = useMediaQuery('(max-width: 650px)');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [auctionStatus, setAuctionStatus] = useState<AuctionStatus>(AuctionStatus.NONE);
+    const [imageURL, setImageUrl] = useState(moove_logo);
     const appContext = useAppContext();
     const MySwal = withReactContent(Swal);
     
     useEffect(() => {
         setAuctionStatus(getAuctionStatus(auction));
+        getTokenImage();
     }, [auction]);
 
     const chooseTooltipText = () => {
@@ -37,6 +40,42 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
                 return tooltipTextEnglishAuction;
             default:
                 return "";
+        }
+    }
+
+    async function getTokenImage(){
+        setIsLoading(true);
+        //Sostituire con getTokenURI;
+        const tokenData = await readTokenData(auction.collection.address, auction.tokenId);
+        if(tokenData){
+            fetchMetadata(tokenData.URI);
+        }
+        setIsLoading(false);
+
+    }
+
+
+
+    async function fetchMetadata(tokenURI: string){
+        const metadataUrl = `https://${tokenURI}.ipfs.nftstorage.link`;
+        try {
+        const response = await fetch(metadataUrl);
+        if (!response.ok) {
+            throw new Error(`Errore nel fetch: ${response.status}`);
+        }
+
+        const metadata = await response.json();
+        console.log("Name:", metadata.name);
+        console.log("Cid:", metadata.cid);
+        console.log("Attrbitues:", metadata.attributes[0]);
+
+        const imageCIDFetched = metadata.cid;
+        const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCIDFetched}`;
+
+        setImageUrl(imageUrlFetched);
+
+        } catch (error) {
+        console.error("Errore nel recupero dei metadati:", error);
         }
     }
 
@@ -182,10 +221,10 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
             {/* Image */}
             <CardMedia
                 component="img"
-                image={moove_logo}
+                image={imageURL}
                 width={"30%"}
                 alt="NFT Image not available..."
-                sx={{ height: 120, width: 120, objectFit: 'contain', mr:2, ml:1}}
+                sx={{ height: 120, width: 120, objectFit: 'contain'}}
             />
 
             {/* Text */}
