@@ -177,12 +177,20 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
 
     const choseButtonsToShow = () => {
         if(!auction.ended && appContext.signer !== auction.seller && Math.floor(Date.now() / 1000) < auction.endTime){
-            return (
-                <Button size="small" variant="contained" onClick={buyPlaceBid} sx={{mr: 1}}>
-                    {!isPhone && (auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH)? "Place Bid" : "Buy now"}
-                    {isPhone && (auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH)? "Bid" : "Buy"}
-                </Button>
-            );
+            if(isPhone){
+                return (
+                    <Button size="small" variant="contained" onClick={buyPlaceBid} sx={{mr: 1}}>
+                        {(auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH)? "Bid" : "Buy"}
+                    </Button>
+                );
+            } else {
+                return (
+                    <Button size="small" variant="contained" onClick={buyPlaceBid} sx={{mr: 1}}>
+                        {(auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH)? "Place Bid" : "Buy now"}
+                    </Button>
+                );
+            }
+            
         } else if (appContext.signer && auction.ended && appContext.signer !== auction.seller && appContext.signer !== auction.highestBidder && auction.auctionType === AuctionType.CLASSIC){
             return (
                 <Button size="small" variant="outlined" sx={{mr: 1}} onClick={withdraw}>Withdraw</Button>
