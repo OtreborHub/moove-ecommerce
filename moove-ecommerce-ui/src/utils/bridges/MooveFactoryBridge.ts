@@ -11,11 +11,10 @@ export const FACTORY_ADDRESS: string = process.env.REACT_APP_FACTORY_ADDRESS as 
 const infuraApiKey = process.env.REACT_APP_INFURA_API_KEY as string;
 const infuraProvider: Provider = new ethers.InfuraProvider("sepolia" , infuraApiKey);
 
-export default function getMooveFactory_ContractInstance(provider: Provider) {
+export default function getMooveFactory_ContractInstance() {
   try {
     if (!factory) {
-      var usedProvider = provider ? provider : infuraProvider; //Prevenzione da problemi lato Infura
-      factory = new Contract(FACTORY_ADDRESS, FACTORY_ABI, usedProvider);
+      factory = new Contract(FACTORY_ADDRESS, FACTORY_ABI, infuraProvider);
     }
   } catch {
     console.log("Error during contract instance creation: verifiy contract address, abi and provider used");
@@ -26,11 +25,7 @@ export default function getMooveFactory_ContractInstance(provider: Provider) {
 export async function readIsAdmin() {
   if (factory) {
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const signerContract = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, signer);
-
-      return await signerContract.isAdmin();
+      return await factory.isAdmin();
 
     } catch (error: any) {
       console.log("readAdmin action: " + ErrorMessage.RD);
@@ -42,11 +37,7 @@ export async function readIsAdmin() {
 export async function readCollections() {
   if(factory){
     try{
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const signerContract = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, signer);
-
-      const collections = await signerContract.getCollections();
+      const collections = await factory.getCollections();
       console.log("Collections retrieved successfully");
       return collections;
     } catch (error: any) {

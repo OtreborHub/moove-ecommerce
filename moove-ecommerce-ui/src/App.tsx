@@ -31,7 +31,7 @@ function App() {
   }, [appContext.signer]);
 
   async function initCollections(){
-    getMooveFactory_ContractInstance(appContext.provider);
+    getMooveFactory_ContractInstance();
     const collections = await readCollections();
     appContext.updateCollectionAddresses(collections ? collections : []);
   }
@@ -55,9 +55,9 @@ function App() {
   }
 
   async function connectWallet() {
-    if (window.ethereum) {
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
+
         appContext.updateProvider(provider);
 
         const signer = await provider.getSigner();
@@ -75,15 +75,12 @@ function App() {
         }
 
         //Events
-        window.ethereum.on('chainChanged', handleChanges);
-        window.ethereum.on('accountsChanged', handleAccountChanges);
+        // window.ethereum.on('chainChanged', handleChanges);
+        // window.ethereum.on('accountsChanged', handleAccountChanges);
 
       } catch (err) {
         disconnect();
       }
-    } else {
-      disconnect();
-    }
   }
 
   async function setAccountBalance(address: string){
