@@ -25,7 +25,12 @@ export default function getMooveFactory_ContractInstance() {
 export async function readIsAdmin() {
   if (factory) {
     try {
-      return await factory.isAdmin();
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const signerContract = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, signer);
+
+      const isAdmin = await signerContract.isAdmin();
+      return isAdmin;
 
     } catch (error: any) {
       console.log("readAdmin action: " + ErrorMessage.RD);

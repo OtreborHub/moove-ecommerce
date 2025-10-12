@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import moove_logo from "../../assets/moove.png";
 import { useAppContext } from "../../Context";
-import { readTokenData, retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from '../../utils/bridges/MooveCollectionsBridge';
+import { readTokenData, readTokenURI, retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from '../../utils/bridges/MooveCollectionsBridge';
 import { AuctionStatus, AuctionType, getAuctionStatus } from '../../utils/enums/Auction';
 import { formatToRomeTime, formatAuctionType } from "../../utils/formatValue";
 import { AuctionProps } from '../../utils/Interfaces';
@@ -44,16 +44,15 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
 
     async function getTokenImage(){
         setIsLoading(true);
-        //Sostituire con getTokenURI;
-        const tokenData = await readTokenData(auction.collection.address, auction.tokenId);
-        if(tokenData){
-            fetchMetadata(tokenData.URI);
+        const tokenURI = await readTokenURI(auction.collection.address, auction.tokenId);
+        if(tokenURI){
+            fetchMetadata(tokenURI);
+        } else {
+            setIsLoading(false);
+            console.log("Token URI is undefined");
         }
-        setIsLoading(false);
 
     }
-
-
 
     async function fetchMetadata(tokenURI: string){
         const metadataUrl = `https://${tokenURI}.ipfs.nftstorage.link`;
@@ -65,16 +64,25 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
 
         const metadata = await response.json();
         console.log("Name:", metadata.name);
-        console.log("Cid:", metadata.cid);
-        console.log("Attrbitues:", metadata.attributes[0]);
+        // console.log("Cid:", metadata.cid);
+        // console.log("Attrbitues:", metadata.attributes[0]);
 
         const imageCIDFetched = metadata.cid;
         const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCIDFetched}`;
 
-        setImageUrl(imageUrlFetched);
+        const img = new window.Image();
+        img.src = imageUrlFetched;
+        img.onload = () => {
+            setImageUrl(imageUrlFetched);
+            setIsLoading(false);
+        };
+        img.onerror = () => {
+            setImageUrl(moove_logo);
+            setIsLoading(false);
+        };
 
         } catch (error) {
-        console.error("Errore nel recupero dei metadati:", error);
+            console.error("Errore nel recupero dei metadati:", error);
         }
     }
 

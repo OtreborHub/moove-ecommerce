@@ -74,6 +74,22 @@ export async function readAuction(collectionAddress: string, tokenId: number){
   }
 }
 
+export async function readTokenURI(collectionAddress: string, tokenId: number){
+  if(collectionContract.target.toString() !== collectionAddress){
+    collectionContract = new Contract(collectionAddress, COLLECTION_ABI, infuraProvider);
+  }
+
+  if(collectionContract){
+    try {
+      const tokenURI = await collectionContract.tokenURI(tokenId);
+      return tokenURI;
+    } catch (error) {
+      console.log("readTokenURI action: " + ErrorMessage.RD);
+      swalError(ErrorMessage.RD, Action.RD_DATA, error);
+    }
+  }
+}
+
 export async function readTokenData(collectionAddress: string, tokenId: number){
   if(collectionContract.target.toString() !== collectionAddress){
     collectionContract = new Contract(collectionAddress, COLLECTION_ABI, infuraProvider);
@@ -91,7 +107,7 @@ export async function readTokenData(collectionAddress: string, tokenId: number){
       return token;
     } catch (error) {
       console.log("readTokenData action: " + ErrorMessage.RD);
-      // swalError(ErrorMessage.RD, Action.RD_DATA, error);
+      swalError(ErrorMessage.RD, Action.RD_DATA, error);
     }
   }
 }

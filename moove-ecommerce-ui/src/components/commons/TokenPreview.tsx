@@ -35,7 +35,7 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
 
   function fillTokenAuction(){
     if(appContext.auctions.length > 0){
-      appContext.auctions.map((auction) => {
+      appContext.auctions.filter((auction) => {
         if(auction.collection.address === appContext.shownCollection.address && auction.tokenId === token.id){
           token.auction = auction;
         }
@@ -59,13 +59,23 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
       console.log("Attrbitues:", metadata.attributes[0]);
 
       const imageCIDFetched = metadata.cid;
-      //const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCIDFetched}`;
-      const imageUrlFetched = `https://${imageCIDFetched}.ipfs.nftstorage.link`;
+      const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCIDFetched}`;
+      //const imageUrlFetched = `https://${imageCIDFetched}.ipfs.nftstorage.link`;
 
-      setImageUrl(imageUrlFetched);
+      // setImageUrl(imageUrlFetched);
       token.imageCid = imageCIDFetched;
       token.metadata = metadata;
-      isLoading(false);
+
+      const img = new window.Image();
+      img.src = imageUrlFetched;
+      img.onload = () => {
+        setImageUrl(imageUrlFetched);
+        isLoading(false);
+      };
+      img.onerror = () => {
+        setImageUrl(moove_logo);
+        isLoading(false);
+      };
 
     } catch (error) {
       console.error("Errore nel recupero dei metadati:", error);
