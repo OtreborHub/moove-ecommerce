@@ -58,12 +58,12 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
       console.log("Cid:", metadata.cid);
       console.log("Attrbitues:", metadata.attributes[0]);
 
-      const imageCIDFetched = metadata.cid;
-      const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCIDFetched}`;
+      const imageCID = metadata.cid;
+      const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCID}`;
       //const imageUrlFetched = `https://${imageCIDFetched}.ipfs.nftstorage.link`;
 
       // setImageUrl(imageUrlFetched);
-      token.imageCid = imageCIDFetched;
+      token.imageCID = imageCID;
       token.metadata = metadata;
 
       const img = new window.Image();

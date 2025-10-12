@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import moove_logo from "../../assets/moove.png";
 import { useAppContext } from "../../Context";
-import { readTokenData, readTokenURI, retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from '../../utils/bridges/MooveCollectionsBridge';
+import { readTokenURI, retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from '../../utils/bridges/MooveCollectionsBridge';
 import { AuctionStatus, AuctionType, getAuctionStatus } from '../../utils/enums/Auction';
 import { formatToRomeTime, formatAuctionType } from "../../utils/formatValue";
 import { AuctionProps } from '../../utils/Interfaces';
@@ -67,16 +67,22 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
         // console.log("Cid:", metadata.cid);
         // console.log("Attrbitues:", metadata.attributes[0]);
 
-        const imageCIDFetched = metadata.cid;
-        const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCIDFetched}`;
-
+        const imageCID = metadata.cid;
+        const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCID}`;
+        
         const img = new window.Image();
         img.src = imageUrlFetched;
+        // const timeout = setTimeout(() => {
+        //     img.onerror?.(new Event('error'));
+        // }, 5000); // 5 second timeout
+
         img.onload = () => {
+            // clearTimeout(timeout);
             setImageUrl(imageUrlFetched);
             setIsLoading(false);
         };
         img.onerror = () => {
+            // clearTimeout(timeout);
             setImageUrl(moove_logo);
             setIsLoading(false);
         };

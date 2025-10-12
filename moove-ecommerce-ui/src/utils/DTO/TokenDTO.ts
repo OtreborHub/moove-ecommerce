@@ -16,7 +16,7 @@ export default class TokenDTO {
     price: number;
     owner: string;
     auction: AuctionDTO = AuctionDTO.emptyInstance();
-    imageCid?: string;
+    imageCID?: string;
     metadata?: Metadata;
 
     constructor(id: number, URI: string, price: number, owner: string) {

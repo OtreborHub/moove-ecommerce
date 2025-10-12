@@ -18,7 +18,7 @@ interface CollectionProps{
 
 interface TokenProps {
     signer?: string;
-    collection?: CollectionDTO;
+    collection: CollectionDTO;
     token: TokenDTO;
     isLoading: (isLoading: boolean) => void,
     handleBuy: (tokenId: number, price: number) => void;

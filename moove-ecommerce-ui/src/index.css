@@ -22,8 +22,8 @@ body {
 }
 
 .primary-bg-color {
-  background-image: linear-gradient(to bottom, #26547C 0%, #b2ccff 100%);
-  /* background-color: #b2ccff; */
+  /* background-image: linear-gradient(to bottom, #26547C 0%, #b2ccff 100%); */
+  background-color: rgb(20, 19, 19);
 }
 
 /* .secondary-background-color {

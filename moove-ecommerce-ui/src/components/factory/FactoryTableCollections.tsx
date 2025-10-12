@@ -19,7 +19,7 @@ export default function TableCollection({ collections, handleMint, handleDisable
         <TableHead sx={{ backgroundColor: '#f7a642ff', borderBottom: '.15rem solid #000000'}}>
           <TableRow>
             {(isMobile) && <TableCell align="center"><b>Actions</b></TableCell>}
-            <TableCell><b>Collection</b></TableCell>
+            <TableCell align="center"><b>Collection</b></TableCell>
             <TableCell align="center"><b>Symbol</b></TableCell>
             <TableCell align="center"><b>Max Supply</b></TableCell>
             <TableCell align="center"><b>Token Ids</b></TableCell>

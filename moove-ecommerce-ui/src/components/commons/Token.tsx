@@ -1,24 +1,75 @@
 import { Box, Button, CardMedia, Grid, Typography, useMediaQuery } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import moove_logo from "../../assets/moove.png";
 import { TokenProps } from "../../utils/Interfaces";
 import { formatAddress, formatPrice } from "../../utils/formatValue";
 import Auction from "./Auction";
 import TokenActionsButton from "../actionsButton/TokenActionsButton";
+import { readTokenURI } from "../../utils/bridges/MooveCollectionsBridge";
 
 export default function Token({ signer, collection, token, connectWallet, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice: handleTokenPrice}: TokenProps) {
     const [section, setSection] = useState<number>(token.auction.tokenId > 0 ? 1 : 0);
-    const imageUrl = `https://ipfs.infura.io/ipfs/${token.imageCid}`;
+    const [imageUrl, setImageUrl] = useState(moove_logo);
     const isPhone = useMediaQuery('(max-width: 650px)');
     
+    useEffect(() => {
+        getTokenImage();
+    }, [])
+
+    async function getTokenImage(){
+        const tokenURI = await readTokenURI(collection.address, token.id);
+        if(tokenURI){
+            fetchMetadata(tokenURI);
+        } else {
+            console.log("Token URI is undefined");
+        }
+    }
+
+    async function fetchMetadata(tokenURI: string){
+        const metadataUrl = `https://${tokenURI}.ipfs.nftstorage.link`;
+        try {
+        const response = await fetch(metadataUrl);
+        if (!response.ok) {
+            throw new Error(`Errore nel fetch: ${response.status}`);
+        }
+
+        const metadata = await response.json();
+        console.log("Name:", metadata.name);
+        // console.log("Cid:", metadata.cid);
+        // console.log("Attrbitues:", metadata.attributes[0]);
+
+        const imageCID = metadata.cid;
+        const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCID}`;
+        
+        const img = new window.Image();
+        img.src = imageUrlFetched;
+        // const timeout = setTimeout(() => {
+        //     img.onerror?.(new Event('error'));
+        // }, 5000); // 5 second timeout
+
+        img.onload = () => {
+            // clearTimeout(timeout);
+            setImageUrl(imageUrlFetched);
+        };
+        img.onerror = () => {
+            // clearTimeout(timeout);
+            setImageUrl(moove_logo);
+        };
+
+        } catch (error) {
+            console.error("Errore nel recupero dei metadati:", error);
+        }
+    }
+
+
     return (
         <Box padding={1}>
             <Grid container spacing={4} mb={4}>
                 <Grid size={6}>
                     <CardMedia
                     component="img"
-                    sx={{ width: '100%', height: 'auto', maxHeight: 700, objectFit: 'contain', mt:1.5}}
-                    src={imageUrl ? imageUrl : moove_logo}
+                    sx={{ width: '100%', height: 'auto', objectFit: 'contain', mt:1.5}}
+                    src={imageUrl}
                     alt={"NFT Preview not available..."}
                     />
                 </Grid>

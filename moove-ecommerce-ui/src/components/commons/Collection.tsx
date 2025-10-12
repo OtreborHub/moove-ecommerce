@@ -183,6 +183,7 @@ export default function Collection({collection, connectWallet} : CollectionProps
             >
               <TokenPreview 
                 token={token} 
+                collection={collection}
                 isLoading={loadingPropagation}
                 connectWallet={connectWallet} 
                 handleBuy={handleBuy} 
