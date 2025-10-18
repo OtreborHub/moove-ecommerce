@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAppContext } from "../../Context";
 import collections_logo from "../../assets/collections.png";
-import { writeMintNFT } from "../../utils/bridges/MooveCollectionsBridge";
+import { writeDisableCollection, writeMintNFT } from "../../utils/bridges/MooveCollectionsBridge";
 import { writeCreateCollection } from "../../utils/bridges/MooveFactoryBridge";
 import Loader from "../commons/Loader";
 import CreateCollectionForm from "../forms/CreateCollectionForm";
@@ -62,11 +62,10 @@ export function Factory() {
       }
     }
 
-    async function handleDisable(){
+    async function handleDisable(collectionAddress: string){
       setIsLoading(true);
-      //var success = await writeDisableCollection(collectionName);
+      var success = await writeDisableCollection(collectionAddress);
       setIsLoading(false);
-      var success = true;
       if(success){
         MySwal.fire({
           title: "Disable collection",

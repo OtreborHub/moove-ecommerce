@@ -9,12 +9,13 @@ import { TokenProps } from "../../utils/Interfaces";
 import Token from "./Token";
 
 // ✅ Gateway IPFS multipli con fallback
-const IPFS_GATEWAYS = [
-  'https://nftstorage.link/ipfs',
-  'https://ipfs.io/ipfs',
-  'https://cloudflare-ipfs.com/ipfs',
-  'https://gateway.pinata.cloud/ipfs'
-];
+// const IPFS_GATEWAYS = [
+//   'https://nftstorage.link/ipfs',
+//   'https://ipfs.io/ipfs',
+//   'https://cloudflare-ipfs.com/ipfs',
+//   'https://gateway.pinata.cloud/ipfs'
+// ];
+const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
 
 export default function TokenPreview({token, isLoading, connectWallet, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice: handleTokenPrice}: TokenProps) {
   const [imageUrl, setImageUrl] = useState(moove_logo);
@@ -69,34 +70,19 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
     });
   }
 
-  // ✅ Prova gateway multipli in sequenza
-  async function tryMultipleGateways(cid: string): Promise<boolean> {
-    for (const gateway of IPFS_GATEWAYS) {
-      const url = `${gateway}/${cid}`;
-      console.log(`🔄 Trying gateway: ${url}`);
-      
-      const success = await loadImageWithTimeout(url);
-      if (success) {
-        console.log(`✅ Success with gateway: ${gateway}`);
-        return true;
-      }
-    }
-    console.log('❌ All gateways failed');
-    return false;
-  }
-
   async function fetchMetadata(){
     isLoading(true);
     
     try {
       // ✅ Usa nftstorage.link che è più affidabile
-      const metadataUrl = `https://nftstorage.link/ipfs/${token.URI}`;
-      console.log(`📥 Fetching metadata from: ${metadataUrl}`);
+      const metadataURL = `${IPFS_gateway}${token.URI}`;
+      //const metadataUrl = `https://nftstorage.link/ipfs/${token.URI}`;
+      console.log(`📥 Fetching metadata from: ${metadataURL}`);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      const response = await fetch(metadataUrl, { 
+      const response = await fetch(metadataURL, { 
         signal: controller.signal 
       });
       
@@ -113,7 +99,10 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
       token.metadata = metadata;
 
       // ✅ Prova gateway multipli
-      const success = await tryMultipleGateways(metadata.cid);
+      const url = `${IPFS_gateway}${metadata.cid}`;
+      console.log(`🔄 Trying gateway: ${url}`);
+      
+      const success = await loadImageWithTimeout(url);
       
       if (!success) {
         console.warn('⚠️ Using fallback logo');

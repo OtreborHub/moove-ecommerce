@@ -4,7 +4,7 @@ import { DeleteCollectionFormProps } from "../../utils/Interfaces";
 import { ErrorMessage, swalError } from "../../utils/enums/Errors";
 import { Action } from "../../utils/enums/Actions";
 
-export default function DeleteCollectionForm({ collectionName, handleSubmit }: DeleteCollectionFormProps) {
+export default function DeleteCollectionForm({ collectionAddress, collectionName, handleSubmit }: DeleteCollectionFormProps) {
     const [formData, setFormData] = useState("");
 
     const handleChange = (event: any) => {
@@ -15,7 +15,7 @@ export default function DeleteCollectionForm({ collectionName, handleSubmit }: D
   const submit = (event : any) => {
     event.preventDefault();
     if(formData === collectionName){
-        handleSubmit();
+        handleSubmit(collectionAddress);
     } else {
         swalError(ErrorMessage.DELETE_CONFIRM_ERROR, Action.DELETE_COLL);
     }

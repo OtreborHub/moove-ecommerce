@@ -7,6 +7,8 @@ import Auction from "./Auction";
 import TokenActionsButton from "../actionsButton/TokenActionsButton";
 import { readTokenURI } from "../../utils/bridges/MooveCollectionsBridge";
 
+const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
+
 export default function Token({ signer, collection, token, connectWallet, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice: handleTokenPrice}: TokenProps) {
     const [section, setSection] = useState<number>(token.auction.tokenId > 0 ? 1 : 0);
     const [imageUrl, setImageUrl] = useState(moove_logo);
@@ -18,9 +20,23 @@ export default function Token({ signer, collection, token, connectWallet, handle
 
     async function getTokenImage(){
         try {
+            // se token.imageCID è già disponibile, salta la lettura del tokenURI
+            if (token.imageCID) {
+                const cid = token.imageCID;
+                const imageUrl = `${IPFS_gateway}${cid}`;
+                const success = await loadImageWithTimeout(imageUrl, 8000);
+                if (!success) {
+                    console.warn('⚠️ Using fallback logo (cid preload failed)');
+                    setImageUrl(moove_logo);
+                }
+                return;
+            }
+
+            // fallback: leggi il tokenURI dal contratto e ricava il CID dai metadata
             const tokenURI = await readTokenURI(collection.address, token.id);
             if (!tokenURI) {
                 console.log("Token URI is undefined");
+                setImageUrl(moove_logo);
                 return;
             }
             await fetchMetadata(tokenURI);
@@ -32,7 +48,7 @@ export default function Token({ signer, collection, token, connectWallet, handle
 
     async function fetchMetadata(tokenURI: string){
         try {
-            const metadataUrl = `https://nftstorage.link/ipfs/${tokenURI}`;
+            const metadataUrl = `${IPFS_gateway}${tokenURI}`;
             
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -47,19 +63,14 @@ export default function Token({ signer, collection, token, connectWallet, handle
             const metadata = await response.json();
             const imageCID = metadata.cid;
             
-            // Prova gateway multipli
-            const GATEWAYS = [
-                'https://nftstorage.link/ipfs',
-                'https://ipfs.io/ipfs',
-                'https://cloudflare-ipfs.com/ipfs'
-            ];
 
-            for (const gateway of GATEWAYS) {
-                const imageUrl = `${gateway}/${imageCID}`;
-                const success = await loadImageWithTimeout(imageUrl, 8000);
-                if (success) break;
+            const imageUrl = `${IPFS_gateway}/${imageCID}`;
+            const success = await loadImageWithTimeout(imageUrl, 8000);
+            if (!success) {
+                console.warn('⚠️ Using fallback logo');
+                setImageUrl(moove_logo);
             }
-
+            
         } catch (error) {
             console.error("Error fetching metadata:", error);
             setImageUrl(moove_logo);

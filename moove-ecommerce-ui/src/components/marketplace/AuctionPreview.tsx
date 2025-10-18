@@ -11,15 +11,7 @@ import { AuctionProps } from '../../utils/Interfaces';
 import Loader from '../commons/Loader';
 import PlaceBidForm from '../forms/PlaceBidForm';
 
-// ✅ Gateway IPFS multipli con fallback
-const IPFS_GATEWAYS = [
-  'https://ipfs.infura.io/ipfs/',
-  'https://nftstorage.link/ipfs',
-  'https://ipfs.io/ipfs',
-  'https://cloudflare-ipfs.com/ipfs',
-  'https://gateway.pinata.cloud/ipfs'
-];
-
+const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
 const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the price suits you.</>
 const tooltipTextEnglishAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
@@ -29,7 +21,6 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [auctionStatus, setAuctionStatus] = useState<AuctionStatus>(AuctionStatus.NONE);
     const [imageURL, setImageUrl] = useState(moove_logo);
-    const [imageLoadFailed, setImageLoadFailed] = useState(false);
     const appContext = useAppContext();
     const MySwal = withReactContent(Swal);
     
@@ -51,7 +42,6 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
         }
     }
 
-    // ✅ Funzione helper per provare il caricamento con timeout
     async function loadImageWithTimeout(url: string, timeout: number = 5000): Promise<boolean> {
         return new Promise((resolve) => {
             const img = new window.Image();
@@ -76,50 +66,30 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
         });
     }
 
-    // ✅ Prova gateway multipli in sequenza (con timeout ridotto per home)
-    async function tryMultipleGateways(cid: string): Promise<boolean> {
-        for (const gateway of IPFS_GATEWAYS) {
-            const url = `${gateway}/${cid}`;
-            console.log(`🔄 [Auction ${auction.tokenId}] Trying: ${gateway}`);
-            
-            const success = await loadImageWithTimeout(url, 3000); // ✅ Timeout ridotto a 3s per home
-            if (success) {
-                console.log(`✅ [Auction ${auction.tokenId}] Success: ${gateway}`);
-                return true;
-            }
-        }
-        console.log(`❌ [Auction ${auction.tokenId}] All gateways failed`);
-        return false;
-    }
-
     async function getTokenImage(){
-        // ✅ Non bloccare il render, usa flag locale
         setIsLoading(true);
         
         try {
             const tokenURI = await readTokenURI(auction.collection.address, auction.tokenId);
             if (!tokenURI) {
                 console.log(`⚠️ [Auction ${auction.tokenId}] Token URI is undefined`);
-                setImageLoadFailed(true);
                 return;
             }
             await fetchMetadata(tokenURI);
         } catch (error) {
             console.error(`❌ [Auction ${auction.tokenId}] Error getting token image:`, error);
             setImageUrl(moove_logo);
-            setImageLoadFailed(true);
         } finally {
-            // ✅ SEMPRE rimuovi il loader
             setIsLoading(false);
         }
     }
 
     async function fetchMetadata(tokenURI: string){
         try {
-            const metadataUrl = `https://nftstorage.link/ipfs/${tokenURI}`;
+            //const metadataUrl = `${IPFS_gateway}bafkreiccwxnjmyks43clusjghqpx4d6df5mcw6hlu563cpywwqyaik6dwq`;
+            const metadataUrl = `${IPFS_gateway}${tokenURI}`;
             console.log(`📥 [Auction ${auction.tokenId}] Fetching metadata from: ${metadataUrl}`);
             
-            // ✅ Timeout ridotto per home (5s invece di 10s)
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -138,24 +108,24 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
 
             const imageCID = metadata.cid;
             
-            // ✅ Prova gateway multipli
-            const success = await tryMultipleGateways(imageCID);
+            //const url = `${IPFS_gateway}bafkreib5devkaoxtqvomv34ifihpuqvztv5htbs3z5skidjfxd6oq36uoy`;
+            const url = `${IPFS_gateway}${imageCID}`;
+            console.log(`🔄 [Auction ${auction.tokenId}] Trying: ${url}`);
+        
+            const success = await loadImageWithTimeout(url, 3000);
             
             if (!success) {
                 console.warn(`⚠️ [Auction ${auction.tokenId}] Using fallback logo`);
                 setImageUrl(moove_logo);
-                setImageLoadFailed(true);
             }
 
         } catch (error: any) {
-            // ✅ Gestisci meglio gli errori di abort
             if (error.name === 'AbortError') {
                 console.warn(`⏱️ [Auction ${auction.tokenId}] Fetch timeout`);
             } else {
                 console.error(`❌ [Auction ${auction.tokenId}] Error fetching metadata:`, error);
             }
             setImageUrl(moove_logo);
-            setImageLoadFailed(true);
         }
     }
 
@@ -312,7 +282,7 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
                 component="img"
                 image={imageURL}
                 width={"30%"}
-                alt={imageLoadFailed ? "NFT Image not available..." : "Loading NFT Image..."}
+                alt={"NFT Image not available..."}
                 sx={{ 
                     height: 120, 
                     width: 120, 

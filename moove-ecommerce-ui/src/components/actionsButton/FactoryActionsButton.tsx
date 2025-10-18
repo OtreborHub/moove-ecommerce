@@ -50,7 +50,7 @@ export default function FactoryActionsButton({ collection, handleMint, handleDis
     const disableCollection = () => {
         MySwal.fire({
             title: "Disable collection",
-            html: <DisableCollectionForm collectionName={collection.name} handleSubmit={handleDisable}/>,
+            html: <DisableCollectionForm collectionAddress={collection.address} collectionName={collection.name} handleSubmit={handleDisable}/>,
             showConfirmButton: false,
             showCloseButton: true,
         });   

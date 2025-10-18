@@ -300,3 +300,18 @@ export async function retrieveBid(collectionAddress: string, tokenId: number){
     }
   }
 }
+
+export async function writeDisableCollection(collectionAddress: string){
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const signerContract = new ethers.Contract(collectionAddress, COLLECTION_ABI, signer);
+
+    await signerContract.disableCollection();
+    return true;
+  } catch (error: any) {
+    console.log("Disable collection action: " + error);
+    swalError(ErrorMessage.TR, Action.WC_DATA, error);
+    return false;
+  }
+}

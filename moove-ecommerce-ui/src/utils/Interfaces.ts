@@ -38,13 +38,13 @@ interface AuctionProps {
 interface TableCollectionProps {
     collections: CollectionDTO[];
     handleMint: (collectionAddress: string, tokenURI: string, price: number) => void;
-    handleDisable: () => void;
+    handleDisable: (collectionAddress: string) => void;
 }
 
 interface FactoryActionsButtonProps {
     collection: CollectionDTO;
     handleMint: (collectionAddress: string, tokenURI: string, price: number) => void;
-    handleDisable: () => void;
+    handleDisable: (collectionAddress: string) => void;
 }
 
 interface TokenActionsButtonProps {
@@ -71,8 +71,9 @@ interface MintTokenFormProps {
 }
 
 interface DeleteCollectionFormProps {
+    collectionAddress: string;
     collectionName: string;
-    handleSubmit: () => void;
+    handleSubmit: (collectionAddress: string) => void;
 }
 
 interface SetTokenPriceFormProps {
