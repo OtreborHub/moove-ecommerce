@@ -8,28 +8,31 @@ import { formatPrice } from "../../utils/formatValue";
 import { TokenProps } from "../../utils/Interfaces";
 import Token from "./Token";
 
+// ✅ Gateway IPFS multipli con fallback
+const IPFS_GATEWAYS = [
+  'https://nftstorage.link/ipfs',
+  'https://ipfs.io/ipfs',
+  'https://cloudflare-ipfs.com/ipfs',
+  'https://gateway.pinata.cloud/ipfs'
+];
+
 export default function TokenPreview({token, isLoading, connectWallet, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice: handleTokenPrice}: TokenProps) {
   const [imageUrl, setImageUrl] = useState(moove_logo);
   const [hovered, setHovered] = useState(false);
   const MySwal = withReactContent(Swal);
   const appContext = useAppContext();
 
-  // const [metadata,setMetadata] = useState("");
-
   useEffect(() => {
-
       init();
       
       if(appContext.shownNFT > 0 && appContext.shownNFT === token.id) {
         openTokenDetail();
         appContext.updateShownNFT(0);
       }
-
-    }, []);
-
+  }, []);
 
   async function init(){
-    fetchMetadata();
+    await fetchMetadata();
     fillTokenAuction();
   }  
 
@@ -43,42 +46,86 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
     }
   }
 
-  async function fetchMetadata(){
-    const metadataUrl = `https://${token.URI}.ipfs.nftstorage.link`;
-    try {
-      isLoading(true)
+  // ✅ Funzione helper per provare il caricamento con timeout
+  async function loadImageWithTimeout(url: string, timeout: number = 8000): Promise<boolean> {
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      const timer = setTimeout(() => {
+        resolve(false);
+      }, timeout);
+
+      img.onload = () => {
+        clearTimeout(timer);
+        setImageUrl(url);
+        resolve(true);
+      };
+
+      img.onerror = () => {
+        clearTimeout(timer);
+        resolve(false);
+      };
+
+      img.src = url;
+    });
+  }
+
+  // ✅ Prova gateway multipli in sequenza
+  async function tryMultipleGateways(cid: string): Promise<boolean> {
+    for (const gateway of IPFS_GATEWAYS) {
+      const url = `${gateway}/${cid}`;
+      console.log(`🔄 Trying gateway: ${url}`);
       
-      const response = await fetch(metadataUrl);
+      const success = await loadImageWithTimeout(url);
+      if (success) {
+        console.log(`✅ Success with gateway: ${gateway}`);
+        return true;
+      }
+    }
+    console.log('❌ All gateways failed');
+    return false;
+  }
+
+  async function fetchMetadata(){
+    isLoading(true);
+    
+    try {
+      // ✅ Usa nftstorage.link che è più affidabile
+      const metadataUrl = `https://nftstorage.link/ipfs/${token.URI}`;
+      console.log(`📥 Fetching metadata from: ${metadataUrl}`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const response = await fetch(metadataUrl, { 
+        signal: controller.signal 
+      });
+      
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`Errore nel fetch: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const metadata = await response.json();
-      console.log("Name:", metadata.name);
-      console.log("Cid:", metadata.cid);
-      console.log("Attrbitues:", metadata.attributes[0]);
+      console.log("✅ Metadata fetched:", metadata.name);
 
-      const imageCID = metadata.cid;
-      const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCID}`;
-      //const imageUrlFetched = `https://${imageCIDFetched}.ipfs.nftstorage.link`;
-
-      // setImageUrl(imageUrlFetched);
-      token.imageCID = imageCID;
+      token.imageCID = metadata.cid;
       token.metadata = metadata;
 
-      const img = new window.Image();
-      img.src = imageUrlFetched;
-      img.onload = () => {
-        setImageUrl(imageUrlFetched);
-        isLoading(false);
-      };
-      img.onerror = () => {
+      // ✅ Prova gateway multipli
+      const success = await tryMultipleGateways(metadata.cid);
+      
+      if (!success) {
+        console.warn('⚠️ Using fallback logo');
         setImageUrl(moove_logo);
-        isLoading(false);
-      };
+      }
 
     } catch (error) {
-      console.error("Errore nel recupero dei metadati:", error);
+      console.error("❌ Error fetching metadata:", error);
+      setImageUrl(moove_logo);
+    } finally {
+      // ✅ SEMPRE rimuovi il loader
+      isLoading(false);
     }
   }
 
@@ -118,13 +165,11 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
           showConfirmButton: false,
           showCloseButton: true,
           customClass: {
-            //Comandare sulla base della grandezza dello schermo per avere un popup adeguato
             popup: 'my-fullscreen-swal'
           }
       }); 
   }
 
-  
   return (
     <Card sx={{ 
       position: "relative",
@@ -146,22 +191,11 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
             maxHeight: 500,              
             objectFit: 'contain',        
             borderRadius: 2,
-            backgroundColor: '#f0f0f0'   // Optional: per sfondo neutro se l'immagine è piccola
+            backgroundColor: '#f0f0f0'
           }}
           src={imageUrl}
           alt={"NFT Image not available..."}
         />
-        {/* <CardContent sx={{ textAlign: "left"}}>
-          <Typography gutterBottom variant="body2" component="div">
-            {appContext.shownCollection.symbol}#{token.id}
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Price: {formatPrice(token.price, "wei")} wei
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Owner: {formatAddress(token.owner)}
-          </Typography>
-        </CardContent> */}
 
         <CardContent
         sx={{
@@ -186,7 +220,6 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
         </Typography>
       </CardContent>
 
-      {/* Hover: Info in basso */}
       <CardContent
         sx={{
           position: "absolute",

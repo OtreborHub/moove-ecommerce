@@ -59,7 +59,7 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
         setIsLoading(true);
         var auctionDTOs: AuctionDTO[] = [];
         for (const collection of collectionData) {
-            for(let idx = 1; idx < collection.tokenIds; idx++){
+            for(let idx = 1; idx <= collection.tokenIds; idx++){
                 var auctionResponse = await readAuction(collection.address, idx);
                 if(auctionResponse && auctionResponse.tokenId !== 0){
                     auctionResponse.collection = collection;
@@ -170,7 +170,7 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
                 }
                 
                 {appContext.auctions
-                // .filter((auction) => auction.ended === false)
+                //.filter((auction) => auction.ended === false)
                 .slice() 
                 .sort((a, b) => {
                         const now = Date.now();

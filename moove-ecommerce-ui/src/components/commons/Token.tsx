@@ -17,50 +17,75 @@ export default function Token({ signer, collection, token, connectWallet, handle
     }, [])
 
     async function getTokenImage(){
-        const tokenURI = await readTokenURI(collection.address, token.id);
-        if(tokenURI){
-            fetchMetadata(tokenURI);
-        } else {
-            console.log("Token URI is undefined");
+        try {
+            const tokenURI = await readTokenURI(collection.address, token.id);
+            if (!tokenURI) {
+                console.log("Token URI is undefined");
+                return;
+            }
+            await fetchMetadata(tokenURI);
+        } catch (error) {
+            console.error("Error getting token image:", error);
+            setImageUrl(moove_logo);
         }
     }
 
     async function fetchMetadata(tokenURI: string){
-        const metadataUrl = `https://${tokenURI}.ipfs.nftstorage.link`;
         try {
-        const response = await fetch(metadataUrl);
-        if (!response.ok) {
-            throw new Error(`Errore nel fetch: ${response.status}`);
-        }
+            const metadataUrl = `https://nftstorage.link/ipfs/${tokenURI}`;
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-        const metadata = await response.json();
-        console.log("Name:", metadata.name);
-        // console.log("Cid:", metadata.cid);
-        // console.log("Attrbitues:", metadata.attributes[0]);
+            const response = await fetch(metadataUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
 
-        const imageCID = metadata.cid;
-        const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCID}`;
-        
-        const img = new window.Image();
-        img.src = imageUrlFetched;
-        // const timeout = setTimeout(() => {
-        //     img.onerror?.(new Event('error'));
-        // }, 5000); // 5 second timeout
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
-        img.onload = () => {
-            // clearTimeout(timeout);
-            setImageUrl(imageUrlFetched);
-        };
-        img.onerror = () => {
-            // clearTimeout(timeout);
-            setImageUrl(moove_logo);
-        };
+            const metadata = await response.json();
+            const imageCID = metadata.cid;
+            
+            // Prova gateway multipli
+            const GATEWAYS = [
+                'https://nftstorage.link/ipfs',
+                'https://ipfs.io/ipfs',
+                'https://cloudflare-ipfs.com/ipfs'
+            ];
+
+            for (const gateway of GATEWAYS) {
+                const imageUrl = `${gateway}/${imageCID}`;
+                const success = await loadImageWithTimeout(imageUrl, 8000);
+                if (success) break;
+            }
 
         } catch (error) {
-            console.error("Errore nel recupero dei metadati:", error);
+            console.error("Error fetching metadata:", error);
+            setImageUrl(moove_logo);
         }
     }
 
+    // Helper per timeout
+    async function loadImageWithTimeout(url: string, timeout: number): Promise<boolean> {
+        return new Promise((resolve) => {
+            const img = new window.Image();
+            const timer = setTimeout(() => resolve(false), timeout);
+
+            img.onload = () => {
+                clearTimeout(timer);
+                setImageUrl(url);
+                resolve(true);
+            };
+
+            img.onerror = () => {
+                clearTimeout(timer);
+                resolve(false);
+            };
+
+            img.src = url;
+        });
+    }
 
     return (
         <Box padding={1}>

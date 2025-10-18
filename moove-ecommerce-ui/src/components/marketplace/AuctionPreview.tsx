@@ -11,16 +11,25 @@ import { AuctionProps } from '../../utils/Interfaces';
 import Loader from '../commons/Loader';
 import PlaceBidForm from '../forms/PlaceBidForm';
 
+// ✅ Gateway IPFS multipli con fallback
+const IPFS_GATEWAYS = [
+  'https://ipfs.infura.io/ipfs/',
+  'https://nftstorage.link/ipfs',
+  'https://ipfs.io/ipfs',
+  'https://cloudflare-ipfs.com/ipfs',
+  'https://gateway.pinata.cloud/ipfs'
+];
+
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
 const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the price suits you.</>
 const tooltipTextEnglishAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
 
 export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
-    //const isMobile = useMediaQuery('(max-width: 1400px)');
     const isPhone = useMediaQuery('(max-width: 650px)');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [auctionStatus, setAuctionStatus] = useState<AuctionStatus>(AuctionStatus.NONE);
     const [imageURL, setImageUrl] = useState(moove_logo);
+    const [imageLoadFailed, setImageLoadFailed] = useState(false);
     const appContext = useAppContext();
     const MySwal = withReactContent(Swal);
     
@@ -42,53 +51,111 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
         }
     }
 
-    async function getTokenImage(){
-        setIsLoading(true);
-        const tokenURI = await readTokenURI(auction.collection.address, auction.tokenId);
-        if(tokenURI){
-            fetchMetadata(tokenURI);
-        } else {
-            setIsLoading(false);
-            console.log("Token URI is undefined");
-        }
+    // ✅ Funzione helper per provare il caricamento con timeout
+    async function loadImageWithTimeout(url: string, timeout: number = 5000): Promise<boolean> {
+        return new Promise((resolve) => {
+            const img = new window.Image();
+            const timer = setTimeout(() => {
+                console.log(`⏱️ Timeout for: ${url}`);
+                resolve(false);
+            }, timeout);
 
+            img.onload = () => {
+                clearTimeout(timer);
+                setImageUrl(url);
+                resolve(true);
+            };
+
+            img.onerror = () => {
+                clearTimeout(timer);
+                console.log(`❌ Failed to load: ${url}`);
+                resolve(false);
+            };
+
+            img.src = url;
+        });
+    }
+
+    // ✅ Prova gateway multipli in sequenza (con timeout ridotto per home)
+    async function tryMultipleGateways(cid: string): Promise<boolean> {
+        for (const gateway of IPFS_GATEWAYS) {
+            const url = `${gateway}/${cid}`;
+            console.log(`🔄 [Auction ${auction.tokenId}] Trying: ${gateway}`);
+            
+            const success = await loadImageWithTimeout(url, 3000); // ✅ Timeout ridotto a 3s per home
+            if (success) {
+                console.log(`✅ [Auction ${auction.tokenId}] Success: ${gateway}`);
+                return true;
+            }
+        }
+        console.log(`❌ [Auction ${auction.tokenId}] All gateways failed`);
+        return false;
+    }
+
+    async function getTokenImage(){
+        // ✅ Non bloccare il render, usa flag locale
+        setIsLoading(true);
+        
+        try {
+            const tokenURI = await readTokenURI(auction.collection.address, auction.tokenId);
+            if (!tokenURI) {
+                console.log(`⚠️ [Auction ${auction.tokenId}] Token URI is undefined`);
+                setImageLoadFailed(true);
+                return;
+            }
+            await fetchMetadata(tokenURI);
+        } catch (error) {
+            console.error(`❌ [Auction ${auction.tokenId}] Error getting token image:`, error);
+            setImageUrl(moove_logo);
+            setImageLoadFailed(true);
+        } finally {
+            // ✅ SEMPRE rimuovi il loader
+            setIsLoading(false);
+        }
     }
 
     async function fetchMetadata(tokenURI: string){
-        const metadataUrl = `https://${tokenURI}.ipfs.nftstorage.link`;
         try {
-        const response = await fetch(metadataUrl);
-        if (!response.ok) {
-            throw new Error(`Errore nel fetch: ${response.status}`);
-        }
+            const metadataUrl = `https://nftstorage.link/ipfs/${tokenURI}`;
+            console.log(`📥 [Auction ${auction.tokenId}] Fetching metadata from: ${metadataUrl}`);
+            
+            // ✅ Timeout ridotto per home (5s invece di 10s)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-        const metadata = await response.json();
-        console.log("Name:", metadata.name);
-        // console.log("Cid:", metadata.cid);
-        // console.log("Attrbitues:", metadata.attributes[0]);
+            const response = await fetch(metadataUrl, { 
+                signal: controller.signal 
+            });
+            
+            clearTimeout(timeoutId);
 
-        const imageCID = metadata.cid;
-        const imageUrlFetched = `https://ipfs.infura.io/ipfs/${imageCID}`;
-        
-        const img = new window.Image();
-        img.src = imageUrlFetched;
-        // const timeout = setTimeout(() => {
-        //     img.onerror?.(new Event('error'));
-        // }, 5000); // 5 second timeout
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
-        img.onload = () => {
-            // clearTimeout(timeout);
-            setImageUrl(imageUrlFetched);
-            setIsLoading(false);
-        };
-        img.onerror = () => {
-            // clearTimeout(timeout);
+            const metadata = await response.json();
+            console.log(`✅ [Auction ${auction.tokenId}] Metadata fetched:`, metadata.name);
+
+            const imageCID = metadata.cid;
+            
+            // ✅ Prova gateway multipli
+            const success = await tryMultipleGateways(imageCID);
+            
+            if (!success) {
+                console.warn(`⚠️ [Auction ${auction.tokenId}] Using fallback logo`);
+                setImageUrl(moove_logo);
+                setImageLoadFailed(true);
+            }
+
+        } catch (error: any) {
+            // ✅ Gestisci meglio gli errori di abort
+            if (error.name === 'AbortError') {
+                console.warn(`⏱️ [Auction ${auction.tokenId}] Fetch timeout`);
+            } else {
+                console.error(`❌ [Auction ${auction.tokenId}] Error fetching metadata:`, error);
+            }
             setImageUrl(moove_logo);
-            setIsLoading(false);
-        };
-
-        } catch (error) {
-            console.error("Errore nel recupero dei metadati:", error);
+            setImageLoadFailed(true);
         }
     }
 
@@ -105,7 +172,7 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
     function connectWalletSwal() {
         return (
             <Box>
-                <Typography variant='body1'>Don’t worry, it’s just a quick connection.</Typography>
+                <Typography variant='body1'>Don't worry, it's just a quick connection.</Typography>
                 <Button variant="contained" onClick={closeAndConnectWallet} sx={{backgroundColor:'#f7a642ff', borderRadius:'10px', margin: '1rem'}}>
                     Connect Wallet
                 </Button>
@@ -245,8 +312,15 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
                 component="img"
                 image={imageURL}
                 width={"30%"}
-                alt="NFT Image not available..."
-                sx={{ height: 120, width: 120, objectFit: 'contain'}}
+                alt={imageLoadFailed ? "NFT Image not available..." : "Loading NFT Image..."}
+                sx={{ 
+                    height: 120, 
+                    width: 120, 
+                    objectFit: 'contain',
+                    // ✅ Indicatore visivo di caricamento
+                    opacity: isLoading ? 0.5 : 1,
+                    transition: 'opacity 0.3s ease'
+                }}
             />
 
             {/* Text */}
@@ -272,13 +346,13 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
                         }}
                     >?</Box>
 
-                </Tooltip>  }  
+                </Tooltip>}  
                     
                 </Typography>
                 <Typography variant="body2">
                     {!isPhone && auction.auctionType === AuctionType.CLASSIC && <>Highest Bid: {auction.highestBid} Wei<br/></>}
                     {!isPhone && <>Current Price: {auction.currentPrice} Wei</>}
-                    </Typography>
+                </Typography>
                 {!isPhone && auction.minIncrement > 0 && <Typography variant="body2">Min. increment: {auction.minIncrement} Wei</Typography>}
                 <Typography variant="body2">Ends at: {isPhone ? formatToRomeTime(auction.endTime).substring(0,10) : formatToRomeTime(auction.endTime)}</Typography>
             </CardContent>
@@ -299,6 +373,7 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
             </Box>
                 
         </Card>
+        {/* ✅ Loader solo per transazioni, non per caricamento immagini */}
         <Loader loading={isLoading} />
         </>
     );
