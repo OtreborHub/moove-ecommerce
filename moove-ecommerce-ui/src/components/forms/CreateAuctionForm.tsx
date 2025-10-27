@@ -4,7 +4,7 @@ import { CreateAuctionFormProps } from "../../utils/Interfaces";
 import { formatInSeconds } from "../../utils/formatValue";
 import { AuctionType } from "../../utils/enums/Auction";
 
-const AUCTION_LIMIT = process.env.REACT_APP_AUCTION_LIMIT as string;
+const AUCTION_LIMIT = import.meta.env.VITE_AUCTION_LIMIT as string;
 
 const tooltipTextClassicAuction = (
   <>

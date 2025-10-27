@@ -5,7 +5,7 @@ import CollectionDTO from "./utils/DTO/CollectionDTO";
 import { Role } from "./utils/enums/Role";
 import { Sections } from "./utils/enums/Sections";
 
-const infuraApiKey = process.env.REACT_APP_INFURA_API_KEY as string;
+const infuraApiKey = import.meta.env.VITE_INFURA_API_KEY as string;
 const infuraProvider: Provider = new ethers.InfuraProvider("sepolia", infuraApiKey);
 
 const appContext = createContext({

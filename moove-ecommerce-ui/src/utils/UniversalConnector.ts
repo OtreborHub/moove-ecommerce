@@ -3,7 +3,7 @@ import type { CustomCaipNetwork } from '@reown/appkit-common'
 import { UniversalConnector } from '@reown/appkit-universal-connector'
 
 // Get projectId from https://dashboard.reown.com
-export const projectId = process.env.REACT_APP_PROJECT_ID as string;
+export const projectId = import.meta.env.VITE_PROJECT_ID as string;
 
 if (!projectId) {
   throw new Error('Project ID is not defined')
@@ -21,7 +21,7 @@ const sepoliaTestnet: CustomCaipNetwork<'sui'> = {
   rpcUrls: {
     default: {
       http: [
-        `https://sepolia.infura.io/v3/${process.env.REACT_APP_INFURA_API_KEY}`
+        `https://sepolia.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`
       ]
     }
   }

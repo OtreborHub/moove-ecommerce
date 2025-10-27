@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-const mooveOwner = process.env.REACT_APP_MOOVE_OWNER as string;
+const mooveOwner = import.meta.env.VITE_MOOVE_OWNER as string;
 
 export function formatAddress(address: string, signer?: string) {
   if(address === mooveOwner){

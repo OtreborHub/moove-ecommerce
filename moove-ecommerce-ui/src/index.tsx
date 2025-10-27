@@ -5,9 +5,8 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { AppContextProvider } from './Context';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+const container = document.getElementById('root')!;
+const root = ReactDOM.createRoot(container);
 root.render(
   <AppContextProvider>
   <React.StrictMode>

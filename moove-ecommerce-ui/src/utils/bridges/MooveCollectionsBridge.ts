@@ -9,7 +9,7 @@ import AuctionDTO from "../DTO/AuctionDTO";
 export var collectionContract: Contract;
 
 
-const infuraApiKey = process.env.REACT_APP_INFURA_API_KEY as string;
+const infuraApiKey = import.meta.env.VITE_INFURA_API_KEY as string;
 const infuraProvider: Provider = new ethers.InfuraProvider("sepolia" , infuraApiKey);
 
 export default function getContractInstance(collectionAddress: string, signer?: Provider) {

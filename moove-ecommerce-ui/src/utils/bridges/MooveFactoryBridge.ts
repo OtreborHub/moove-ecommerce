@@ -4,9 +4,9 @@ import { ErrorMessage, swalError } from "../enums/Errors";
 import { Action } from "../enums/Actions";
 import Swal from "sweetalert2";
 
-export const FACTORY_ADDRESS: string = process.env.REACT_APP_FACTORY_ADDRESS as string;
+export const FACTORY_ADDRESS: string = import.meta.env.VITE_FACTORY_ADDRESS as string;
 
-const infuraApiKey = process.env.REACT_APP_INFURA_API_KEY as string;
+const infuraApiKey = import.meta.env.VITE_INFURA_API_KEY as string;
 const infuraProvider: Provider = new ethers.InfuraProvider("sepolia" , infuraApiKey);
 
 export default function getContractInstance(signer?: Provider) {
