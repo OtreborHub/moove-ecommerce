@@ -4,6 +4,20 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { AppContextProvider } from './Context';
+import { createAppKit } from '@reown/appkit/react'
+import { networks, projectId } from './utils/UniversalConnector'
+
+  createAppKit({
+    projectId,
+    networks,
+    metadata: {
+      name: 'Moove NFT Marketplace',
+      description: 'NFT Marketplace on Sepolia',
+      url: window.location.origin,
+      icons: ['https://appkit.reown.com/icon.png']
+    },
+    
+  });
 
 const container = document.getElementById('root')!;
 const root = ReactDOM.createRoot(container);

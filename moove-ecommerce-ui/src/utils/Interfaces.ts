@@ -4,6 +4,7 @@ import TokenDTO from "./DTO/TokenDTO";
 
 interface NavbarProps {
     connect: () => void;
+    disconnect: () => void;
 }
 
 interface MarketplaceProps {

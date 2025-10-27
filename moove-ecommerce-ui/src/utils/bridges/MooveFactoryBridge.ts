@@ -29,9 +29,9 @@ export async function readIsAdmin(signer: Provider) {
     }
   }
 
-export async function readCollections(signer?: Provider) {
+export async function readCollections() {
     try {
-      const contract = getContractInstance(signer);
+      const contract = getContractInstance();
       return await contract?.getCollections();
     } catch (error: any) {
       console.log("readCollections action: " + ErrorMessage.RD);

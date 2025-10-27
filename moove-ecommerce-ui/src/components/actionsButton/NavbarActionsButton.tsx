@@ -18,7 +18,7 @@ import FactoryIcon from '@mui/icons-material/Factory';
 import MuseumIcon from '@mui/icons-material/Museum';
 import { Box } from '@mui/material';
 
-export default function NavbarActionsButton() {
+export default function NavbarActionsButton(props: {disconnect: () => void}) {
     const [open, setOpen] = useState(false);
     const anchorRef = useRef<HTMLDivElement>(null);
     // const [selectedIndex, setSelectedIndex] = useState(0);
@@ -35,10 +35,10 @@ export default function NavbarActionsButton() {
             appContext.updateSection(Sections.FACTORY);
     }
 
-    async function disconnect() {
-        appContext.updateSigner("");
-        appContext.updateBalance(0);
-    }
+    // async function disconnect() {
+    //     appContext.updateSigner("");
+    //     appContext.updateBalance(0);
+    // }
     
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen);
@@ -106,7 +106,7 @@ export default function NavbarActionsButton() {
 
                             {/* Logout */}
                             <MenuItem>
-                                <Button onClick={disconnect} sx={{ pl:0, color: 'red'}} variant='text'><LogoutIcon sx={{mr: 1}} fontSize='small'/> Logout </Button>
+                                <Button onClick={props.disconnect} sx={{ pl:0, color: 'red'}} variant='text'><LogoutIcon sx={{mr: 1}} fontSize='small'/> Logout </Button>
                             </MenuItem>
                             
                             

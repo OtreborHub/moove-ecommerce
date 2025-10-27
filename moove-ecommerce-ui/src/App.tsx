@@ -12,31 +12,60 @@ import { useAppContext } from './Context';
 import getContractInstance, { addFactoryContractListeners, readCollections, readIsAdmin } from './utils/bridges/MooveFactoryBridge';
 import { Role } from './utils/enums/Role';
 import { Sections } from './utils/enums/Sections';
-import { UniversalConnector } from '@reown/appkit-universal-connector'
-import { getUniversalConnector } from './utils/UniversalConnector';
-import { useAppKitProvider, useAppKitAccount } from "@reown/appkit/react";
-
+import { useAppKitProvider, useAppKitAccount, useAppKit } from "@reown/appkit/react";
+import { sepoliaTestnet } from './utils/UniversalConnector';
 
 function App() {
   const appContext = useAppContext();
-  const [universalConnector, setUniversalConnector] = useState<UniversalConnector>()
-  const [session, setSession] = useState<any>();
+  //const [universalConnector, setUniversalConnector] = useState<UniversalConnector>()
+  // const [session, setSession] = useState<any>();
+  // const [walletProvider, setWalletProvider] = useState<any>();
+  // const [address, setAddress] = useState<string>("");
+  // const [isConnected, setIsConnected] = useState<boolean>(false);
 
   const { address, isConnected } = useAppKitAccount();
-  const { walletProvider } = useAppKitProvider("eip155");
-
+  const { walletProvider } = useAppKitProvider(sepoliaTestnet.chainNamespace);
+  const { open, close } = useAppKit();
+  
   useEffect(() => {
-    //Gestire con gli eventi dal contratto
-    getUniversalConnector().then(setUniversalConnector)
-    if(appContext.collectionAddresses.length === 0){
-      initCollections();
-      //connectWallet();
-    }
+    close();
+    initCollections();
   }, []);
 
-  useEffect(() => {
-    setSession(universalConnector?.provider.session)
-  }, [universalConnector?.provider.session])
+  async function initSession() {
+    if (!walletProvider) return;
+    
+    try {
+      const provider = new ethers.BrowserProvider(walletProvider as any);
+      appContext.updateProvider(provider);
+
+      const signer = await provider.getSigner();
+      appContext.updateSigner(signer.address);
+      
+      await setAccountBalance(signer.address);
+      const network = await provider.getNetwork();
+      appContext.updateChainId(Number(network.chainId));
+
+      const isAdmin = await readIsAdmin(provider);
+      appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
+      appContext.updateSection(Sections.MARKETPLACE);
+      
+      if (isAdmin) {
+        addFactoryContractListeners(provider);
+      }
+    } catch (error) {
+      console.error("Init session error:", error);
+      // try a clean disconnect + close modal
+      await handleDisconnect();
+    }
+  };
+
+  // open walletconnect modal only on user action
+  function handleConnect() {
+    open().then(() => {
+      initSession();
+    });
+  }
 
   async function initCollections(){
     getContractInstance();
@@ -44,37 +73,22 @@ function App() {
     appContext.updateCollectionAddresses(collections ? collections : []);
   }
 
-  // get the session from the universal connector
-  async function handleConnect() {
-    if (!universalConnector) { return; }
-    const { session: providerSession } = await universalConnector.connect();
-    setSession(providerSession);
-    const provider = new ethers.BrowserProvider(walletProvider as any);
-    appContext.updateProvider( provider );
-
-    const signer = await provider.getSigner();
-    appContext.updateSigner(signer.address);
-    console.log(`address: ${signer.address}`);
-
-    setAccountBalance(signer.address);
-    const network = await provider.getNetwork();
-    appContext.updateChainId(Number(network.chainId)); 
-
-    const isAdmin = await readIsAdmin(provider);
-    appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
-    appContext.updateSection(Sections.MARKETPLACE);
-    if (isAdmin) {
-         addFactoryContractListeners(provider);
-       }
-  };
-
+  
   // disconnect the universal connector
-  const handleDisconnect = async () => {
-    if (!universalConnector) {
-      return;
+  async function handleDisconnect() {
+    try {
+      // close AppKit modal / session UI
+      useAppKit().close();
+    } catch (err) {
+      console.warn('useAppKit.close() failed', err);
     }
-    await universalConnector.disconnect();
-    setSession(null);
+    // reset application context state
+    appContext.updateProvider(undefined as any);
+    appContext.updateSigner("");
+    appContext.updateBalance(0);
+    appContext.updateChainId(0);
+    appContext.updateRole(Role.NONE);
+    appContext.updateSection(Sections.MARKETPLACE);
   };
 
   // const handleChanges = () => {
@@ -89,11 +103,6 @@ function App() {
   //     await connectWallet();
   //   }
   // };
-
-  async function disconnect() {
-    appContext.updateSigner("");
-    appContext.updateBalance(0);
-  }
 
   // async function connectWallet() {
   //     try {
@@ -134,12 +143,10 @@ function App() {
     });
   }
 
-
-
   return (
     <div className="App" id="app">
 
-      <Navbar connect={handleConnect}/>
+      <Navbar connect={() => handleConnect()} disconnect={() => handleDisconnect()}/>
 
       {/* background images */}
       

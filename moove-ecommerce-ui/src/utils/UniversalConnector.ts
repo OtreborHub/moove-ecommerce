@@ -5,14 +5,9 @@ import { UniversalConnector } from '@reown/appkit-universal-connector'
 // Get projectId from https://dashboard.reown.com
 export const projectId = import.meta.env.VITE_PROJECT_ID as string;
 
-if (!projectId) {
-  throw new Error('Project ID is not defined')
-}
+const SEPOLIA_CHAIN_ID = 11155111;
 
-const SEPOLIA_CHAIN_ID = 11155111
-
-// you can configure your own network
-const sepoliaTestnet: CustomCaipNetwork<'sui'> = {
+export const sepoliaTestnet: CustomCaipNetwork<'sui'> = {
   id: SEPOLIA_CHAIN_ID,
   chainNamespace: 'eip155' as const,
   caipNetworkId: `eip155:${SEPOLIA_CHAIN_ID}`,
@@ -35,8 +30,7 @@ export async function getUniversalConnector() {
     metadata: {
       name: 'Universal Connector',
       description: 'Universal Connector',
-      //url: 'https://appkit.reown.com',
-      url: 'https://localhost:3000', // for local development committare Vercel
+      url: window.location.origin,
       icons: ['https://appkit.reown.com/icon.png']
     },
     networks: [

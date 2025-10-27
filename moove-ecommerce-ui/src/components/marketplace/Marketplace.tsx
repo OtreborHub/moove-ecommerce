@@ -19,7 +19,7 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
 
 
     useEffect(() => {
-        if(appContext.collections.length === 0){
+        if(collectionAddresses.length > 0){ 
             init();
         }
     }, [collectionAddresses]);
