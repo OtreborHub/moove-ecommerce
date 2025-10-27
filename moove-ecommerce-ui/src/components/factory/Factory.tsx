@@ -32,7 +32,7 @@ export function Factory() {
     async function handleSubmit(name: string, symbol: string, maxSupply:number){
       try {
         setIsLoading(true);
-        const success = await writeCreateCollection(name, symbol, maxSupply);
+        const success = await writeCreateCollection(name, symbol, maxSupply, appContext.provider);
         setIsLoading(false);
         if(success){
           Swal.fire({
@@ -50,7 +50,7 @@ export function Factory() {
 
     async function handleMint(collectionAddress: string, tokenURI: string, price: number){
       setIsLoading(true);
-      var success = await writeMintNFT(collectionAddress, tokenURI, price)
+      var success = await writeMintNFT(collectionAddress, tokenURI, price, appContext.provider);
       setIsLoading(false);
       if(success){
         MySwal.fire({
@@ -64,7 +64,7 @@ export function Factory() {
 
     async function handleDisable(collectionAddress: string){
       setIsLoading(true);
-      var success = await writeDisableCollection(collectionAddress);
+      var success = await writeDisableCollection(collectionAddress, appContext.provider);
       setIsLoading(false);
       if(success){
         MySwal.fire({

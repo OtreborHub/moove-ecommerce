@@ -7,12 +7,14 @@ import { readCurrentPriceDutch, retrieveBid, writeBuyDutch, writeEndClassicAucti
 import { AuctionStatus, AuctionType, getAuctionStatus, getAuctionTypeDescription } from "../../utils/enums/Auction";
 import { formatAddress, formatToRomeTime } from "../../utils/formatValue";
 import Loader from "./Loader";
+import { useAppContext } from "../../Context";
 
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
 const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the price suits you.</>
 const tooltipTextEnglishAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
 
 export default function Auction({ auction, signer }: AuctionProps){
+    const appContext = useAppContext();
     const [isLoadingUpdateDutch, setIsLoading] = useState<boolean>(false);
     const [auctionStatus, setAuctionStatus] = useState<AuctionStatus>(AuctionStatus.NONE);
     const MySwal = withReactContent(Swal);
@@ -55,12 +57,12 @@ export default function Auction({ auction, signer }: AuctionProps){
         if(signer){
             let success = false;
             if(auction.auctionType === AuctionType.DUTCH){
-                success = await writeBuyDutch(auction.collection.address, auction.tokenId, auction.currentPrice);
+                success = await writeBuyDutch(auction.collection.address, auction.tokenId, auction.currentPrice, appContext.provider);
             } if(auction.auctionType === AuctionType.CLASSIC){
-                success = await writePlaceBidClassic(auction.collection.address, auction.tokenId, formData.bid);
+                success = await writePlaceBidClassic(auction.collection.address, auction.tokenId, formData.bid, appContext.provider);
             } else if (auction.auctionType === AuctionType.ENGLISH){
                 if(verifyBid()){
-                    success = await writePlaceBidEnglish(auction.collection.address, auction.tokenId, formData.bid);    
+                    success = await writePlaceBidEnglish(auction.collection.address, auction.tokenId, formData.bid, appContext.provider);    
                 } else {
                     MySwal.fire({
                         title: "Check you bid",
@@ -91,7 +93,7 @@ export default function Auction({ auction, signer }: AuctionProps){
     }
 
     async function withdraw(){
-        const success = await retrieveBid(auction.collection.address, auction.tokenId);
+        const success = await retrieveBid(auction.collection.address, auction.tokenId, appContext.provider);
         if(success){
             MySwal.fire({
                 title: "Withdraw",
@@ -105,9 +107,9 @@ export default function Auction({ auction, signer }: AuctionProps){
     async function endAuction(){
         let success = false;
         if(auction.auctionType === AuctionType.CLASSIC){
-            success = await writeEndClassicAuction(auction.collection.address, auction.tokenId);
+            success = await writeEndClassicAuction(auction.collection.address, auction.tokenId, appContext.provider);
         } else if (auction.auctionType === AuctionType.ENGLISH){
-            success = await writeEndEnglishAuction(auction.collection.address, auction.tokenId);
+            success = await writeEndEnglishAuction(auction.collection.address, auction.tokenId, appContext.provider);
         }
         if(success){
             MySwal.fire({

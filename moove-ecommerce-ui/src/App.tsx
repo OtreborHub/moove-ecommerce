@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import { ethers } from 'ethers';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import bici from './assets/bici.png';
 import motorino from './assets/motorino.png';
@@ -9,79 +9,120 @@ import { Factory } from './components/factory/Factory';
 import { Marketplace } from './components/marketplace/Marketplace';
 import Navbar from './components/commons/Navbar';
 import { useAppContext } from './Context';
-import getMooveFactory_ContractInstance, { addContractListeners, readCollections, readIsAdmin } from './utils/bridges/MooveFactoryBridge';
+import getContractInstance, { addFactoryContractListeners, readCollections, readIsAdmin } from './utils/bridges/MooveFactoryBridge';
 import { Role } from './utils/enums/Role';
 import { Sections } from './utils/enums/Sections';
+import { UniversalConnector } from '@reown/appkit-universal-connector'
+import { getUniversalConnector } from './utils/UniversalConnector';
+import { useAppKitProvider, useAppKitAccount } from "@reown/appkit/react";
 
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
 
 function App() {
   const appContext = useAppContext();
+  const [universalConnector, setUniversalConnector] = useState<UniversalConnector>()
+  const [session, setSession] = useState<any>();
+
+  const { address, isConnected } = useAppKitAccount();
+  const { walletProvider } = useAppKitProvider("eip155");
+
   useEffect(() => {
     //Gestire con gli eventi dal contratto
+    getUniversalConnector().then(setUniversalConnector)
     if(appContext.collectionAddresses.length === 0){
       initCollections();
       //connectWallet();
     }
+  }, []);
 
-  }, [appContext.signer]);
+  useEffect(() => {
+    setSession(universalConnector?.provider.session)
+  }, [universalConnector?.provider.session])
 
   async function initCollections(){
-    getMooveFactory_ContractInstance();
+    getContractInstance();
     const collections = await readCollections();
     appContext.updateCollectionAddresses(collections ? collections : []);
   }
 
-  const handleChanges = () => {
-    console.log(window.ethereum.chainId);
+  // get the session from the universal connector
+  async function handleConnect() {
+    if (!universalConnector) { return; }
+    const { session: providerSession } = await universalConnector.connect();
+    setSession(providerSession);
+    const provider = new ethers.BrowserProvider(walletProvider as any);
+    appContext.updateProvider( provider );
+
+    const signer = await provider.getSigner();
+    appContext.updateSigner(signer.address);
+    console.log(`address: ${signer.address}`);
+
+    setAccountBalance(signer.address);
+    const network = await provider.getNetwork();
+    appContext.updateChainId(Number(network.chainId)); 
+
+    const isAdmin = await readIsAdmin(provider);
+    appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
+    appContext.updateSection(Sections.MARKETPLACE);
+    if (isAdmin) {
+         addFactoryContractListeners(provider);
+       }
   };
 
-  const handleAccountChanges = async (accounts:any) => {
-    if (accounts.length === 0) {
-      console.log('Please connect to Metamask.');
-      disconnect();
-    } else {
-      await connectWallet();
+  // disconnect the universal connector
+  const handleDisconnect = async () => {
+    if (!universalConnector) {
+      return;
     }
+    await universalConnector.disconnect();
+    setSession(null);
   };
+
+  // const handleChanges = () => {
+  //   console.log(window.ethereum.chainId);
+  // };
+
+  // const handleAccountChanges = async (accounts:any) => {
+  //   if (accounts.length === 0) {
+  //     console.log('Please connect to Metamask.');
+  //     disconnect();
+  //   } else {
+  //     await connectWallet();
+  //   }
+  // };
 
   async function disconnect() {
     appContext.updateSigner("");
     appContext.updateBalance(0);
   }
 
-  async function connectWallet() {
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
+  // async function connectWallet() {
+  //     try {
+  //       const provider = new ethers.BrowserProvider(window.ethereum);
 
-        appContext.updateProvider(provider);
+  //       appContext.updateProvider(provider);
 
-        const signer = await provider.getSigner();
-        appContext.updateSigner(signer.address);
-        console.log(`address: ${signer.address}`);
+  //       const signer = await provider.getSigner();
+  //       appContext.updateSigner(signer.address);
+  //       console.log(`address: ${signer.address}`);
 
-        setAccountBalance(signer.address);
-        appContext.updateChainId(parseInt(window.ethereum.chainId));
+  //       setAccountBalance(signer.address);
+  //       appContext.updateChainId(parseInt(window.ethereum.chainId));
 
-        const isAdmin = await readIsAdmin();
-        appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
-        appContext.updateSection(Sections.MARKETPLACE);
-        if(isAdmin){
-          addContractListeners();
-        }
+  //       const isAdmin = await readIsAdmin();
+  //       appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
+  //       appContext.updateSection(Sections.MARKETPLACE);
+  //       if(isAdmin){
+  //         addFactoryContractListeners();
+  //       }
 
-        //Events
-        // window.ethereum.on('chainChanged', handleChanges);
-        // window.ethereum.on('accountsChanged', handleAccountChanges);
+  //       //Events
+  //       // window.ethereum.on('chainChanged', handleChanges);
+  //       // window.ethereum.on('accountsChanged', handleAccountChanges);
 
-      } catch (err) {
-        disconnect();
-      }
-  }
+  //     } catch (err) {
+  //       disconnect();
+  //     }
+  // }
 
   async function setAccountBalance(address: string){
     if(!appContext.provider || !address) return;
@@ -98,7 +139,7 @@ function App() {
   return (
     <div className="App" id="app">
 
-      <Navbar connect={connectWallet}/>
+      <Navbar connect={handleConnect}/>
 
       {/* background images */}
       
@@ -154,13 +195,13 @@ function App() {
       <div className="main-div primary-bg-color">
         <Box>
             {appContext.section === Sections.MARKETPLACE && !appContext.shownCollection.name &&
-              <Marketplace connectWallet={connectWallet} collectionAddresses={appContext.collectionAddresses} />
+              <Marketplace connectWallet={handleConnect} collectionAddresses={appContext.collectionAddresses} />
             }
             {appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY && !appContext.shownCollection.name &&
               <Factory/>
             }
             {appContext.shownCollection.address && 
-              <Collection collection={appContext.shownCollection} connectWallet={connectWallet}/>
+              <Collection collection={appContext.shownCollection} connectWallet={handleConnect}/>
             }
         </Box>      
       </div>

@@ -8,49 +8,51 @@ import AuctionDTO from "../DTO/AuctionDTO";
 
 export var collectionContract: Contract;
 
+
 const infuraApiKey = process.env.REACT_APP_INFURA_API_KEY as string;
 const infuraProvider: Provider = new ethers.InfuraProvider("sepolia" , infuraApiKey);
 
-export default function getMooveCollection_ContractInstance(collectionAddress: string, provider: Provider) {
+export default function getContractInstance(collectionAddress: string, signer?: Provider) {
   try {
-      var usedProvider = provider ? provider : infuraProvider; //Prevenzione da problemi lato Infura
-      collectionContract = new Contract(collectionAddress, COLLECTION_ABI, usedProvider);
+    const usedProvider = signer ?? infuraProvider;
+    return new Contract(collectionAddress, COLLECTION_ABI, usedProvider);
   } catch {
-    console.log("Error during contract instance creation: verifiy contract address, abi and provider used");
+    console.log("Error retrieving contract instance: verify contract address, abi and provider used");
   }
 
 }
 
-export async function readCollectionData(){
-  if(collectionContract){
+export async function readCollectionData(collectionAddress: string){
+  const contractInstance = getContractInstance(collectionAddress);
+  if(contractInstance){
     try {
-    const address = collectionContract.target.toString();
-    const name = await collectionContract.name();
-    const symbol = await collectionContract.symbol();
-    const totalSupply = await collectionContract.totalSupply();
-    const owner = await collectionContract.owner();
-    const tokenIds = await collectionContract._tokenIds();
-    const isActive = await collectionContract.active();
+      const address = contractInstance.target.toString();
+      const name = await contractInstance.name();
+      const symbol = await contractInstance.symbol();
+      const totalSupply = await contractInstance.totalSupply();
+      const owner = await contractInstance.owner();
+      const tokenIds = await contractInstance._tokenIds();
+      const isActive = await contractInstance.active();
 
-    const collectionInfo = new CollectionDTO(address, name, symbol, parseFloat(tokenIds), parseFloat(totalSupply), isActive, owner);
-    
-    return collectionInfo;
+      const collectionInfo = new CollectionDTO(address, name, symbol, parseFloat(tokenIds), parseFloat(totalSupply), isActive, owner);
+      
+      return collectionInfo;
     } catch (error) {
       console.log("readCollectionInfo action: " + ErrorMessage.RD);
       swalError(ErrorMessage.RD, Action.RD_DATA, error);
-
+      return null;
     }
+  } else {
+    console.log("Contract instance is undefined");
+    return null;
   }
 }
 
 export async function readAuction(collectionAddress: string, tokenId: number){
-  if(collectionContract.target.toString() !== collectionAddress){
-    collectionContract = new Contract(collectionAddress, COLLECTION_ABI, infuraProvider);
-  }
-
-  if(collectionContract){
+  const contractInstance = getContractInstance(collectionAddress);
+  if(contractInstance){
     try {
-      const auction = await collectionContract.auctions(tokenId);
+      const auction = await contractInstance.auctions(tokenId);
 
       const auctionDTO = new AuctionDTO(
         Number(auction.tokenId),
@@ -75,13 +77,10 @@ export async function readAuction(collectionAddress: string, tokenId: number){
 }
 
 export async function readTokenURI(collectionAddress: string, tokenId: number){
-  if(collectionContract.target.toString() !== collectionAddress){
-    collectionContract = new Contract(collectionAddress, COLLECTION_ABI, infuraProvider);
-  }
-
-  if(collectionContract){
+  const contractInstance = getContractInstance(collectionAddress);
+  if(contractInstance){
     try {
-      const tokenURI = await collectionContract.tokenURI(tokenId);
+      const tokenURI = await contractInstance.tokenURI(tokenId);
       return tokenURI;
     } catch (error) {
       console.log("readTokenURI action: " + ErrorMessage.RD);
@@ -91,16 +90,13 @@ export async function readTokenURI(collectionAddress: string, tokenId: number){
 }
 
 export async function readTokenData(collectionAddress: string, tokenId: number){
-  if(collectionContract.target.toString() !== collectionAddress){
-    collectionContract = new Contract(collectionAddress, COLLECTION_ABI, infuraProvider);
-  }
-
-  if(collectionContract){
+  const contractInstance = getContractInstance(collectionAddress);
+  if(contractInstance){
     try {
-      
-      const tokenURI = await collectionContract.tokenURI(tokenId);
-      const tokenPrice = await collectionContract.tokenPrices(tokenId);
-      const ownerOf = await collectionContract.ownerOf(tokenId);
+
+      const tokenURI = await contractInstance.tokenURI(tokenId);
+      const tokenPrice = await contractInstance.tokenPrices(tokenId);
+      const ownerOf = await contractInstance.ownerOf(tokenId);
 
       const token = new TokenDTO(tokenId, tokenURI, parseFloat(tokenPrice), ownerOf);
 
@@ -112,15 +108,11 @@ export async function readTokenData(collectionAddress: string, tokenId: number){
   }
 }
 
-export async function writeMintNFT(collectionAddress: string, tokenURI: string, price: number){
+export async function writeMintNFT(collectionAddress: string, tokenURI: string, price: number, signer: Provider) {
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const signerContract = new ethers.Contract(collectionAddress, COLLECTION_ABI, signer);
-
-    await signerContract.mintNFT(tokenURI, price);
+    const signerContract = getContractInstance(collectionAddress, signer);
+    await signerContract?.mintNFT(tokenURI, price);
     return true;
-
   } catch (error: any) {
     console.log("Mint NFT action: " + ErrorMessage.TR);
     swalError(ErrorMessage.TR, Action.WC_DATA, error);
@@ -129,15 +121,10 @@ export async function writeMintNFT(collectionAddress: string, tokenURI: string, 
   }
 }
 
-export async function payableBuyNFT(collectionAddress: string, tokenId: number, price: number) {
+export async function payableBuyNFT(collectionAddress: string, tokenId: number, price: number, signer: Provider) {
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const signerContract = new ethers.Contract(collectionAddress, COLLECTION_ABI, signer);
-
-    const valueSent = BigInt(price);
-    await signerContract.buyNFT(tokenId, { value: valueSent });
-    
+    const signerContract = getContractInstance(collectionAddress, signer);
+    await signerContract?.buyNFT(tokenId, { value: BigInt(price) });
     return true;
   } catch (error: any) {
     console.log("Buy NFT action: " + ErrorMessage.TR);
@@ -146,14 +133,11 @@ export async function payableBuyNFT(collectionAddress: string, tokenId: number, 
   }
 }
 
-export async function writeCreateAuction(collectionAddress: string, tokenId: number, auctionType: number, startPrice: number, duration: number, minIncrement: number) {
+export async function writeCreateAuction(collectionAddress: string, tokenId: number, auctionType: number, startPrice: number, duration: number, minIncrement: number, signer: Provider) {
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const signerContract = new ethers.Contract(collectionAddress, COLLECTION_ABI, signer);
-
+    const signerContract = getContractInstance(collectionAddress, signer);
     // Assicurati che startPrice e minIncrement siano in wei!
-    await signerContract.createAuction(tokenId, auctionType, startPrice, duration, minIncrement);
+    await signerContract?.createAuction(tokenId, auctionType, startPrice, duration, minIncrement);
     return true;
   } catch (error: any) {
     console.log("Create Auction action: " + ErrorMessage.TR);
@@ -162,13 +146,10 @@ export async function writeCreateAuction(collectionAddress: string, tokenId: num
   }
 }
 
-export async function writeTokenPrice(collectionAddress: string, tokenId: number, price: number){
+export async function writeTokenPrice(collectionAddress: string, tokenId: number, price: number, signer: Provider ){
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const signerContract = new ethers.Contract(collectionAddress, COLLECTION_ABI, signer);
-
-    await signerContract.setTokenPrice(tokenId, price);
+    const signerContract = getContractInstance(collectionAddress, signer);
+    await signerContract?.setTokenPrice(tokenId, price);
     return true;
   } catch (error: any) {
     console.log("Update price action: " + error);
@@ -177,13 +158,10 @@ export async function writeTokenPrice(collectionAddress: string, tokenId: number
   }
 }
 
-export async function transferTo(collectionAddress: string, addressTo: string, tokenId: number){
+export async function transferTo(collectionAddress: string, addressTo: string, tokenId: number, signer: Provider ){
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const signerContract = new ethers.Contract(collectionAddress, COLLECTION_ABI, signer);
-
-    await signerContract.transfer(addressTo, tokenId);
+    const signerContract = getContractInstance(collectionAddress, signer);
+    await signerContract?.transfer(addressTo, tokenId);
     return true;
   } catch (error: any) {
     console.log("Trasfer NFT action: " + ErrorMessage.TR);
@@ -193,13 +171,10 @@ export async function transferTo(collectionAddress: string, addressTo: string, t
 }
 
 export async function readCurrentPriceDutch(collectionAddress: string, tokenId: number){
-  if(collectionContract.target.toString() !== collectionAddress){
-    collectionContract = new Contract(collectionAddress, COLLECTION_ABI, infuraProvider);
-  }
-
-  if(collectionContract){
+  const contractInstance = getContractInstance(collectionAddress);
+  if(contractInstance){
     try {
-      const currentPrice = await collectionContract.getCurrentDutchPrice(tokenId);
+      const currentPrice = await contractInstance.getCurrentDutchPrice(tokenId);
       return currentPrice;
     } catch (error) {
       console.log("Read Current Price Dutch action: " + ErrorMessage.RD);
@@ -209,13 +184,10 @@ export async function readCurrentPriceDutch(collectionAddress: string, tokenId: 
   }
 }
 
-export async function writePlaceBidClassic(collectionAddress: string, tokenId: number, bid: number){
+export async function writePlaceBidClassic(collectionAddress: string, tokenId: number, bid: number, signer: Provider ){
    try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const signerContract = new ethers.Contract(collectionAddress, COLLECTION_ABI, signer);
-
-    await signerContract.placeBidClassic(tokenId, { value: ethers.parseUnits(bid.toString(), "wei") });
+    const signerContract = getContractInstance(collectionAddress, signer);
+    await signerContract?.placeBidClassic(tokenId, { value: ethers.parseUnits(bid.toString(), "wei") });
     return true;
   } catch (error: any) {
     console.log("Place Bid Classic action: " + error);
@@ -224,13 +196,10 @@ export async function writePlaceBidClassic(collectionAddress: string, tokenId: n
   }
 }
 
-export async function writeBuyDutch(collectionAddress: string, tokenId: number, bid: number){
+export async function writeBuyDutch(collectionAddress: string, tokenId: number, bid: number, signer: Provider ){
    try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const signerContract = new ethers.Contract(collectionAddress, COLLECTION_ABI, signer);
-
-    await signerContract.buyDutch(tokenId, { value: ethers.parseUnits(bid.toString(), "wei") });
+    const signerContract = getContractInstance(collectionAddress, signer);
+    await signerContract?.buyDutch(tokenId, { value: ethers.parseUnits(bid.toString(), "wei") });
     return true;
   } catch (error: any) {
     console.log("Buy dutch action: " + error);
@@ -239,13 +208,10 @@ export async function writeBuyDutch(collectionAddress: string, tokenId: number, 
   }
 }
 
-export async function writePlaceBidEnglish(collectionAddress: string, tokenId: number, bid: number){
+export async function writePlaceBidEnglish(collectionAddress: string, tokenId: number, bid: number, signer: Provider ){
    try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const signerContract = new ethers.Contract(collectionAddress, COLLECTION_ABI, signer);
-
-    await signerContract.placeBidEnglish(tokenId, { value: ethers.parseUnits(bid.toString(), "wei") });
+    const signerContract = getContractInstance(collectionAddress, signer);
+    await signerContract?.placeBidEnglish(tokenId, { value: ethers.parseUnits(bid.toString(), "wei") });
     return true;
   } catch (error: any) {
     console.log("Place Bid English action: " + error);
@@ -254,13 +220,10 @@ export async function writePlaceBidEnglish(collectionAddress: string, tokenId: n
   }
 }
 
-export async function writeEndClassicAuction(collectionAddress: string, tokenId: number){
+export async function writeEndClassicAuction(collectionAddress: string, tokenId: number,  signer: Provider){
    try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const signerContract = new ethers.Contract(collectionAddress, COLLECTION_ABI, signer);
-
-    await signerContract.endClassicAuction(tokenId);
+    const signerContract = getContractInstance(collectionAddress, signer);
+    await signerContract?.endClassicAuction(tokenId);
     return true;
   } catch (error: any) {
     console.log("End classic action: " + error);
@@ -269,13 +232,10 @@ export async function writeEndClassicAuction(collectionAddress: string, tokenId:
   }
 }
 
-export async function writeEndEnglishAuction(collectionAddress: string, tokenId: number){
+export async function writeEndEnglishAuction(collectionAddress: string, tokenId: number, signer: Provider){
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const signerContract = new ethers.Contract(collectionAddress, COLLECTION_ABI, signer);
-
-    await signerContract.endEnglishAuction(tokenId);
+    const signerContract = getContractInstance(collectionAddress, signer);
+    await signerContract?.endEnglishAuction(tokenId);
     return true;
   } catch (error: any) {
     console.log("End english action: " + error);
@@ -284,14 +244,11 @@ export async function writeEndEnglishAuction(collectionAddress: string, tokenId:
   }
 }
 
-export async function retrieveBid(collectionAddress: string, tokenId: number){
-  if(collectionContract.target.toString() !== collectionAddress){
-    collectionContract = new Contract(collectionAddress, COLLECTION_ABI, infuraProvider);
-  }
-
-  if(collectionContract){
+export async function retrieveBid(collectionAddress: string, tokenId: number, signer: Provider){
+  const signerContract = getContractInstance(collectionAddress, signer);
+  if(signerContract){
     try {
-      await collectionContract.withdrawBid(tokenId);
+      await signerContract.withdrawBid(tokenId);
       return true;
     } catch (error) {
       console.log("Read Current Price Dutch action: " + error);
@@ -301,13 +258,10 @@ export async function retrieveBid(collectionAddress: string, tokenId: number){
   }
 }
 
-export async function writeDisableCollection(collectionAddress: string){
+export async function writeDisableCollection(collectionAddress: string, signer: Provider){
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const signerContract = new ethers.Contract(collectionAddress, COLLECTION_ABI, signer);
-
-    await signerContract.disableCollection();
+    const signerContract = getContractInstance(collectionAddress, signer);
+    await signerContract?.disableCollection();
     return true;
   } catch (error: any) {
     console.log("Disable collection action: " + error);

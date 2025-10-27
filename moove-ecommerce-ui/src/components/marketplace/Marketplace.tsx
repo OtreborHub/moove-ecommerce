@@ -4,7 +4,7 @@ import Slider from "react-slick";
 import auction_logo from "../../assets/auctions.png";
 import collections_logo from "../../assets/collections.png";
 import { useAppContext } from "../../Context";
-import getMooveCollection_ContractInstance, { readAuction, readCollectionData } from "../../utils/bridges/MooveCollectionsBridge";
+import getContractInstance, { readAuction, readCollectionData } from "../../utils/bridges/MooveCollectionsBridge";
 import AuctionDTO from "../../utils/DTO/AuctionDTO";
 import CollectionDTO from "../../utils/DTO/CollectionDTO";
 import { MarketplaceProps } from "../../utils/Interfaces";
@@ -25,31 +25,31 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
     }, [collectionAddresses]);
 
     async function init(){
-        
         const collectionsData = await readCollectionsData();
         await readAuctionsData(collectionsData);
     }
 
     async function readCollectionsData() {
         setIsLoading(true);
-        var collectionDTOs: CollectionDTO[] = [];
+
+        const collectionPromises: Promise<CollectionDTO | null>[] = [];
         for (const collectionAddress of collectionAddresses) {
-            getMooveCollection_ContractInstance(collectionAddress, appContext.provider);
-            var collectionDataResponse = await readCollectionData();
-            if(collectionDataResponse){
-                var collectionInfo = new CollectionDTO(
-                    collectionAddress,
-                    collectionDataResponse.name, 
-                    collectionDataResponse.symbol,
-                    collectionDataResponse.tokenIds,
-                    collectionDataResponse.totalSupply,
-                    collectionDataResponse.active,
-                    collectionDataResponse.owner
-                );
-                collectionDTOs.push(collectionInfo);
-            }
+            const promise = readCollectionData(collectionAddress)
+            .then(collectionResponse => { return collectionResponse; })
+            .catch(error => {
+                console.error(`Error reading collection data from ${collectionAddress}:`, error);
+                return null; 
+            });
+            
+            collectionPromises.push(promise);
         }
-        
+
+        console.log(`🚀 Loading ${collectionPromises.length} collections in parallel...`);
+        const results = await Promise.all(collectionPromises);
+
+        const collectionDTOs = results.filter(collection => collection !== null) as CollectionDTO[];
+
+        console.log(`✅ Loaded ${collectionDTOs.length} collections successfully`);
         appContext.updateCollections(collectionDTOs);
         setIsLoading(false);
         return collectionDTOs;
@@ -57,31 +57,48 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
 
     async function readAuctionsData(collectionData: CollectionDTO[]){
         setIsLoading(true);
-        var auctionDTOs: AuctionDTO[] = [];
-        for (const collection of collectionData) {
-            for(let idx = 1; idx <= collection.tokenIds; idx++){
-                var auctionResponse = await readAuction(collection.address, idx);
-                if(auctionResponse && auctionResponse.tokenId !== 0){
-                    auctionResponse.collection = collection;
-                    auctionDTOs.push(auctionResponse);
+        
+        try {
+            const auctionPromises: Promise<AuctionDTO | null>[] = [];
+            
+            for (const collection of collectionData) {
+                if(collection.active === false) continue;
+                for(let idx = 1; idx < collection.tokenIds; idx++){
+                    const promise = readAuction(collection.address, idx)
+                        .then(auctionResponse => {
+                            if(auctionResponse && auctionResponse.tokenId !== 0){
+                                auctionResponse.collection = collection;
+                                return auctionResponse;
+                            }
+                            return null;
+                        })
+                        .catch(error => {
+                            console.error(`Error reading auction ${idx} from ${collection.name}:`, error);
+                            return null; 
+                        });
+                    
+                    auctionPromises.push(promise);
                 }
-
             }
-        }
 
-        appContext.updateAuctions(auctionDTOs);
-        setIsLoading(false);
-        return auctionDTOs;
+            console.log(`🚀 Loading ${auctionPromises.length} auctions in parallel...`);
+            const results = await Promise.all(auctionPromises);
+            
+            const auctionDTOs = results.filter(auction => auction !== null) as AuctionDTO[];
+            
+            console.log(`✅ Loaded ${auctionDTOs.length} auctions successfully`);
+            appContext.updateAuctions(auctionDTOs);
+            
+        } catch (error) {
+            console.error("Error loading auctions:", error);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
-    const PrevArrow = () => {
-        return (
-            <div
-                style={{display: "none"}}
-            />
-        );
-    };
 
+    // Custom Arrows for the Slider
+    const PrevArrow = () => { return ( <div style={{display: "none"}} /> );};
     const NextArrow = (props: any) => {
         const { className, style, onClick } = props;
         return (
@@ -100,7 +117,6 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
     };
 
     const settings = {
-        // dots: true,
         fade: true,
         infinite: true,
         speed: 350,

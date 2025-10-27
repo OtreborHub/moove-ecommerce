@@ -175,7 +175,7 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
 
     async function buyDutch(tokenId: number, price: number){
         setIsLoading(true);
-        const success = await writeBuyDutch(auction.collection.address, tokenId, price);
+        const success = await writeBuyDutch(auction.collection.address, tokenId, price, appContext.provider);
         setIsLoading(false);
         if(success){
             MySwal.fire({
@@ -192,9 +192,9 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
         let success = false;
         setIsLoading(true);
         if(auction.auctionType === AuctionType.CLASSIC){
-            success = await writePlaceBidClassic(auction.collection.address, tokenId, bid);
+            success = await writePlaceBidClassic(auction.collection.address, tokenId, bid, appContext.provider);
         } else if (auction.auctionType === AuctionType.ENGLISH){
-            success = await writePlaceBidEnglish(auction.collection.address, tokenId, bid);
+            success = await writePlaceBidEnglish(auction.collection.address, tokenId, bid, appContext.provider);
         }
         setIsLoading(false);
         if(success){
@@ -211,9 +211,9 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
         setIsLoading(true);
         let success = false;
         if(auction.auctionType === AuctionType.CLASSIC){
-            success = await writeEndClassicAuction(auction.collection.address, tokenId);
+            success = await writeEndClassicAuction(auction.collection.address, tokenId, appContext.provider);
         } else if (auction.auctionType === AuctionType.ENGLISH){
-            success = await writeEndEnglishAuction(auction.collection.address, tokenId);
+            success = await writeEndEnglishAuction(auction.collection.address, tokenId, appContext.provider);
         }
         setIsLoading(false);
         if(success){
@@ -255,7 +255,7 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
 
     async function withdraw(){
         setIsLoading(true);
-        const success = await retrieveBid(auction.collection.address, auction.tokenId);
+        const success = await retrieveBid(auction.collection.address, auction.tokenId, appContext.provider);
         setIsLoading(false);
         if(success){
             MySwal.fire({
