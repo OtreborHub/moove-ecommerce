@@ -32,22 +32,15 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
     async function readCollectionsData() {
         setIsLoading(true);
 
+        var collectionDTOs: CollectionDTO[] = [];
+
         const collectionPromises: Promise<CollectionDTO | null>[] = [];
         for (const collectionAddress of collectionAddresses) {
-            const promise = readCollectionData(collectionAddress)
-            .then(collectionResponse => { return collectionResponse; })
-            .catch(error => {
-                console.error(`Error reading collection data from ${collectionAddress}:`, error);
-                return null; 
-            });
-            
-            collectionPromises.push(promise);
+            var collectionDataResponse = await readCollectionData(collectionAddress);
+            if(collectionDataResponse){
+                collectionDTOs.push(collectionDataResponse);
+            }
         }
-
-        console.log(`🚀 Loading ${collectionPromises.length} collections in parallel...`);
-        const results = await Promise.all(collectionPromises);
-
-        const collectionDTOs = results.filter(collection => collection !== null) as CollectionDTO[];
 
         console.log(`✅ Loaded ${collectionDTOs.length} collections successfully`);
         appContext.updateCollections(collectionDTOs);
