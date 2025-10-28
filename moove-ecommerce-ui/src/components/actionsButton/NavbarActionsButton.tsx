@@ -17,13 +17,16 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import FactoryIcon from '@mui/icons-material/Factory';
 import MuseumIcon from '@mui/icons-material/Museum';
 import { Box } from '@mui/material';
+import { NavbarProps } from '../../utils/Interfaces';
+import { useDisconnect } from '@reown/appkit/react';
 
-export default function NavbarActionsButton(props: {disconnect: () => void}) {
+export default function NavbarActionsButton() {
     const [open, setOpen] = useState(false);
     const anchorRef = useRef<HTMLDivElement>(null);
     // const [selectedIndex, setSelectedIndex] = useState(0);
     // const MySwal = withReactContent(Swal);
     const appContext = useAppContext();
+    const { disconnect } = useDisconnect();
 
     //ACTIONS
     function changeSection() {
@@ -106,7 +109,7 @@ export default function NavbarActionsButton(props: {disconnect: () => void}) {
 
                             {/* Logout */}
                             <MenuItem>
-                                <Button onClick={props.disconnect} sx={{ pl:0, color: 'red'}} variant='text'><LogoutIcon sx={{mr: 1}} fontSize='small'/> Logout </Button>
+                                <Button onClick={() => disconnect()} sx={{ pl:0, color: 'red'}} variant='text'><LogoutIcon sx={{mr: 1}} fontSize='small'/> Logout </Button>
                             </MenuItem>
                             
                             

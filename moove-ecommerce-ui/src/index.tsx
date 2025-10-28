@@ -5,26 +5,32 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { AppContextProvider } from './Context';
 import { createAppKit } from '@reown/appkit/react'
-import { networks, projectId } from './utils/UniversalConnector'
+import { EthersAdapter } from "@reown/appkit-adapter-ethers";
+import { sepolia, mainnet} from '@reown/appkit/networks';
+import moove_logo from './assets/moove.png';
+
+export const projectId = import.meta.env.VITE_PROJECT_ID as string;
 
   createAppKit({
+    // adapters: [new EthersAdapter()],
     projectId,
-    networks,
+    networks: [sepolia],
     metadata: {
       name: 'Moove NFT Marketplace',
       description: 'NFT Marketplace on Sepolia',
       url: window.location.origin,
-      icons: ['https://appkit.reown.com/icon.png']
+      icons: ["https://raw.githubusercontent.com/MetaMask/metamask-mobile/main/logo.png"]
     },
     
   });
+  
 
 const container = document.getElementById('root')!;
 const root = ReactDOM.createRoot(container);
 root.render(
   <AppContextProvider>
   <React.StrictMode>
-    <App />
+    <App/>
   </React.StrictMode>
   </AppContextProvider>
 );

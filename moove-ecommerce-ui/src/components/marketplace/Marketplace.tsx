@@ -4,13 +4,14 @@ import Slider from "react-slick";
 import auction_logo from "../../assets/auctions.png";
 import collections_logo from "../../assets/collections.png";
 import { useAppContext } from "../../Context";
-import getContractInstance, { readAuction, readCollectionData } from "../../utils/bridges/MooveCollectionsBridge";
+import { readAuction, readCollectionData } from "../../utils/bridges/MooveCollectionsBridge";
 import AuctionDTO from "../../utils/DTO/AuctionDTO";
 import CollectionDTO from "../../utils/DTO/CollectionDTO";
 import { MarketplaceProps } from "../../utils/Interfaces";
 import Loader from "../commons/Loader";
 import AuctionPreview from "./AuctionPreview";
 import CollectionPreview from "./CollectionsPreview";
+import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
 
 export function Marketplace({collectionAddresses, connectWallet}: MarketplaceProps) {
     const isMobile = useMediaQuery('(max-width: 1400px)');
@@ -19,7 +20,7 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
 
 
     useEffect(() => {
-        if(collectionAddresses.length > 0){ 
+        if(appContext.collections.length === 0 && collectionAddresses.length > 0){ 
             init();
         }
     }, [collectionAddresses]);
@@ -34,7 +35,6 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
 
         var collectionDTOs: CollectionDTO[] = [];
 
-        const collectionPromises: Promise<CollectionDTO | null>[] = [];
         for (const collectionAddress of collectionAddresses) {
             var collectionDataResponse = await readCollectionData(collectionAddress);
             if(collectionDataResponse){
@@ -93,19 +93,21 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
     // Custom Arrows for the Slider
     const PrevArrow = () => { return ( <div style={{display: "none"}} /> );};
     const NextArrow = (props: any) => {
-        const { className, style, onClick } = props;
-        return (
-            <Box
-                className={className}
-                style={{
-                    ...style,
-                    right: '3rem', 
-                    zIndex: 1,
-                    fontSize: '5rem',
-                    cursor: 'pointer'
-                }}
-                onClick={onClick}
-            ></Box>
+        const { onClick } = props;
+  return (
+        <Box
+            onClick={onClick}
+            sx={{
+                position: 'absolute',
+                right: isMobile ? '2rem' : '3rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 2,
+                cursor: 'pointer'
+            }}
+            >
+            <DoubleArrowIcon sx={{ fontSize: '2rem', color: 'whitesmoke' }} />
+            </Box>
         );
     };
 

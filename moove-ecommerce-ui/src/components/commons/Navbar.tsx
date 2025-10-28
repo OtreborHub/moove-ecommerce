@@ -11,14 +11,14 @@ import logoCutted from '../../assets/mooveCutted.png';
 import { NavbarProps } from '../../utils/Interfaces';
 import { Sections } from '../../utils/enums/Sections';
 import NavbarActionsButton from '../actionsButton/NavbarActionsButton';
-import { useAppKitAccount } from '@reown/appkit/react'
+import { useAppKit } from '@reown/appkit/react';
 
-export default function Navbar({ connect: connect, disconnect: disconnect }: NavbarProps) {
+export default function Navbar() {
   const isPhone = useMediaQuery('(max-width: 650px)');
-  // const isMobile = useMediaQuery('(max-width: 1400px)');
   const appContext = useAppContext();
-  const { isConnected } = useAppKitAccount();
 
+  const { open } = useAppKit();
+  
   return (
     <Box sx={{ flexGrow: 1, borderBottom: "2px solid" }}>
       <AppBar position="static" style={{ backgroundColor: '#26547C'}}>
@@ -30,19 +30,19 @@ export default function Navbar({ connect: connect, disconnect: disconnect }: Nav
           {!isPhone && appContext.section === Sections.MARKETPLACE &&
           <img src={logo3} alt="Marketplace" style={{ maxHeight: '50px', marginRight: '10px', marginTop: '.2rem' }} />}
           
-          {/* {appContext.signer &&
+          {appContext.signer &&
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: 'auto', marginRight: '2rem'}}>
-                <NavbarActionsButton disconnect={disconnect}/>
+                <NavbarActionsButton/>
               </Box>
-          } */}
-          {/* {!appContext.signer &&  */}
+          }
+          {!appContext.signer && 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: 'auto', marginRight: '2rem'}}>
-              <Button variant="contained" onClick={() => connect()} size="large" sx={{ color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px'}}>
-                <b>{appContext.signer ? "Profile" : "Connect"}</b> <img alt="meta" style={{ marginLeft: ".5rem"}} src={metamask_logo}></img>
+              <Button variant="contained" onClick={() => open()} size="large" sx={{ color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px'}}>
+                <b>{"Connect"}</b> <img alt="meta" style={{ marginLeft: ".5rem"}} src={metamask_logo}></img>
                 {/* Connect <AccountBalanceWalletIcon sx={{ ml:1}}/> */}
               </Button>
             </Box>
-          {/* } */}
+          }
         </Toolbar>
       </AppBar>
     </Box>

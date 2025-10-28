@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, useMediaQuery } from '@mui/material';
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import './App.css';
@@ -9,86 +9,126 @@ import { Factory } from './components/factory/Factory';
 import { Marketplace } from './components/marketplace/Marketplace';
 import Navbar from './components/commons/Navbar';
 import { useAppContext } from './Context';
-import getContractInstance, { addFactoryContractListeners, readCollections, readIsAdmin } from './utils/bridges/MooveFactoryBridge';
+import { addFactoryContractListeners, readCollections, readIsAdmin } from './utils/bridges/MooveFactoryBridge';
 import { Role } from './utils/enums/Role';
 import { Sections } from './utils/enums/Sections';
-import { useAppKitProvider, useAppKitAccount, useAppKit } from "@reown/appkit/react";
-import { sepoliaTestnet } from './utils/UniversalConnector';
+import { useAppKitProvider, useAppKitAccount, useAppKit, useDisconnect } from "@reown/appkit/react";
+import { infuraProvider } from './utils/bridges/MooveCollectionsBridge';
+import { sepolia } from '@reown/appkit/networks';
 
 function App() {
   const appContext = useAppContext();
-  //const [universalConnector, setUniversalConnector] = useState<UniversalConnector>()
-  // const [session, setSession] = useState<any>();
-  // const [walletProvider, setWalletProvider] = useState<any>();
-  // const [address, setAddress] = useState<string>("");
-  // const [isConnected, setIsConnected] = useState<boolean>(false);
+  const isMobile = useMediaQuery('(max-width: 1400px)');
+  const [appStarting, setAppStarting] = useState<boolean>(true);
 
   const { address, isConnected } = useAppKitAccount();
-  const { walletProvider } = useAppKitProvider(sepoliaTestnet.chainNamespace);
-  const { open, close } = useAppKit();
+  // const { disconnect } = useDisconnect();
+  const { walletProvider }: any = useAppKitProvider('eip155');
+  const { close } = useAppKit();
+
+  
+  //events
+  function listenChanges() {
+    if(!walletProvider) return;
+    walletProvider.on("chainChanged", (chainId: string) => {
+      initSigner(chainId);
+    });
+  }
+  
   
   useEffect(() => {
-    close();
-    initCollections();
-  }, []);
+    if(appStarting){
+      handleDisconnect();
+    } else if(isConnected && walletProvider && appContext.signer === ""){
+      initSession();
+    } else {
+      handleDisconnect();
+    }
+    
+    if(appContext.collectionAddresses.length === 0){
+      initCollections();
+    }
+  }, [isConnected, walletProvider, address]);
+
 
   async function initSession() {
+    const chainId = await verifyChainId();
+    initSigner(Number(chainId));
+  }
+
+  async function verifyChainId() {
     if (!walletProvider) return;
     
     try {
-      const provider = new ethers.BrowserProvider(walletProvider as any);
-      appContext.updateProvider(provider);
 
-      const signer = await provider.getSigner();
-      appContext.updateSigner(signer.address);
+      console.log("address:", address);
+      console.log("isConnected:", isConnected);
       
-      await setAccountBalance(signer.address);
+      //const providerWC = walletProvider.getProvider();
+      const provider = new ethers.BrowserProvider(walletProvider as any);
+      
+      const signer = address ?? (await provider.getSigner()).address;
+      appContext.updateSigner(signer);
+      listenChanges();
+      
       const network = await provider.getNetwork();
       appContext.updateChainId(Number(network.chainId));
-
-      const isAdmin = await readIsAdmin(provider);
-      appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
-      appContext.updateSection(Sections.MARKETPLACE);
+      console.log("chainId:", network.chainId);
+      console.log("namespace:", walletProvider.session.namespace);
+      return Number(network.chainId);
       
-      if (isAdmin) {
-        addFactoryContractListeners(provider);
-      }
     } catch (error) {
       console.error("Init session error:", error);
-      // try a clean disconnect + close modal
       await handleDisconnect();
     }
   };
 
-  // open walletconnect modal only on user action
-  function handleConnect() {
-    open().then(() => {
-      initSession();
-    });
+  async function initSigner(chainId: string | number) {
+    if(chainId === sepolia.id){
+      const provider = new ethers.BrowserProvider(walletProvider as any);
+      appContext.updateProvider(provider);
+      await setAccountBalance(provider, appContext.signer);
+      const isAdmin = await readIsAdmin(provider);
+      appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
+      appContext.updateSection(Sections.MARKETPLACE);
+      if (isAdmin) {
+        addFactoryContractListeners(provider);
+      }
+    } else {
+      console.warn(`⚠️ Unsupported network (chainId: ${chainId}). Please switch to Sepolia.`);
+    }
   }
+
 
   async function initCollections(){
-    getContractInstance();
     const collections = await readCollections();
     appContext.updateCollectionAddresses(collections ? collections : []);
+    setAppStarting(false);
   }
 
+  // const handleConnect = async () => {
+  //   try {
+  //     open(); 
+  //   } catch (err) {
+  //     console.error("Errore apertura AppKit:", err);
+  //   }
+  // };
+
   
-  // disconnect the universal connector
   async function handleDisconnect() {
     try {
-      // close AppKit modal / session UI
-      useAppKit().close();
+      appContext.updateProvider(infuraProvider);
+      appContext.updateSigner("");
+      appContext.updateBalance(0);
+      appContext.updateChainId(0);
+      appContext.updateRole(Role.NONE);
+      appContext.updateSection(Sections.MARKETPLACE);
+      //await disconnect();
+      await close();
     } catch (err) {
       console.warn('useAppKit.close() failed', err);
     }
-    // reset application context state
-    appContext.updateProvider(undefined as any);
-    appContext.updateSigner("");
-    appContext.updateBalance(0);
-    appContext.updateChainId(0);
-    appContext.updateRole(Role.NONE);
-    appContext.updateSection(Sections.MARKETPLACE);
+    
   };
 
   // const handleChanges = () => {
@@ -133,20 +173,27 @@ function App() {
   //     }
   // }
 
-  async function setAccountBalance(address: string){
-    if(!appContext.provider || !address) return;
+  async function setAccountBalance(provider: ethers.BrowserProvider, address: string){
+  if (!provider) return;
 
-    await appContext.provider.getBalance(address ? address : appContext.signer).then((balance: bigint) => {
-      const bal = parseFloat(ethers.formatEther(balance));
-      console.log(`balance available: ${bal.toFixed(18)} ETH`);
-      appContext.updateBalance(bal);
-    });
+  const signer = address ?? (await provider.getSigner()).address;
+  if (!signer) return;
+
+  try {
+    const balanceWei = await provider.getBalance(signer);
+    const balanceEth = Number(ethers.formatEther(balanceWei));
+    console.log(`Balance di ${signer}: ${balanceEth} ETH`);
+    appContext.updateBalance(balanceEth);
+    return balanceEth;
+  } catch (err) {
+    console.error("Errore nel calcolo del balance:", err);
+  }
   }
 
   return (
     <div className="App" id="app">
 
-      <Navbar connect={() => handleConnect()} disconnect={() => handleDisconnect()}/>
+      <Navbar />
 
       {/* background images */}
       
@@ -182,7 +229,7 @@ function App() {
           top: '80vh',
           height: 'auto',
           zIndex: 0,
-          display: 'flex',
+          display: isMobile ? 'none':'flex',
           alignItems: 'flex-start',
           pointerEvents: 'none'
         }}
@@ -202,13 +249,13 @@ function App() {
       <div className="main-div primary-bg-color">
         <Box>
             {appContext.section === Sections.MARKETPLACE && !appContext.shownCollection.name &&
-              <Marketplace connectWallet={handleConnect} collectionAddresses={appContext.collectionAddresses} />
+              <Marketplace connectWallet={() => {}} collectionAddresses={appContext.collectionAddresses} />
             }
             {appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY && !appContext.shownCollection.name &&
               <Factory/>
             }
             {appContext.shownCollection.address && 
-              <Collection collection={appContext.shownCollection} connectWallet={handleConnect}/>
+              <Collection collection={appContext.shownCollection} connectWallet={() => {}}/>
             }
         </Box>      
       </div>

@@ -9,7 +9,7 @@ export const FACTORY_ADDRESS: string = import.meta.env.VITE_FACTORY_ADDRESS as s
 const infuraApiKey = import.meta.env.VITE_INFURA_API_KEY as string;
 const infuraProvider: Provider = new ethers.InfuraProvider("sepolia" , infuraApiKey);
 
-export default function getContractInstance(signer?: Provider) {
+export default function getContractInstance(signer?: Signer) {
   try {
     const usedProvider = signer ?? infuraProvider;
     return new Contract(FACTORY_ADDRESS, FACTORY_ABI, usedProvider);
@@ -19,8 +19,9 @@ export default function getContractInstance(signer?: Provider) {
 
 }
 
-export async function readIsAdmin(signer: Provider) {
+export async function readIsAdmin(browserProvider: BrowserProvider) {
     try {
+      const signer = await browserProvider.getSigner();
       const signerContract = getContractInstance(signer);
       return await signerContract?.isAdmin();
     } catch (error: any) {
@@ -39,8 +40,9 @@ export async function readCollections() {
     }
   }
 
-export async function writeCreateCollection(name: string, symbol: string, maxSupply: number, signer: Provider) {
+export async function writeCreateCollection(name: string, symbol: string, maxSupply: number, provider: BrowserProvider) {
   try{
+    const signer = await provider.getSigner();
     const signerContract = getContractInstance(signer);
     await signerContract?.createCollection(name, symbol, maxSupply);
     return true;
@@ -52,7 +54,8 @@ export async function writeCreateCollection(name: string, symbol: string, maxSup
 
 // CONTRACT LISTENERS
 
-export function addFactoryContractListeners(signer: Provider) {
+export async function addFactoryContractListeners(browserProvider: BrowserProvider) {
+  const signer = await browserProvider.getSigner();
   const factory = getContractInstance(signer);
   factory?.on("CollectionCreated", (collectionAddress, name, symbol) => {
     if (collectionAddress) {

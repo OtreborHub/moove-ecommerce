@@ -1,4 +1,4 @@
-import { Contract, ethers, Provider } from "ethers";
+import { BrowserProvider, Contract, ethers, Provider, Signer } from "ethers";
 import { COLLECTION_ABI } from "../../abi/erc721_abi";
 import { ErrorMessage, swalError } from "../enums/Errors";
 import { Action } from "../enums/Actions";
@@ -10,9 +10,9 @@ export var collectionContract: Contract;
 
 
 const infuraApiKey = import.meta.env.VITE_INFURA_API_KEY as string;
-const infuraProvider: Provider = new ethers.InfuraProvider("sepolia" , infuraApiKey);
+export const infuraProvider: Provider = new ethers.InfuraProvider("sepolia" , infuraApiKey);
 
-export default function getContractInstance(collectionAddress: string, signer?: Provider) {
+export default function getContractInstance(collectionAddress: string, signer?: Signer) {
   try {
     const usedProvider = signer ?? infuraProvider;
     return new Contract(collectionAddress, COLLECTION_ABI, usedProvider);
@@ -108,8 +108,9 @@ export async function readTokenData(collectionAddress: string, tokenId: number){
   }
 }
 
-export async function writeMintNFT(collectionAddress: string, tokenURI: string, price: number, signer: Provider) {
+export async function writeMintNFT(collectionAddress: string, tokenURI: string, price: number, provider: BrowserProvider) {
   try {
+    const signer = await provider.getSigner();
     const signerContract = getContractInstance(collectionAddress, signer);
     await signerContract?.mintNFT(tokenURI, price);
     return true;
@@ -121,8 +122,9 @@ export async function writeMintNFT(collectionAddress: string, tokenURI: string, 
   }
 }
 
-export async function payableBuyNFT(collectionAddress: string, tokenId: number, price: number, signer: Provider) {
+export async function payableBuyNFT(collectionAddress: string, tokenId: number, price: number, provider: BrowserProvider) {
   try {
+    const signer = await provider.getSigner();
     const signerContract = getContractInstance(collectionAddress, signer);
     await signerContract?.buyNFT(tokenId, { value: BigInt(price) });
     return true;
@@ -133,8 +135,9 @@ export async function payableBuyNFT(collectionAddress: string, tokenId: number, 
   }
 }
 
-export async function writeCreateAuction(collectionAddress: string, tokenId: number, auctionType: number, startPrice: number, duration: number, minIncrement: number, signer: Provider) {
+export async function writeCreateAuction(collectionAddress: string, tokenId: number, auctionType: number, startPrice: number, duration: number, minIncrement: number, provider: BrowserProvider) {
   try {
+    const signer = await provider.getSigner();
     const signerContract = getContractInstance(collectionAddress, signer);
     // Assicurati che startPrice e minIncrement siano in wei!
     await signerContract?.createAuction(tokenId, auctionType, startPrice, duration, minIncrement);
@@ -146,8 +149,9 @@ export async function writeCreateAuction(collectionAddress: string, tokenId: num
   }
 }
 
-export async function writeTokenPrice(collectionAddress: string, tokenId: number, price: number, signer: Provider ){
+export async function writeTokenPrice(collectionAddress: string, tokenId: number, price: number, provider: BrowserProvider ){
   try {
+    const signer = await provider.getSigner();
     const signerContract = getContractInstance(collectionAddress, signer);
     await signerContract?.setTokenPrice(tokenId, price);
     return true;
@@ -158,8 +162,9 @@ export async function writeTokenPrice(collectionAddress: string, tokenId: number
   }
 }
 
-export async function transferTo(collectionAddress: string, addressTo: string, tokenId: number, signer: Provider ){
+export async function transferTo(collectionAddress: string, addressTo: string, tokenId: number, provider: BrowserProvider ){
   try {
+    const signer = await provider.getSigner();
     const signerContract = getContractInstance(collectionAddress, signer);
     await signerContract?.transfer(addressTo, tokenId);
     return true;
@@ -184,8 +189,9 @@ export async function readCurrentPriceDutch(collectionAddress: string, tokenId: 
   }
 }
 
-export async function writePlaceBidClassic(collectionAddress: string, tokenId: number, bid: number, signer: Provider ){
+export async function writePlaceBidClassic(collectionAddress: string, tokenId: number, bid: number, provider: BrowserProvider ){
    try {
+    const signer = await provider.getSigner();
     const signerContract = getContractInstance(collectionAddress, signer);
     await signerContract?.placeBidClassic(tokenId, { value: ethers.parseUnits(bid.toString(), "wei") });
     return true;
@@ -196,8 +202,9 @@ export async function writePlaceBidClassic(collectionAddress: string, tokenId: n
   }
 }
 
-export async function writeBuyDutch(collectionAddress: string, tokenId: number, bid: number, signer: Provider ){
+export async function writeBuyDutch(collectionAddress: string, tokenId: number, bid: number, provider: BrowserProvider ){
    try {
+    const signer = await provider.getSigner();
     const signerContract = getContractInstance(collectionAddress, signer);
     await signerContract?.buyDutch(tokenId, { value: ethers.parseUnits(bid.toString(), "wei") });
     return true;
@@ -208,8 +215,9 @@ export async function writeBuyDutch(collectionAddress: string, tokenId: number, 
   }
 }
 
-export async function writePlaceBidEnglish(collectionAddress: string, tokenId: number, bid: number, signer: Provider ){
+export async function writePlaceBidEnglish(collectionAddress: string, tokenId: number, bid: number, provider: BrowserProvider ){
    try {
+    const signer = await provider.getSigner();
     const signerContract = getContractInstance(collectionAddress, signer);
     await signerContract?.placeBidEnglish(tokenId, { value: ethers.parseUnits(bid.toString(), "wei") });
     return true;
@@ -220,8 +228,9 @@ export async function writePlaceBidEnglish(collectionAddress: string, tokenId: n
   }
 }
 
-export async function writeEndClassicAuction(collectionAddress: string, tokenId: number,  signer: Provider){
+export async function writeEndClassicAuction(collectionAddress: string, tokenId: number,  provider: BrowserProvider){
    try {
+    const signer = await provider.getSigner();
     const signerContract = getContractInstance(collectionAddress, signer);
     await signerContract?.endClassicAuction(tokenId);
     return true;
@@ -232,8 +241,9 @@ export async function writeEndClassicAuction(collectionAddress: string, tokenId:
   }
 }
 
-export async function writeEndEnglishAuction(collectionAddress: string, tokenId: number, signer: Provider){
+export async function writeEndEnglishAuction(collectionAddress: string, tokenId: number, provider: BrowserProvider){
   try {
+    const signer = await provider.getSigner();
     const signerContract = getContractInstance(collectionAddress, signer);
     await signerContract?.endEnglishAuction(tokenId);
     return true;
@@ -244,7 +254,8 @@ export async function writeEndEnglishAuction(collectionAddress: string, tokenId:
   }
 }
 
-export async function retrieveBid(collectionAddress: string, tokenId: number, signer: Provider){
+export async function retrieveBid(collectionAddress: string, tokenId: number, provider: BrowserProvider){
+  const signer = await provider.getSigner();
   const signerContract = getContractInstance(collectionAddress, signer);
   if(signerContract){
     try {
@@ -258,8 +269,9 @@ export async function retrieveBid(collectionAddress: string, tokenId: number, si
   }
 }
 
-export async function writeDisableCollection(collectionAddress: string, signer: Provider){
+export async function writeDisableCollection(collectionAddress: string, provider: BrowserProvider){
   try {
+    const signer = await provider.getSigner();
     const signerContract = getContractInstance(collectionAddress, signer);
     await signerContract?.disableCollection();
     return true;
