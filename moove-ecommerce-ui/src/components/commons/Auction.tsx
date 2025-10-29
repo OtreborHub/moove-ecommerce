@@ -51,18 +51,17 @@ export default function Auction({ auction, signer }: AuctionProps){
         setFormData({...formData, [name]: valueForced > 0 ? valueForced : value });
     };
 
-
-
     async function buyPlaceBid(){
         if(signer){
             let success = false;
             if(auction.auctionType === AuctionType.DUTCH){
-                success = await writeBuyDutch(auction.collection.address, auction.tokenId, auction.currentPrice, appContext.provider);
+                success = await writeBuyDutch(auction.collection.address, auction.tokenId, auction.currentPrice, appContext.signer);
             } if(auction.auctionType === AuctionType.CLASSIC){
-                success = await writePlaceBidClassic(auction.collection.address, auction.tokenId, formData.bid, appContext.provider);
+                success = await writePlaceBidClassic(auction.collection.address, auction.tokenId, formData.bid, appContext.signer);
             } else if (auction.auctionType === AuctionType.ENGLISH){
-                if(verifyBid()){
-                    success = await writePlaceBidEnglish(auction.collection.address, auction.tokenId, formData.bid, appContext.provider);    
+
+                if(formData.bid > auction.currentPrice + auction.minIncrement){
+                    success = await writePlaceBidEnglish(auction.collection.address, auction.tokenId, formData.bid, appContext.signer);    
                 } else {
                     MySwal.fire({
                         title: "Check you bid",
@@ -72,6 +71,7 @@ export default function Auction({ auction, signer }: AuctionProps){
                     });
                 }
             }
+            
             if(success){
             MySwal.fire({
                 title: auction.auctionType === AuctionType.DUTCH ? "Buy Dutch" : "Bid Place",
@@ -84,16 +84,11 @@ export default function Auction({ auction, signer }: AuctionProps){
     }
 
     function verifyBid(){
-        let verified = false;
-        if(formData.bid > auction.currentPrice + auction.minIncrement){
-            verified = true;
-        }
-        return verified;
-
+        return formData.bid > auction.currentPrice + auction.minIncrement;
     }
 
     async function withdraw(){
-        const success = await retrieveBid(auction.collection.address, auction.tokenId, appContext.provider);
+        const success = await retrieveBid(auction.collection.address, auction.tokenId, appContext.signer);
         if(success){
             MySwal.fire({
                 title: "Withdraw",
@@ -107,9 +102,9 @@ export default function Auction({ auction, signer }: AuctionProps){
     async function endAuction(){
         let success = false;
         if(auction.auctionType === AuctionType.CLASSIC){
-            success = await writeEndClassicAuction(auction.collection.address, auction.tokenId, appContext.provider);
+            success = await writeEndClassicAuction(auction.collection.address, auction.tokenId, appContext.signer);
         } else if (auction.auctionType === AuctionType.ENGLISH){
-            success = await writeEndEnglishAuction(auction.collection.address, auction.tokenId, appContext.provider);
+            success = await writeEndEnglishAuction(auction.collection.address, auction.tokenId, appContext.signer);
         }
         if(success){
             MySwal.fire({

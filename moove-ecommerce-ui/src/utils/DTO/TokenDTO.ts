@@ -1,6 +1,6 @@
 import AuctionDTO from "./AuctionDTO";
 
-interface Metadata {
+export interface Metadata {
     name: string;
     cid: string;
     attributes: Array<{

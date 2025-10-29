@@ -50,7 +50,7 @@ export default function Collection({collection, connectWallet} : CollectionProps
 
   async function handleBuy(tokenId: number, tokenPrice: number){
     setIsLoading(true)
-    var success = await payableBuyNFT(collection.address, tokenId, tokenPrice, appContext.provider);
+    var success = await payableBuyNFT(collection.address, tokenId, tokenPrice, appContext.signer);
     setIsLoading(false);
     if(success){
       MySwal.fire({
@@ -73,7 +73,7 @@ export default function Collection({collection, connectWallet} : CollectionProps
 
   async function handleCreateAuction(tokenId: number, auctionType: number, startPrice: number, duration: number, minIncrement: number){
     setIsLoading(true);
-    const success = await writeCreateAuction(collection.address, tokenId, auctionType, startPrice, duration, minIncrement, appContext.provider);
+    const success = await writeCreateAuction(collection.address, tokenId, auctionType, startPrice, duration, minIncrement, appContext.signer);
     setIsLoading(false);
     if(success){
       MySwal.fire({
@@ -96,7 +96,7 @@ export default function Collection({collection, connectWallet} : CollectionProps
 
   async function handleTrasferFrom(tokenId: number, addressTo: string){
     setIsLoading(true);
-    var success = await transferTo(collection.address, addressTo, tokenId, appContext.provider);
+    var success = await transferTo(collection.address, addressTo, tokenId, appContext.signer);
     setIsLoading(false);
     if(success){
       MySwal.fire({
@@ -119,7 +119,7 @@ export default function Collection({collection, connectWallet} : CollectionProps
 
   async function handleSetTokenPrice(tokenId: number, price: number){
     setIsLoading(true);
-    var success = await writeTokenPrice(collection.address, tokenId, price, appContext.provider);
+    var success = await writeTokenPrice(collection.address, tokenId, price, appContext.signer);
     setIsLoading(false);
     if(success){
       MySwal.fire({
@@ -134,7 +134,7 @@ export default function Collection({collection, connectWallet} : CollectionProps
   function showMintTokenForm(){
     MySwal.fire({
         title: "Mint a new NFT",
-        html: <MintTokenForm collectionAddress={collection.address} handleSubmit={handleMint} signer={appContext.signer}/>,
+        html: <MintTokenForm collectionAddress={collection.address} handleSubmit={handleMint} signer={appContext.signerAddress}/>,
         showConfirmButton: false,
         showCloseButton: true,
     });
@@ -142,7 +142,7 @@ export default function Collection({collection, connectWallet} : CollectionProps
 
   async function handleMint(collectionAddress: string, tokenURI: string, price: number){
     setIsLoading(true);
-    var success = await writeMintNFT(collectionAddress, tokenURI, price, appContext.provider);
+    var success = await writeMintNFT(collectionAddress, tokenURI, price, appContext.signer);
     setIsLoading(false);
     if(success){
       MySwal.fire({
@@ -183,7 +183,10 @@ export default function Collection({collection, connectWallet} : CollectionProps
             >
               <TokenPreview 
                 token={token} 
+                tokenId={token.id}
+                auction={token.auction}
                 collection={collection}
+                metadata={{name: "", cid: "", attributes: []}}
                 isLoading={loadingPropagation}
                 connectWallet={connectWallet} 
                 handleBuy={handleBuy} 

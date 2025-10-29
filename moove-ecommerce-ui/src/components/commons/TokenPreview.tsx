@@ -19,17 +19,13 @@ const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
 
 export default function TokenPreview({token, isLoading, connectWallet, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice: handleTokenPrice}: TokenProps) {
   const [imageUrl, setImageUrl] = useState(moove_logo);
+  const [metadata, setMetadata] = useState({name:"", cid:"", attributes: []});
   const [hovered, setHovered] = useState(false);
   const MySwal = withReactContent(Swal);
   const appContext = useAppContext();
 
   useEffect(() => {
       init();
-      
-      if(appContext.shownNFT > 0 && appContext.shownNFT === token.id) {
-        openTokenDetail();
-        appContext.updateShownNFT(0);
-      }
   }, []);
 
   async function init(){
@@ -40,7 +36,7 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
   function fillTokenAuction(){
     if(appContext.auctions.length > 0){
       appContext.auctions.filter((auction) => {
-        if(auction.collection.address === appContext.shownCollection.address && auction.tokenId === token.id){
+        if(auction.collection.address === appContext.shownCollection.address && auction.tokenId === token?.id){
           token.auction = auction;
         }
       });
@@ -74,9 +70,7 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
     isLoading(true);
     
     try {
-      // ✅ Usa nftstorage.link che è più affidabile
       const metadataURL = `${IPFS_gateway}${token.URI}`;
-      //const metadataUrl = `https://nftstorage.link/ipfs/${token.URI}`;
       console.log(`📥 Fetching metadata from: ${metadataURL}`);
       
       const controller = new AbortController();
@@ -97,11 +91,9 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
 
       token.imageCID = metadata.cid;
       token.metadata = metadata;
+      setMetadata(metadata);
 
-      // ✅ Prova gateway multipli
       const url = `${IPFS_gateway}${metadata.cid}`;
-      console.log(`🔄 Trying gateway: ${url}`);
-      
       const success = await loadImageWithTimeout(url);
       
       if (!success) {
@@ -142,9 +134,11 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
       MySwal.fire({
           html: <Token 
             isLoading={isLoading}
-            signer={appContext.signer}
             collection={appContext.shownCollection}
             token={token} 
+            tokenId={token.id}
+            auction={token.auction}
+            metadata={metadata}
             connectWallet={closeAndHandleConnectWallet} 
             handleBuy={handleBuy}
             handleCreateAuction={closeAndHandleCreateAuction}

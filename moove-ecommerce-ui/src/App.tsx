@@ -10,7 +10,7 @@ import Collection from './components/commons/Collection';
 import Navbar from './components/commons/Navbar';
 import { Factory } from './components/factory/Factory';
 import { Marketplace } from './components/marketplace/Marketplace';
-import { useAppContext } from './Context';
+import { emptySigner, useAppContext } from './Context';
 import { infuraProvider } from './utils/bridges/MooveCollectionsBridge';
 import { addFactoryContractListeners, readCollections, readIsAdmin } from './utils/bridges/MooveFactoryBridge';
 import { Role } from './utils/enums/Role';
@@ -27,9 +27,8 @@ function App() {
   
   useEffect(() => {
     if(appStarting){
-      
       handleDisconnect();
-    } else if(walletProvider && isConnected && appContext.signer === ""){
+    } else if(walletProvider && isConnected && appContext.signer === emptySigner){
       activateWCHooks();
     } else {
       handleDisconnect();
@@ -55,7 +54,8 @@ function App() {
       const signer = await provider.getSigner();
       const network = await provider.getNetwork();
       
-      appContext.updateSigner(signer.address);
+      appContext.updateSigner(signer);
+      appContext.updateSignerAddress(signer.address);
       appContext.updateChainId(Number(network.chainId));
       appContext.updateProvider(provider);
 
@@ -92,7 +92,8 @@ function App() {
           const provider = new ethers.BrowserProvider(window.ethereum as any);
           appContext.updateProvider(provider);
           const signer = await provider.getSigner();
-          appContext.updateSigner(signer.address);
+          appContext.updateSigner(signer);
+          appContext.updateSignerAddress(signer.address);  
           console.log(`Metamask browser address: ${signer.address}`);
   
           const network = await provider.getNetwork();
@@ -141,7 +142,8 @@ function App() {
 
   async function handleDisconnect() {
       appContext.updateProvider(infuraProvider);
-      appContext.updateSigner("");
+      appContext.updateSigner(emptySigner);
+      appContext.updateSignerAddress("");
       appContext.updateBalance(0);
       appContext.updateChainId(0);
       appContext.updateRole(Role.NONE);

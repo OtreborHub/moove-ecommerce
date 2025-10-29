@@ -13,7 +13,7 @@ import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
 import { useAppKitProvider, useDisconnect } from '@reown/appkit/react';
 import { useRef, useState } from 'react';
-import { useAppContext } from '../../Context';
+import { emptySigner, useAppContext } from '../../Context';
 import { infuraProvider } from '../../utils/bridges/MooveCollectionsBridge';
 import CollectionDTO from '../../utils/DTO/CollectionDTO';
 import { Role } from '../../utils/enums/Role';
@@ -59,7 +59,7 @@ export default function NavbarActionsButton() {
         }
 
         appContext.updateProvider(infuraProvider);
-        appContext.updateSigner("");
+        appContext.updateSigner(emptySigner);
         appContext.updateBalance(0);
         appContext.updateChainId(0);
         appContext.updateRole(Role.NONE);
@@ -107,7 +107,7 @@ export default function NavbarActionsButton() {
                         <ClickAwayListener onClickAway={handleClose}>
                             <MenuList>
                             <Box border={"1px solid #000"} ml={1} mr={1}>
-                                <MenuItem sx={{ pb: 0, cursor: 'default'}}> Address {formatAddress(appContext.signer)} </MenuItem>
+                                <MenuItem sx={{ pb: 0, cursor: 'default'}}> Address {formatAddress(appContext.signerAddress)} </MenuItem>
                                 <MenuItem sx={{  cursor: 'default'}}> {appContext.balance.toFixed(4).toString()} ETH </MenuItem>
                              </Box>
                             {/* <hr style={{ marginLeft: "10px", marginRight: "10px"}}/> */}

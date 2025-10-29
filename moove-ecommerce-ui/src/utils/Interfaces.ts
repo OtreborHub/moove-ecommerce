@@ -1,6 +1,6 @@
 import AuctionDTO from "./DTO/AuctionDTO";
 import CollectionDTO from "./DTO/CollectionDTO";
-import TokenDTO from "./DTO/TokenDTO";
+import TokenDTO, { Metadata } from "./DTO/TokenDTO";
 
 interface NavbarProps {
     connect: () => void;
@@ -17,9 +17,11 @@ interface CollectionProps{
 }
 
 interface TokenProps {
-    signer?: string;
     collection: CollectionDTO;
     token: TokenDTO;
+    tokenId: number;
+    auction: AuctionDTO;
+    metadata: Metadata;
     isLoading: (isLoading: boolean) => void,
     handleBuy: (tokenId: number, price: number) => void;
     handleCreateAuction: (tokenId: number) => void;

@@ -5,41 +5,62 @@ import { TokenProps } from "../../utils/Interfaces";
 import { formatAddress, formatPrice } from "../../utils/formatValue";
 import Auction from "./Auction";
 import TokenActionsButton from "../actionsButton/TokenActionsButton";
-import { readTokenURI } from "../../utils/bridges/MooveCollectionsBridge";
+import { readTokenData, readTokenURI } from "../../utils/bridges/MooveCollectionsBridge";
+import TokenDTO, { Metadata } from "../../utils/DTO/TokenDTO";
+import { emptySigner, useAppContext } from "../../Context";
+import AuctionDTO from "../../utils/DTO/AuctionDTO";
 
 const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
 
-export default function Token({ signer, collection, token, connectWallet, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice: handleTokenPrice}: TokenProps) {
-    const [section, setSection] = useState<number>(token.auction.tokenId > 0 ? 1 : 0);
+export default function Token({ collection, token, tokenId, auction, metadata, connectWallet, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice}: TokenProps) {
+    const appContext = useAppContext();
+    const [section, setSection] = useState<number>(auction.tokenId > 0 ? 1 : 0);
+    const [tokenData, setTokenData] = useState<TokenDTO>(token);
+    const [tokenMetadata, setTokenMetadata] = useState<Metadata>();
+    const [tokenAuction, setTokenAuction] = useState<AuctionDTO>();
     const [imageUrl, setImageUrl] = useState(moove_logo);
     const isPhone = useMediaQuery('(max-width: 650px)');
     
     useEffect(() => {
+        if(token.id === 0 && tokenId !== 0){
+            getTokenData();
+        } else {
+            setTokenData(token);
+            setTokenMetadata(token.metadata);
+            setTokenAuction(token.auction);
+        }
+
+        setTokenAuction(auction);
         getTokenImage();
     }, [])
 
+    async function getTokenData() {
+        const tokenData = await readTokenData(collection.address, tokenId);
+        setTokenData(tokenData!);
+        setTokenMetadata(metadata);
+    }
+
     async function getTokenImage(){
         try {
-            // se token.imageCID è già disponibile, salta la lettura del tokenURI
-            if (token.imageCID) {
-                const cid = token.imageCID;
-                const imageUrl = `${IPFS_gateway}${cid}`;
+            // se token.imageCID è già disponibile, salta la lettura del tokenURI (da TokenPreview)
+            if (metadata.cid) {
+                const imageUrl = `${IPFS_gateway}${metadata.cid}`;
                 const success = await loadImageWithTimeout(imageUrl, 8000);
                 if (!success) {
                     console.warn('⚠️ Using fallback logo (cid preload failed)');
                     setImageUrl(moove_logo);
                 }
                 return;
+            } else {
+                // fallback: leggi il tokenURI dal contratto e ricava il CID dai metadata (da AuctionPreview)
+                const tokenURI = await readTokenURI(collection.address, tokenId);
+                if (!tokenURI) {
+                    console.log("Token URI is undefined");
+                    setImageUrl(moove_logo);
+                    return;
+                }
+                await fetchMetadata(tokenURI);
             }
-
-            // fallback: leggi il tokenURI dal contratto e ricava il CID dai metadata
-            const tokenURI = await readTokenURI(collection.address, token.id);
-            if (!tokenURI) {
-                console.log("Token URI is undefined");
-                setImageUrl(moove_logo);
-                return;
-            }
-            await fetchMetadata(tokenURI);
         } catch (error) {
             console.error("Error getting token image:", error);
             setImageUrl(moove_logo);
@@ -62,9 +83,9 @@ export default function Token({ signer, collection, token, connectWallet, handle
 
             const metadata = await response.json();
             const imageCID = metadata.cid;
-            
+            setTokenMetadata(metadata);
 
-            const imageUrl = `${IPFS_gateway}/${imageCID}`;
+            const imageUrl = `${IPFS_gateway}${imageCID}`;
             const success = await loadImageWithTimeout(imageUrl, 8000);
             if (!success) {
                 console.warn('⚠️ Using fallback logo');
@@ -110,15 +131,15 @@ export default function Token({ signer, collection, token, connectWallet, handle
                     />
                 </Grid>
                 <Grid size={6}>
-                    <Grid textAlign="left" sx={{ fontSize: '1.5rem'}}><b>{collection?.symbol}#{token.id}</b>
+                    <Grid textAlign="left" sx={{ fontSize: '1.5rem'}}><b>{collection?.symbol}#{tokenId}</b>
                      {/* • {collection?.name}  */}
                     </Grid>
                     <Grid textAlign="left">{collection?.name}</Grid>
-                    <Grid textAlign="left">Owner: {formatAddress(token.owner, signer)}</Grid>
-                    <Grid textAlign="left" sx={{ mb: .5}}>Current price: {formatPrice(token.price)} wei</Grid>
+                    <Grid textAlign="left">Owner: {formatAddress(tokenData.owner, appContext.signerAddress)}</Grid>
+                    <Grid textAlign="left" sx={{ mb: .5}}>Current price: {formatPrice(tokenData.price)} wei</Grid>
                     {/* <Grid textAlign="left">URI: {token.URI}</Grid> */}
 
-                    {!signer && 
+                    {appContext.signer === emptySigner && 
                         <Button 
                             variant="contained" 
                             onClick={connectWallet}
@@ -126,46 +147,23 @@ export default function Token({ signer, collection, token, connectWallet, handle
                             Connect Wallet
                         </Button>
                     }
-                    {signer && token.owner !== signer &&
+                    {appContext.signer !== emptySigner && appContext.signerAddress !== tokenData.owner &&
                         <Button 
                             variant="contained" 
-                            onClick={() => handleBuy(token.id, token.price)}
+                            onClick={() => handleBuy(tokenData.id, tokenData.price)}
                             sx={{ mt: 1, width:"100%", backgroundColor:'#f7a642ff'}}>
                             Buy NFT
                         </Button>
                     }
                     
-                    {signer && token.owner === signer &&
-                    <>
+                    {appContext.signer !== emptySigner && appContext.signerAddress === tokenData.owner &&
                     <Box display="flex" justifyContent="center" mt={2}>
                         <TokenActionsButton 
-                            token={token}
+                            token={tokenData}
                             handleCreateAuction={handleCreateAuction}
-                            handleUpdatePrice={handleTokenPrice}
+                            handleUpdatePrice={handleUpdatePrice}
                             handleTransfer={handleTransfer}/>
                     </Box>
-                        {/* <Button 
-                            size="small"
-                            variant="contained" 
-                            onClick={() => handleCreateAuction(token.id)}
-                            sx={{ mt: 1, width:"100%"}}>
-                            Make an auction
-                        </Button>
-                        <Button 
-                            size="small"
-                            variant="contained" 
-                            onClick={() => handleTokenPrice(token.id, token.price)}
-                            sx={{ mt: 1, width:"100%", backgroundColor:'#f7a642ff'}}>
-                            Update Price
-                        </Button>
-                        <Button
-                            size="small" 
-                            variant="outlined" 
-                            onClick={() => handleTransfer(token.id)}
-                            sx={{ mt: 1, width:"100%", color: '#f7a642ff', borderColor:'#f7a642ff'}}>
-                            Transfer
-                        </Button> */}
-                    </>
                     }
                 </Grid>
             </Grid>
@@ -180,26 +178,26 @@ export default function Token({ signer, collection, token, connectWallet, handle
             </Box>
             <hr/>
             
-            {section === 0 && token.metadata && 
+            {section === 0 && tokenMetadata && 
             <Box>
                 {/* <Typography variant="h6">Name: {token.metadata.name}</Typography>
                 <Typography variant="body1">Image CID: {token.metadata.cid}</Typography> */}
 
-                {token.metadata.attributes && token.metadata.attributes.length > 0 &&
+                {tokenMetadata.attributes && tokenMetadata.attributes.length > 0 &&
                     <Box mt={1} textAlign={"left"}>
-                        <Typography><b>Type</b>: {token.metadata.attributes[0].type}</Typography>
-                        <Typography><b>Color</b>: {token.metadata.attributes[0].color}</Typography>
-                        <Typography><b>Background Color</b>: {token.metadata.attributes[0].backgroundColor}</Typography>
+                        <Typography><b>Type</b>: {tokenMetadata?.attributes[0].type}</Typography>
+                        <Typography><b>Color</b>: {tokenMetadata?.attributes[0].color}</Typography>
+                        <Typography><b>Background Color</b>: {tokenMetadata?.attributes[0].backgroundColor}</Typography>
                     </Box>
                 }
             </Box>
         }
 
-            {section === 1 && token.auction.tokenId > 0 && 
-                <Auction auction={token.auction} signer={signer} section={section} connectWallet={connectWallet}/>
+            {section === 1 && tokenAuction && tokenAuction.tokenId > 0 && 
+                <Auction auction={tokenAuction} signer={appContext.signerAddress} connectWallet={connectWallet}/>
             }
 
-            {section === 1 && token.auction.tokenId === 0 && 
+            {section === 1 && tokenData.auction.tokenId === 0 && 
                 <Typography>No auction found for this token</Typography>
             }
             
