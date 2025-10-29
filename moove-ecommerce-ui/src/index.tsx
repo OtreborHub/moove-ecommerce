@@ -15,6 +15,8 @@ export const projectId = import.meta.env.VITE_PROJECT_ID as string;
     // adapters: [new EthersAdapter()],
     projectId,
     networks: [sepolia],
+    defaultNetwork: sepolia,
+    allowUnsupportedChain: false,
     metadata: {
       name: 'Moove NFT Marketplace',
       description: 'NFT Marketplace on Sepolia',

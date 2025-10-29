@@ -22,19 +22,8 @@ function App() {
   const [appStarting, setAppStarting] = useState<boolean>(true);
 
   const { address, isConnected } = useAppKitAccount();
-  // const { disconnect } = useDisconnect();
   const { walletProvider }: any = useAppKitProvider('eip155');
   const { close } = useAppKit();
-
-  
-  //events
-  function listenChanges() {
-    if(!walletProvider) return;
-    walletProvider.on("chainChanged", (chainId: string) => {
-      initSigner(chainId);
-    });
-  }
-  
   
   useEffect(() => {
     if(appStarting){
@@ -51,31 +40,46 @@ function App() {
   }, [isConnected, walletProvider, address]);
 
 
-  async function initSession() {
-    const chainId = await verifyChainId();
-    initSigner(Number(chainId));
-  }
+  // async function initSession() {
+  //   const chainId = await verifyChainId();
+  //   initSigner(Number(chainId));
+  // }
 
-  async function verifyChainId() {
+  async function initSession() {
     if (!walletProvider) return;
     
     try {
-
-      console.log("address:", address);
-      console.log("isConnected:", isConnected);
-      
-      //const providerWC = walletProvider.getProvider();
       const provider = new ethers.BrowserProvider(walletProvider as any);
+      
+      const network = await provider.getNetwork();
+      console.log("chainId:", network.chainId);
+      
+      if (Number(network.chainId) !== sepolia.id) {
+        console.warn(`⚠️ Wrong network (${Number(network.chainId)}). Expected Sepolia (${sepolia.id})`);
+        
+        await walletProvider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: `0x${sepolia.id.toString(16)}` }]
+        });
+        return initSession();
+      }
       
       const signer = address ?? (await provider.getSigner()).address;
       appContext.updateSigner(signer);
-      listenChanges();
-      
-      const network = await provider.getNetwork();
       appContext.updateChainId(Number(network.chainId));
-      console.log("chainId:", network.chainId);
-      console.log("namespace:", walletProvider.session.namespace);
-      return Number(network.chainId);
+      appContext.updateProvider(provider);
+      
+
+      const balanceWei = await provider.getBalance(signer);
+      const balanceEth = Number(ethers.formatEther(balanceWei));
+      console.log(`Balance di ${signer}: ${balanceEth} ETH`);
+      appContext.updateBalance(balanceEth);
+
+      const isAdmin = await readIsAdmin(provider);
+      appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
+      if (isAdmin) {
+        addFactoryContractListeners(provider);
+      }
       
     } catch (error) {
       console.error("Init session error:", error);
@@ -83,40 +87,20 @@ function App() {
     }
   };
 
-  async function initSigner(chainId: string | number) {
-    if(chainId === sepolia.id){
-      const provider = new ethers.BrowserProvider(walletProvider as any);
-      appContext.updateProvider(provider);
-      await setAccountBalance(provider, appContext.signer);
-      const isAdmin = await readIsAdmin(provider);
-      appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
-      appContext.updateSection(Sections.MARKETPLACE);
-      if (isAdmin) {
-        addFactoryContractListeners(provider);
-      }
-    } else {
-      console.warn(`⚠️ Unsupported network (chainId: ${chainId}). Please switch to Sepolia.`);
-    }
-  }
-
 
   async function initCollections(){
     const collections = await readCollections();
     appContext.updateCollectionAddresses(collections ? collections : []);
     setAppStarting(false);
   }
-
-  // const handleConnect = async () => {
-  //   try {
-  //     open(); 
-  //   } catch (err) {
-  //     console.error("Errore apertura AppKit:", err);
-  //   }
-  // };
-
   
   async function handleDisconnect() {
     try {
+      
+      // if (walletProvider) {
+      //   walletProvider.removeAllListeners('chainChanged');
+      // }
+      
       appContext.updateProvider(infuraProvider);
       appContext.updateSigner("");
       appContext.updateBalance(0);
@@ -144,10 +128,9 @@ function App() {
   //   }
   // };
 
-  // async function connectWallet() {
+  async function connectWallet() {
   //     try {
   //       const provider = new ethers.BrowserProvider(window.ethereum);
-
   //       appContext.updateProvider(provider);
 
   //       const signer = await provider.getSigner();
@@ -165,35 +148,19 @@ function App() {
   //       }
 
   //       //Events
-  //       // window.ethereum.on('chainChanged', handleChanges);
-  //       // window.ethereum.on('accountsChanged', handleAccountChanges);
+  //       window.ethereum.on('chainChanged', handleChanges);
+  //       window.ethereum.on('accountsChanged', handleAccountChanges);
 
   //     } catch (err) {
   //       disconnect();
   //     }
-  // }
-
-  async function setAccountBalance(provider: ethers.BrowserProvider, address: string){
-  if (!provider) return;
-
-  const signer = address ?? (await provider.getSigner()).address;
-  if (!signer) return;
-
-  try {
-    const balanceWei = await provider.getBalance(signer);
-    const balanceEth = Number(ethers.formatEther(balanceWei));
-    console.log(`Balance di ${signer}: ${balanceEth} ETH`);
-    appContext.updateBalance(balanceEth);
-    return balanceEth;
-  } catch (err) {
-    console.error("Errore nel calcolo del balance:", err);
   }
-  }
+
 
   return (
     <div className="App" id="app">
 
-      <Navbar />
+      <Navbar connect={connectWallet}/>
 
       {/* background images */}
       
@@ -249,13 +216,13 @@ function App() {
       <div className="main-div primary-bg-color">
         <Box>
             {appContext.section === Sections.MARKETPLACE && !appContext.shownCollection.name &&
-              <Marketplace connectWallet={() => {}} collectionAddresses={appContext.collectionAddresses} />
+              <Marketplace connectWallet={connectWallet} collectionAddresses={appContext.collectionAddresses} />
             }
             {appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY && !appContext.shownCollection.name &&
               <Factory/>
             }
             {appContext.shownCollection.address && 
-              <Collection collection={appContext.shownCollection} connectWallet={() => {}}/>
+              <Collection collection={appContext.shownCollection} connectWallet={connectWallet}/>
             }
         </Box>      
       </div>
