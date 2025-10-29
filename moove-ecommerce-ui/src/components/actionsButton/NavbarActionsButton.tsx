@@ -1,4 +1,8 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import FactoryIcon from '@mui/icons-material/Factory';
+import LogoutIcon from '@mui/icons-material/Logout';
+import MuseumIcon from '@mui/icons-material/Museum';
+import { Box } from '@mui/material';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
@@ -7,25 +11,20 @@ import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
+import { useAppKitProvider, useDisconnect } from '@reown/appkit/react';
 import { useRef, useState } from 'react';
 import { useAppContext } from '../../Context';
+import { infuraProvider } from '../../utils/bridges/MooveCollectionsBridge';
 import CollectionDTO from '../../utils/DTO/CollectionDTO';
 import { Role } from '../../utils/enums/Role';
 import { Sections } from '../../utils/enums/Sections';
 import { formatAddress } from '../../utils/formatValue';
-import LogoutIcon from '@mui/icons-material/Logout';
-import FactoryIcon from '@mui/icons-material/Factory';
-import MuseumIcon from '@mui/icons-material/Museum';
-import { Box } from '@mui/material';
-import { NavbarProps } from '../../utils/Interfaces';
-import { useDisconnect } from '@reown/appkit/react';
 
 export default function NavbarActionsButton() {
     const [open, setOpen] = useState(false);
     const anchorRef = useRef<HTMLDivElement>(null);
-    // const [selectedIndex, setSelectedIndex] = useState(0);
-    // const MySwal = withReactContent(Swal);
     const appContext = useAppContext();
+    const { walletProvider }: any = useAppKitProvider('eip155');
     const { disconnect } = useDisconnect();
 
     //ACTIONS
@@ -53,6 +52,20 @@ export default function NavbarActionsButton() {
         }
         setOpen(false);
     };
+
+    const handleDisconnect = () => {
+        if(walletProvider){
+            disconnect();
+        }
+
+        appContext.updateProvider(infuraProvider);
+        appContext.updateSigner("");
+        appContext.updateBalance(0);
+        appContext.updateChainId(0);
+        appContext.updateRole(Role.NONE);
+        appContext.updateSection(Sections.MARKETPLACE);
+        
+    }
 
   return (
     <>
@@ -109,7 +122,7 @@ export default function NavbarActionsButton() {
 
                             {/* Logout */}
                             <MenuItem>
-                                <Button onClick={() => disconnect()} sx={{ pl:0, color: 'red'}} variant='text'><LogoutIcon sx={{mr: 1}} fontSize='small'/> Logout </Button>
+                                <Button onClick={handleDisconnect} sx={{ pl:0, color: 'red'}} variant='text'><LogoutIcon sx={{mr: 1}} fontSize='small'/> Logout </Button>
                             </MenuItem>
                             
                             

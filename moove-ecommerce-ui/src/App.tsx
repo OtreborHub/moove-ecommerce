@@ -1,35 +1,36 @@
 import { Box, useMediaQuery } from '@mui/material';
+import { sepolia } from '@reown/appkit/networks';
+import { useAppKit, useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import './App.css';
 import bici from './assets/bici.png';
 import motorino from './assets/motorino.png';
 import Collection from './components/commons/Collection';
+import Navbar from './components/commons/Navbar';
 import { Factory } from './components/factory/Factory';
 import { Marketplace } from './components/marketplace/Marketplace';
-import Navbar from './components/commons/Navbar';
 import { useAppContext } from './Context';
+import { infuraProvider } from './utils/bridges/MooveCollectionsBridge';
 import { addFactoryContractListeners, readCollections, readIsAdmin } from './utils/bridges/MooveFactoryBridge';
 import { Role } from './utils/enums/Role';
 import { Sections } from './utils/enums/Sections';
-import { useAppKitProvider, useAppKitAccount, useAppKit, useDisconnect } from "@reown/appkit/react";
-import { infuraProvider } from './utils/bridges/MooveCollectionsBridge';
-import { sepolia } from '@reown/appkit/networks';
 
 function App() {
   const appContext = useAppContext();
   const isMobile = useMediaQuery('(max-width: 1400px)');
   const [appStarting, setAppStarting] = useState<boolean>(true);
 
-  const { address, isConnected } = useAppKitAccount();
+  const { isConnected } = useAppKitAccount();
   const { walletProvider }: any = useAppKitProvider('eip155');
   const { close } = useAppKit();
   
   useEffect(() => {
     if(appStarting){
+      
       handleDisconnect();
-    } else if(isConnected && walletProvider && appContext.signer === ""){
-      initSession();
+    } else if(walletProvider && isConnected && appContext.signer === ""){
+      activateWCHooks();
     } else {
       handleDisconnect();
     }
@@ -37,48 +38,36 @@ function App() {
     if(appContext.collectionAddresses.length === 0){
       initCollections();
     }
-  }, [isConnected, walletProvider, address]);
+  }, [isConnected, walletProvider]);
 
+  
+  function activateWCHooks(){
+    walletProvider.on?.("chainChanged", handleChainChanged);
+    walletProvider.on?.("default_chain_changed", handleChainChanged);
+  }
 
-  // async function initSession() {
-  //   const chainId = await verifyChainId();
-  //   initSigner(Number(chainId));
-  // }
-
-  async function initSession() {
+  async function initSessionWCKitApp() {
     if (!walletProvider) return;
     
     try {
+      
       const provider = new ethers.BrowserProvider(walletProvider as any);
-      
+      const signer = await provider.getSigner();
       const network = await provider.getNetwork();
-      console.log("chainId:", network.chainId);
       
-      if (Number(network.chainId) !== sepolia.id) {
-        console.warn(`⚠️ Wrong network (${Number(network.chainId)}). Expected Sepolia (${sepolia.id})`);
-        
-        await walletProvider.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: `0x${sepolia.id.toString(16)}` }]
-        });
-        return initSession();
-      }
-      
-      const signer = address ?? (await provider.getSigner()).address;
-      appContext.updateSigner(signer);
+      appContext.updateSigner(signer.address);
       appContext.updateChainId(Number(network.chainId));
       appContext.updateProvider(provider);
-      
 
       const balanceWei = await provider.getBalance(signer);
       const balanceEth = Number(ethers.formatEther(balanceWei));
       console.log(`Balance di ${signer}: ${balanceEth} ETH`);
       appContext.updateBalance(balanceEth);
 
-      const isAdmin = await readIsAdmin(provider);
+      const isAdmin = await readIsAdmin(signer);
       appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
       if (isAdmin) {
-        addFactoryContractListeners(provider);
+        addFactoryContractListeners(signer);
       }
       
     } catch (error) {
@@ -87,20 +76,70 @@ function App() {
     }
   };
 
+  const handleChainChanged = async (chainId: string) => {
+    console.log(`🔗 Chain changed: ${chainId}`);
+    if (Number(chainId) === sepolia.id) {
+      console.log("✅ Sei ora su Sepolia, inizializzo la sessione...");
+      await initSessionWCKitApp();
+    } else {
+      console.warn(`⚠️ Sei su una rete diversa (${Number(chainId)}). Attendi switch manuale a Sepolia.`);
+    }
+  };
 
-  async function initCollections(){
-    const collections = await readCollections();
-    appContext.updateCollectionAddresses(collections ? collections : []);
-    setAppStarting(false);
-  }
+  async function initSessionMetamaskBroExt() {
+      try {
+        if(window.ethereum && !walletProvider){
+          const provider = new ethers.BrowserProvider(window.ethereum as any);
+          appContext.updateProvider(provider);
+          const signer = await provider.getSigner();
+          appContext.updateSigner(signer.address);
+          console.log(`Metamask browser address: ${signer.address}`);
   
+          const network = await provider.getNetwork();
+          if(Number(network.chainId) === sepolia.id){
+            appContext.updateChainId(Number(network.chainId));
+            const balanceWei = await provider.getBalance(signer);
+            const balanceEth = Number(ethers.formatEther(balanceWei));
+            console.log(`Balance di ${signer}: ${balanceEth} ETH`);
+            appContext.updateBalance(balanceEth);
+            
+    
+            const isAdmin = await readIsAdmin(signer);
+            appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
+            appContext.updateSection(Sections.MARKETPLACE);
+            if(isAdmin){
+              addFactoryContractListeners(signer);
+            }
+          }
+          // else {
+          // Swal.error()  
+          //}
+
+  
+          //Events
+          (window.ethereum as any)?.on('chainChanged', handleChainChanges);
+          (window.ethereum as any)?.on('accountsChanged', handleAccountChanges);
+        }
+      } catch (err) {
+        handleDisconnect();
+      }
+  }
+
+  //Metamask browser extensions listeners
+  const handleChainChanges = () => {
+    console.log((window.ethereum as any).chainId);
+  };
+
+  const handleAccountChanges = async (accounts:any) => {
+    if (accounts.length > 0) {
+      await initSessionMetamaskBroExt();
+    } else {
+      console.log('Please connect to Metamask.');
+      handleDisconnect();
+    }
+  };
+
   async function handleDisconnect() {
-    try {
-      
-      // if (walletProvider) {
-      //   walletProvider.removeAllListeners('chainChanged');
-      // }
-      
       appContext.updateProvider(infuraProvider);
       appContext.updateSigner("");
       appContext.updateBalance(0);
@@ -109,58 +148,22 @@ function App() {
       appContext.updateSection(Sections.MARKETPLACE);
       //await disconnect();
       await close();
-    } catch (err) {
-      console.warn('useAppKit.close() failed', err);
-    }
-    
   };
 
-  // const handleChanges = () => {
-  //   console.log(window.ethereum.chainId);
-  // };
+  
 
-  // const handleAccountChanges = async (accounts:any) => {
-  //   if (accounts.length === 0) {
-  //     console.log('Please connect to Metamask.');
-  //     disconnect();
-  //   } else {
-  //     await connectWallet();
-  //   }
-  // };
 
-  async function connectWallet() {
-  //     try {
-  //       const provider = new ethers.BrowserProvider(window.ethereum);
-  //       appContext.updateProvider(provider);
-
-  //       const signer = await provider.getSigner();
-  //       appContext.updateSigner(signer.address);
-  //       console.log(`address: ${signer.address}`);
-
-  //       setAccountBalance(signer.address);
-  //       appContext.updateChainId(parseInt(window.ethereum.chainId));
-
-  //       const isAdmin = await readIsAdmin();
-  //       appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
-  //       appContext.updateSection(Sections.MARKETPLACE);
-  //       if(isAdmin){
-  //         addFactoryContractListeners();
-  //       }
-
-  //       //Events
-  //       window.ethereum.on('chainChanged', handleChanges);
-  //       window.ethereum.on('accountsChanged', handleAccountChanges);
-
-  //     } catch (err) {
-  //       disconnect();
-  //     }
+  async function initCollections(){
+    const collections = await readCollections();
+    appContext.updateCollectionAddresses(collections ? collections : []);
+    setAppStarting(false);
   }
 
 
   return (
     <div className="App" id="app">
 
-      <Navbar connect={connectWallet}/>
+      <Navbar connect={initSessionMetamaskBroExt}/>
 
       {/* background images */}
       
@@ -216,13 +219,13 @@ function App() {
       <div className="main-div primary-bg-color">
         <Box>
             {appContext.section === Sections.MARKETPLACE && !appContext.shownCollection.name &&
-              <Marketplace connectWallet={connectWallet} collectionAddresses={appContext.collectionAddresses} />
+              <Marketplace connectWallet={initSessionMetamaskBroExt} collectionAddresses={appContext.collectionAddresses} />
             }
             {appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY && !appContext.shownCollection.name &&
               <Factory/>
             }
             {appContext.shownCollection.address && 
-              <Collection collection={appContext.shownCollection} connectWallet={connectWallet}/>
+              <Collection collection={appContext.shownCollection} connectWallet={initSessionMetamaskBroExt}/>
             }
         </Box>      
       </div>

@@ -5,26 +5,25 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { AppContextProvider } from './Context';
 import { createAppKit } from '@reown/appkit/react'
-import { EthersAdapter } from "@reown/appkit-adapter-ethers";
 import { sepolia, mainnet} from '@reown/appkit/networks';
-import moove_logo from './assets/moove.png';
 
 export const projectId = import.meta.env.VITE_PROJECT_ID as string;
 
-  createAppKit({
-    // adapters: [new EthersAdapter()],
-    projectId,
-    networks: [sepolia],
-    defaultNetwork: sepolia,
-    allowUnsupportedChain: false,
-    metadata: {
-      name: 'Moove NFT Marketplace',
-      description: 'NFT Marketplace on Sepolia',
-      url: window.location.origin,
-      icons: ["https://raw.githubusercontent.com/MetaMask/metamask-mobile/main/logo.png"]
-    },
-    
-  });
+
+createAppKit({
+  // adapters: [new EthersAdapter()],
+  projectId: projectId,
+  networks: [sepolia],
+  defaultNetwork: sepolia,
+  allowUnsupportedChain: false,
+  metadata: {
+    name: 'Moove NFT Marketplace',
+    description: 'NFT Marketplace on Sepolia',
+    url: window.location.origin,
+    icons: ["https://raw.githubusercontent.com/MetaMask/metamask-mobile/main/logo.png"]
+  },
+  
+});
   
 
 const container = document.getElementById('root')!;

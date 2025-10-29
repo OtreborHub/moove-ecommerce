@@ -1,8 +1,8 @@
 import { BrowserProvider, Contract, ethers, Provider, Signer } from "ethers";
-import { FACTORY_ABI } from "../../abi/erc721factory_abi";
-import { ErrorMessage, swalError } from "../enums/Errors";
-import { Action } from "../enums/Actions";
 import Swal from "sweetalert2";
+import { FACTORY_ABI } from "../../abi/erc721factory_abi";
+import { Action } from "../enums/Actions";
+import { ErrorMessage, swalError } from "../enums/Errors";
 
 export const FACTORY_ADDRESS: string = import.meta.env.VITE_FACTORY_ADDRESS as string;
 
@@ -19,9 +19,8 @@ export default function getContractInstance(signer?: Signer) {
 
 }
 
-export async function readIsAdmin(browserProvider: BrowserProvider) {
+export async function readIsAdmin(signer: Signer) {
     try {
-      const signer = await browserProvider.getSigner();
       const signerContract = getContractInstance(signer);
       return await signerContract?.isAdmin();
     } catch (error: any) {
@@ -54,8 +53,8 @@ export async function writeCreateCollection(name: string, symbol: string, maxSup
 
 // CONTRACT LISTENERS
 
-export async function addFactoryContractListeners(browserProvider: BrowserProvider) {
-  const signer = await browserProvider.getSigner();
+export async function addFactoryContractListeners(signer: Signer) {
+  //const signer = await browserProvider.getSigner();
   const factory = getContractInstance(signer);
   factory?.on("CollectionCreated", (collectionAddress, name, symbol) => {
     if (collectionAddress) {
