@@ -4,14 +4,10 @@ import getCoverImage from "../../utils/Cover"
 import { useAppContext } from "../../Context";
 import { formatAddress } from "../../utils/formatValue";
 
-export default function CollectionPreview({collection, idx} : CollectionProps & { idx: number}) {
+export default function CollectionPreview({collection, idx, connectMetamask} : CollectionProps & { idx: number}) {
     const isMobile = useMediaQuery('(max-width: 1400px)');
     const isPhone = useMediaQuery('(max-width: 650px)');
     const appContext = useAppContext();
-
-    function showCollection() {
-        appContext.updateShownCollection(collection);
-    }
 
     return (
         <>
@@ -51,7 +47,7 @@ export default function CollectionPreview({collection, idx} : CollectionProps & 
                     {isPhone? formatAddress(collection.address): collection.address}
                     </Typography>
                     <Typography sx={{mb: 1.5 }}>{collection.tokenIds} {collection.symbol}</Typography>
-                    <Button sx={{ marginTop: 0.5, width: isPhone ? '70%': '30%' }}variant="contained" fullWidth size="small" onClick={() => showCollection()}>View collection</Button>
+                    <Button sx={{ marginTop: 0.5, width: isPhone ? '70%': '30%' }}variant="contained" fullWidth size="small" onClick={() => appContext.updateShownCollection(collection)}>View collection</Button>
                 </Box>    
         </Card>
         </>

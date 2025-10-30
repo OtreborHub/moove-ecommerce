@@ -3,22 +3,23 @@ import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import moove_logo from "../../assets/moove.png";
-import { useAppContext } from "../../Context";
+import { emptySigner, useAppContext } from "../../Context";
 import { readTokenURI, retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from '../../utils/bridges/MooveCollectionsBridge';
 import { AuctionStatus, AuctionType, getAuctionStatus } from '../../utils/enums/Auction';
 import { formatToRomeTime, formatAuctionType } from "../../utils/formatValue";
-import { AuctionProps } from '../../utils/Interfaces';
+import { AuctionPreviewProps } from '../../utils/Interfaces';
 import Loader from '../commons/Loader';
 import PlaceBidForm from '../forms/PlaceBidForm';
 import Token from '../commons/Token';
 import TokenDTO, { Metadata } from '../../utils/DTO/TokenDTO';
+import { useAppKit } from '@reown/appkit/react';
 
 const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
 const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the price suits you.</>
 const tooltipTextEnglishAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
 
-export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
+export default function AuctionPreview({auction, connectMetamask}: AuctionPreviewProps) {
     const isPhone = useMediaQuery('(max-width: 650px)');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [auctionStatus, setAuctionStatus] = useState<AuctionStatus>(AuctionStatus.NONE);
@@ -26,11 +27,12 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
     const [tokenMetadata, setTokenMetadata] = useState<Metadata>({name:"", cid:"", attributes: []});
     const appContext = useAppContext();
     const MySwal = withReactContent(Swal);
+    const { open } = useAppKit();
     
     useEffect(() => {
         setAuctionStatus(getAuctionStatus(auction));
         getTokenImage();
-    }, [auction]);
+    }, [auction, appContext.signerAddress]);
 
     const chooseTooltipText = () => {
         switch(auction.auctionType){
@@ -94,15 +96,10 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-            const response = await fetch(metadataUrl, { 
-                signal: controller.signal 
-            });
-            
+            const response = await fetch(metadataUrl, { signal: controller.signal });
             clearTimeout(timeoutId);
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            } else {
+            if (response.ok) {
                 const metadata = await response.json();
                 console.log(`✅ [Auction ${auction.tokenId}] Metadata fetched:`, metadata.name);
     
@@ -118,22 +115,17 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
                     console.warn(`⚠️ [Auction ${auction.tokenId}] Using fallback logo`);
                     setImageURL(moove_logo);
                 }
+            } else {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-
 
         } catch (error: any) {
-            if (error.name === 'AbortError') {
-                console.warn(`⏱️ [Auction ${auction.tokenId}] Fetch timeout`);
-            } else {
-                console.error(`❌ [Auction ${auction.tokenId}] Error fetching metadata:`, error);
-            }
+            console.error(`❌ [Auction ${auction.tokenId}] Error fetching metadata:`, error);
             setImageURL(moove_logo);
         }
     }
 
     function showNFTAuction(){
-        // appContext.updateShownCollection(auction.collection);
-        // appContext.updateShownNFT(auction.tokenId);
         MySwal.fire({
             html: <Token 
             isLoading={setIsLoading}
@@ -142,7 +134,9 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
             tokenId={auction.tokenId}
             auction={auction}
             metadata={tokenMetadata}
-            connectWallet={connectWallet} 
+            signerAddress={appContext.signerAddress}
+            connectWC={closeAndConnectWC} 
+            connectMetamask={closeAndConnectMetamask}
             handleBuy={(tokenId, price) => {}}
             handleCreateAuction={(tokenId) => {}}
             handleUpdatePrice={(tokenId, price) => {}}
@@ -156,16 +150,22 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
         }); 
     }
 
-    function closeAndConnectWallet(){
+    function closeAndConnectMetamask(){
         MySwal.close();
-        connectWallet();
+        connectMetamask();
+    }
+
+    function closeAndConnectWC(){
+        MySwal.close();
+        open();
     }
 
     function connectWalletSwal() {
         return (
             <Box>
+                {/* TODO: SISTEMARE */}
                 <Typography variant='body1'>Don't worry, it's just a quick connection.</Typography>
-                <Button variant="contained" onClick={closeAndConnectWallet} sx={{backgroundColor:'#f7a642ff', borderRadius:'10px', margin: '1rem'}}>
+                <Button variant="contained" onClick={closeAndConnectMetamask} sx={{backgroundColor:'#f7a642ff', borderRadius:'10px', margin: '1rem'}}>
                     Connect Wallet
                 </Button>
             </Box>
@@ -264,11 +264,11 @@ export default function AuctionPreview({auction, connectWallet}: AuctionProps) {
                 );
             }
             
-        } else if (appContext.signer && auction.ended && appContext.signerAddress !== auction.seller && appContext.signerAddress !== auction.highestBidder && auction.auctionType === AuctionType.CLASSIC){
+        } else if (appContext.signer === emptySigner && auction.ended && appContext.signerAddress !== auction.seller && appContext.signerAddress !== auction.highestBidder && auction.auctionType === AuctionType.CLASSIC){
             return (
                 <Button size="small" variant="outlined" sx={{mr: 1}} onClick={withdraw}>Withdraw</Button>
             );
-        } else if (appContext.signer && !auction.ended && appContext.signerAddress === auction.seller && Math.floor(Date.now() / 1000) >= auction.endTime){
+        } else if (appContext.signer !== emptySigner && !auction.ended && appContext.signerAddress === auction.seller && Math.floor(Date.now() / 1000) >= auction.endTime){
             return ( 
                 <Button size="small" variant="contained" color="error" sx={{mr: 1}} onClick={() => endAuction(auction.tokenId)}>Finalize</Button>
             )

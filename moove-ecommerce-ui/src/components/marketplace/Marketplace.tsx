@@ -1,4 +1,4 @@
-import { Box, useMediaQuery } from "@mui/material";
+import { Box, Button, useMediaQuery } from "@mui/material";
 import { useEffect, useState } from "react";
 import Slider from "react-slick";
 import auction_logo from "../../assets/auctions.png";
@@ -13,7 +13,7 @@ import AuctionPreview from "./AuctionPreview";
 import CollectionPreview from "./CollectionsPreview";
 import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
 
-export function Marketplace({collectionAddresses, connectWallet}: MarketplaceProps) {
+export function Marketplace({collectionAddresses, connectMetamask}: MarketplaceProps) {
     const isMobile = useMediaQuery('(max-width: 1400px)');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const appContext = useAppContext();
@@ -122,6 +122,31 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
         nextArrow: <NextArrow/>
     };
 
+    const sortedAuctions = appContext.auctions
+    .slice()
+    .sort((a, b) => {
+      const now = Date.now();
+      const aEnd = new Date(a.endTime).getTime();
+      const bEnd = new Date(b.endTime).getTime();
+
+      const aIsClosed = a.ended;
+      const bIsClosed = b.ended;
+
+      const aIsExpired = aEnd < now;
+      const bIsExpired = bEnd < now;
+
+      if (aIsClosed && !bIsClosed) return 1;
+      if (!aIsClosed && bIsClosed) return -1;
+
+      if (aIsExpired && !bIsExpired) return -1;
+      if (!aIsExpired && bIsExpired) return 1;
+
+      return aEnd - bEnd;
+    });
+
+    const displayedAuctions = isMobile ? sortedAuctions.slice(0, 5) : sortedAuctions;
+
+
     return (
         <>
         <Box display= {isMobile? "block": "flex"} 
@@ -152,7 +177,7 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
                     {appContext.collections
                     .filter((collection) => collection.active === true)
                     .map((collection, index) => (
-                        <CollectionPreview key={index} collection={collection} idx={index} connectWallet={connectWallet}/>
+                        <CollectionPreview key={index} idx={index} collection={collection} connectMetamask={connectMetamask}/>
                     ))}
                     </Slider>
                 }
@@ -176,35 +201,18 @@ export function Marketplace({collectionAddresses, connectWallet}: MarketplacePro
                 
                 { isMobile && 
                     <Box textAlign="center">
-                        <img src={auction_logo} alt="Collections" style={{ maxWidth: '217px' }} />
+                        <img src={auction_logo} alt="Auctions" style={{ maxWidth: '217px' }} />
                     </Box>
                 }
                 
-                {appContext.auctions
-                //.filter((auction) => auction.ended === false)
-                .slice() 
-                .sort((a, b) => {
-                        const now = Date.now();
-                        const aEnd = new Date(a.endTime).getTime();
-                        const bEnd = new Date(b.endTime).getTime();
-
-                        const aIsClosed = a.ended;
-                        const bIsClosed = b.ended;
-
-                        const aIsExpired = aEnd < now;
-                        const bIsExpired = bEnd < now;
-
-                        if (aIsClosed && !bIsClosed) return 1;
-                        if (!aIsClosed && bIsClosed) return -1;
-
-                        if (aIsExpired && !bIsExpired) return -1;
-                        if (!aIsExpired && bIsExpired) return 1;
-
-                        return aEnd - bEnd;
-                })
-                .map((auction, index) => (
-                    <AuctionPreview key={index} auction={auction} connectWallet={connectWallet}/>
+                {displayedAuctions.map((auction, index) => (
+                    <AuctionPreview key={index} auction={auction} connectMetamask={connectMetamask}/>
                 ))}
+                {appContext.auctions.length > 0 && !isMobile &&
+                <Box textAlign={"right"}>
+                    <Button sx={{color: "#f7a642ff"}} variant="text"> View All </Button>
+                </Box>
+                }
             </Box>
 
         </Box>

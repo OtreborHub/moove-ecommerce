@@ -15,7 +15,7 @@ import Loader from "./Loader";
 import TokenPreview from "./TokenPreview";
 import TransferToForm from "../forms/TransferToForm";
 
-export default function Collection({collection, connectWallet} : CollectionProps) {
+export default function Collection({collection, connectMetamask} : CollectionProps) {
   const [tokens, setTokens] = useState<TokenDTO[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const MySwal = withReactContent(Swal);
@@ -180,15 +180,18 @@ export default function Collection({collection, connectWallet} : CollectionProps
             <Grid
               size={{xs:6, sm:6, md:4, lg:2.4 }} 
               key={index}
+              sx={{
+                transition: 'transform 0.3s ease-in-out',
+                "&:hover": {
+                  transform: 'scale(1.15)',
+                  zIndex: 2, // opzionale, per farlo sopra le altre card
+                }
+              }}
             >
               <TokenPreview 
                 token={token} 
-                tokenId={token.id}
-                auction={token.auction}
-                collection={collection}
-                metadata={{name: "", cid: "", attributes: []}}
                 isLoading={loadingPropagation}
-                connectWallet={connectWallet} 
+                connectMetamask={connectMetamask} 
                 handleBuy={handleBuy} 
                 handleCreateAuction={showCreateAuctionForm}
                 handleTransfer={showTransferForm}

@@ -1,4 +1,3 @@
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import FactoryIcon from '@mui/icons-material/Factory';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MuseumIcon from '@mui/icons-material/Museum';
@@ -19,28 +18,24 @@ import CollectionDTO from '../../utils/DTO/CollectionDTO';
 import { Role } from '../../utils/enums/Role';
 import { Sections } from '../../utils/enums/Sections';
 import { formatAddress } from '../../utils/formatValue';
+import metamask_logo from '../../assets/metamask.svg';
+import walletconnect_logo from '../../assets/wallet-connect.svg';
 
 export default function NavbarActionsButton() {
     const [open, setOpen] = useState(false);
     const anchorRef = useRef<HTMLDivElement>(null);
     const appContext = useAppContext();
-    const { walletProvider }: any = useAppKitProvider('eip155');
+    const { walletProvider } = useAppKitProvider('eip155');
     const { disconnect } = useDisconnect();
 
     //ACTIONS
     function changeSection() {
         setOpen(false);
         appContext.updateShownCollection(CollectionDTO.emptyInstance());
-        appContext.updateShownNFT(0);
         appContext.section === Sections.FACTORY ? 
             appContext.updateSection(Sections.MARKETPLACE) : 
             appContext.updateSection(Sections.FACTORY);
     }
-
-    // async function disconnect() {
-    //     appContext.updateSigner("");
-    //     appContext.updateBalance(0);
-    // }
     
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen);
@@ -60,6 +55,7 @@ export default function NavbarActionsButton() {
 
         appContext.updateProvider(infuraProvider);
         appContext.updateSigner(emptySigner);
+        appContext.updateSignerAddress("");
         appContext.updateBalance(0);
         appContext.updateChainId(0);
         appContext.updateRole(Role.NONE);
@@ -82,10 +78,11 @@ export default function NavbarActionsButton() {
             aria-expanded={open ? 'true' : undefined}
             aria-label="select merge strategy"
             aria-haspopup="menu"
-            sx={{ borderColor:'#f7a642ff', color:"#f7a642ff"}}
+            sx={{ borderColor: walletProvider ? 'whitesmoke' : '#f7a642ff', color: walletProvider ? 'whitesmoke':'#f7a642ff'}}
             onClick={handleToggle}
             > Profile
-            <AccountCircleIcon sx={{ml:1}}/>
+            <img height="24" style={{ marginLeft: "1rem"}} src={walletProvider ? walletconnect_logo : metamask_logo}></img>
+            {/* <AccountCircleIcon sx={{ml:1}}/> */}
             </Button>
         </ButtonGroup>
         <Popper

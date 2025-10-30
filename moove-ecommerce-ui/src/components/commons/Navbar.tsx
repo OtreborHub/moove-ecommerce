@@ -8,13 +8,13 @@ import { emptySigner, useAppContext } from '../../Context';
 import logo2 from '../../assets/factory.png';
 import logo3 from '../../assets/markeplace.png';
 import metamask_logo from '../../assets/metamask.svg';
-import logoCutted from '../../assets/mooveCutted.png';
 import walletconnect_logo from '../../assets/wallet-connect.svg';
+import logoCutted from '../../assets/mooveCutted.png';
 import { NavbarProps } from '../../utils/Interfaces';
 import { Sections } from '../../utils/enums/Sections';
 import NavbarActionsButton from '../actionsButton/NavbarActionsButton';
 
-export default function Navbar({connect}: NavbarProps) {
+export default function Navbar({connectMetamask}: NavbarProps) {
   const isPhone = useMediaQuery('(max-width: 650px)');
   const appContext = useAppContext();
   const { open } = useAppKit();
@@ -38,16 +38,16 @@ export default function Navbar({connect}: NavbarProps) {
           {appContext.signer === emptySigner && 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: 'auto', marginRight: '1rem'}}>
               <ButtonGroup>
-                {!isPhone && <Button key="word" variant="contained" size="medium" sx={{ color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px'}}>
-                  <b>{"Connect"}</b>
+                {!isPhone && <Button key="word" variant="contained" size="large" sx={{ color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px'}}>
+                  <b>Connect</b>
                 </Button> 
                 }
+                <Button key="meta" variant="contained" onClick={connectMetamask} size="medium" sx={{ color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px'}}>
+                  <img height="24" alt="meta" src={metamask_logo}></img>
+                </Button>  
                 <Button key="wc" variant="contained" onClick={() => open()} size="medium" sx={{ color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px'}}>
                   <img height="24" alt="wc" src={walletconnect_logo}></img>
                 </Button> 
-                <Button key="meta" variant="contained" onClick={connect} size="medium" sx={{ color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px'}}>
-                  <img height="24" alt="meta" src={metamask_logo}></img>
-                </Button>  
               </ButtonGroup>
               
             </Box>

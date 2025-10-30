@@ -19,7 +19,6 @@ const appContext = createContext({
   updateRole: (role: Role) => {},
   updateSection: (section: Sections) => {},
   updateShownCollection: (collection: CollectionDTO) => {},
-  updateShownNFT: (tokenId: number) => {},
   updateCollectionAddresses: (collectionAddresses: string[]) => {},
   updateCollections: (collections: CollectionDTO[]) => {},
   updateAuctions: (auction: AuctionDTO[]) => {},
@@ -32,7 +31,6 @@ const appContext = createContext({
   role: Role.NONE,
   section: Sections.MARKETPLACE,
   shownCollection: CollectionDTO.emptyInstance(),
-  shownNFT: 0,
   collectionAddresses: [] as string[],
   collections: [] as CollectionDTO[],
   auctions: [] as AuctionDTO[],
@@ -56,7 +54,6 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   const [role, setRole] = useState<Role>(Role.NONE);
   const [section, setSection] = useState<Sections>(Sections.MARKETPLACE);
   const [shownCollection, setShownCollection] = useState<CollectionDTO>(CollectionDTO.emptyInstance());
-  const [shownNFT, setShownNFT] = useState<number>(0);
   const [collectionAddresses, setCollectionAddresses] = useState<string[]>([]);
   const [collections, setCollections] = useState<CollectionDTO[]>([]);
   const [auctions, setAuctions] = useState<AuctionDTO[]>([]);
@@ -70,7 +67,6 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   function updateRole(role: Role) { setRole(role); }
   function updateSection(section: Sections) { setSection(section); }
   function updateShownCollection(collection: CollectionDTO) { setShownCollection(collection); }
-  function updateShownNFT(tokenId: number) { setShownNFT(tokenId); }
   function updateCollectionAddresses(collectionAddresses: string[]) { setCollectionAddresses(collectionAddresses); }
   function updateCollections(collections: CollectionDTO[]) { setCollections(collections); }
   function updateAuctions(auctions: AuctionDTO[]) { setAuctions(auctions); }
@@ -86,7 +82,6 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       updateRole,
       updateSection,
       updateShownCollection,
-      updateShownNFT,
       updateCollectionAddresses,
       updateCollections,
       updateAuctions,
@@ -99,7 +94,6 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       role,
       section,
       shownCollection,
-      shownNFT,
       collectionAddresses,
       collections,
       auctions,

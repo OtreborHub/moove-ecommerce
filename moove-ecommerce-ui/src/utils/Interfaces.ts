@@ -3,17 +3,27 @@ import CollectionDTO from "./DTO/CollectionDTO";
 import TokenDTO, { Metadata } from "./DTO/TokenDTO";
 
 interface NavbarProps {
-    connect: () => void;
+    connectMetamask: () => void;
 }
 
 interface MarketplaceProps {
     collectionAddresses: string[];
-    connectWallet: () => void;
+    connectMetamask: () => void;
 }
 
 interface CollectionProps{
     collection: CollectionDTO;
-    connectWallet: () => void;
+    connectMetamask: () => void;
+}
+
+interface TokenPreviewProps {
+    token: TokenDTO;
+    isLoading: (isLoading: boolean) => void,
+    handleBuy: (tokenId: number, price: number) => void;
+    handleCreateAuction: (tokenId: number) => void;
+    handleTransfer: (tokenId: number) => void;
+    handleUpdatePrice: (tokenId: number, price: number) => void;
+    connectMetamask: () => void;
 }
 
 interface TokenProps {
@@ -22,19 +32,25 @@ interface TokenProps {
     tokenId: number;
     auction: AuctionDTO;
     metadata: Metadata;
+    signerAddress: string;
     isLoading: (isLoading: boolean) => void,
     handleBuy: (tokenId: number, price: number) => void;
     handleCreateAuction: (tokenId: number) => void;
     handleTransfer: (tokenId: number) => void;
     handleUpdatePrice: (tokenId: number, price: number) => void;
-    connectWallet: () => void;
+    connectWC: () => void;
+    connectMetamask: () => void;
+}
+
+interface AuctionPreviewProps {
+    auction: AuctionDTO;
+    connectMetamask: () => void;
 }
 
 interface AuctionProps {
     auction: AuctionDTO;
     signer?: string;
     section?: number;
-    connectWallet: () => void;
 }
 
 interface TableCollectionProps {
@@ -105,4 +121,4 @@ interface FormProps {
 }
 // END FORMS ----------------------------------
 
-export type { NavbarProps, MarketplaceProps, CollectionProps, AuctionProps, CreateCollectionFormProps, TableCollectionProps, LoaderProps, MintTokenFormProps, DeleteCollectionFormProps, TokenProps, SetTokenPriceFormProps, TrasferFormProps, CreateAuctionFormProps, PlaceBidFormProps, FactoryActionsButtonProps, TokenActionsButtonProps};
+export type { NavbarProps, MarketplaceProps, CollectionProps, AuctionProps, AuctionPreviewProps, CreateCollectionFormProps, TableCollectionProps, LoaderProps, MintTokenFormProps, DeleteCollectionFormProps, TokenProps, TokenPreviewProps, SetTokenPriceFormProps, TrasferFormProps, CreateAuctionFormProps, PlaceBidFormProps, FactoryActionsButtonProps, TokenActionsButtonProps};

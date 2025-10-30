@@ -5,8 +5,9 @@ import withReactContent from "sweetalert2-react-content";
 import moove_logo from "../../assets/moove.png";
 import { useAppContext } from "../../Context";
 import { formatPrice } from "../../utils/formatValue";
-import { TokenProps } from "../../utils/Interfaces";
+import { TokenPreviewProps } from "../../utils/Interfaces";
 import Token from "./Token";
+import { useAppKit } from "@reown/appkit/react";
 
 // ✅ Gateway IPFS multipli con fallback
 // const IPFS_GATEWAYS = [
@@ -17,12 +18,13 @@ import Token from "./Token";
 // ];
 const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
 
-export default function TokenPreview({token, isLoading, connectWallet, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice: handleTokenPrice}: TokenProps) {
+export default function TokenPreview({token, connectMetamask, isLoading, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice}: TokenPreviewProps) {
   const [imageUrl, setImageUrl] = useState(moove_logo);
   const [metadata, setMetadata] = useState({name:"", cid:"", attributes: []});
   const [hovered, setHovered] = useState(false);
   const MySwal = withReactContent(Swal);
   const appContext = useAppContext();
+  const { open } = useAppKit();
 
   useEffect(() => {
       init();
@@ -110,9 +112,14 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
     }
   }
 
-  function closeAndHandleConnectWallet(){
+  function closeAndConnectMetamask(){
     MySwal.close();
-    connectWallet();
+    connectMetamask();
+  }
+
+  function closeAndConnectWC(){
+    MySwal.close();
+    open();
   }
 
   function closeAndHandleCreateAuction(){
@@ -127,7 +134,7 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
 
   function closeAndHandleTokenPrice(){
     MySwal.close();
-    handleTokenPrice(token.id, token.price);
+    handleUpdatePrice(token.id, token.price);
   }
 
   function openTokenDetail(){
@@ -139,7 +146,9 @@ export default function TokenPreview({token, isLoading, connectWallet, handleBuy
             tokenId={token.id}
             auction={token.auction}
             metadata={metadata}
-            connectWallet={closeAndHandleConnectWallet} 
+            signerAddress={appContext.signerAddress}
+            connectWC={closeAndConnectMetamask} 
+            connectMetamask={close}
             handleBuy={handleBuy}
             handleCreateAuction={closeAndHandleCreateAuction}
             handleUpdatePrice={closeAndHandleTokenPrice}

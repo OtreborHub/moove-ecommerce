@@ -40,12 +40,10 @@ function App() {
   }, [isConnected, walletProvider]);
 
   
-  function activateWCHooks(){
-    walletProvider.on?.("chainChanged", handleChainChanged);
-    walletProvider.on?.("default_chain_changed", handleChainChanged);
-  }
+  
 
-  async function initSessionWCKitApp() {
+ //------------------ Wallet Connect KitApp
+  async function connectWCKitApp() {
     if (!walletProvider) return;
     
     try {
@@ -76,17 +74,24 @@ function App() {
     }
   };
 
+  function activateWCHooks(){
+    walletProvider.on?.("chainChanged", handleChainChanged);
+    walletProvider.on?.("default_chain_changed", handleChainChanged);
+  }
+
+  // WalletConnect listeners
   const handleChainChanged = async (chainId: string) => {
     console.log(`🔗 Chain changed: ${chainId}`);
     if (Number(chainId) === sepolia.id) {
       console.log("✅ Sei ora su Sepolia, inizializzo la sessione...");
-      await initSessionWCKitApp();
+      await connectWCKitApp();
     } else {
       console.warn(`⚠️ Sei su una rete diversa (${Number(chainId)}). Attendi switch manuale a Sepolia.`);
     }
   };
 
-  async function initSessionMetamaskBroExt() {
+  //--------------------- METAMASK BROWSER EXTENSION
+  async function connectMetamask() {
       try {
         if(window.ethereum && !walletProvider){
           const provider = new ethers.BrowserProvider(window.ethereum as any);
@@ -133,7 +138,7 @@ function App() {
 
   const handleAccountChanges = async (accounts:any) => {
     if (accounts.length > 0) {
-      await initSessionMetamaskBroExt();
+      await connectMetamask();
     } else {
       console.log('Please connect to Metamask.');
       handleDisconnect();
@@ -152,9 +157,6 @@ function App() {
       await close();
   };
 
-  
-
-
   async function initCollections(){
     const collections = await readCollections();
     appContext.updateCollectionAddresses(collections ? collections : []);
@@ -165,7 +167,7 @@ function App() {
   return (
     <div className="App" id="app">
 
-      <Navbar connect={initSessionMetamaskBroExt}/>
+      <Navbar connectMetamask={connectMetamask}/>
 
       {/* background images */}
       
@@ -221,13 +223,13 @@ function App() {
       <div className="main-div primary-bg-color">
         <Box>
             {appContext.section === Sections.MARKETPLACE && !appContext.shownCollection.name &&
-              <Marketplace connectWallet={initSessionMetamaskBroExt} collectionAddresses={appContext.collectionAddresses} />
+              <Marketplace connectMetamask={connectMetamask} collectionAddresses={appContext.collectionAddresses} />
             }
             {appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY && !appContext.shownCollection.name &&
               <Factory/>
             }
             {appContext.shownCollection.address && 
-              <Collection collection={appContext.shownCollection} connectWallet={initSessionMetamaskBroExt}/>
+              <Collection collection={appContext.shownCollection} connectMetamask={connectMetamask}/>
             }
         </Box>      
       </div>
