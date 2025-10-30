@@ -7,16 +7,14 @@ import { readCurrentPriceDutch, retrieveBid, writeBuyDutch, writeEndClassicAucti
 import { AuctionStatus, AuctionType, getAuctionStatus, getAuctionTypeDescription } from "../../utils/enums/Auction";
 import { formatAddress, formatToRomeTime } from "../../utils/formatValue";
 import Loader from "./Loader";
-import { useAppContext } from "../../Context";
 
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
 const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the price suits you.</>
 const tooltipTextEnglishAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
 
-export default function Auction({ auction, signer }: AuctionProps){
-    const appContext = useAppContext();
+export default function Auction({ auction, signer, signerAddress }: AuctionProps){
     const [isLoadingUpdateDutch, setIsLoading] = useState<boolean>(false);
-    const [auctionStatus, setAuctionStatus] = useState<AuctionStatus>(AuctionStatus.NONE);
+    const [auctionStatus, setAuctionStatus] = useState<AuctionStatus>(AuctionStatus.NONE); //Usare per comandare visualizzazione dei pulsanti?
     const MySwal = withReactContent(Swal);
         const [formData, setFormData] = useState({
         bid: auction.auctionType === AuctionType.ENGLISH ? auction.currentPrice + auction.minIncrement: 0,
@@ -55,13 +53,13 @@ export default function Auction({ auction, signer }: AuctionProps){
         if(signer){
             let success = false;
             if(auction.auctionType === AuctionType.DUTCH){
-                success = await writeBuyDutch(auction.collection.address, auction.tokenId, auction.currentPrice, appContext.signer);
+                success = await writeBuyDutch(auction.collection.address, auction.tokenId, auction.currentPrice, signer);
             } if(auction.auctionType === AuctionType.CLASSIC){
-                success = await writePlaceBidClassic(auction.collection.address, auction.tokenId, formData.bid, appContext.signer);
+                success = await writePlaceBidClassic(auction.collection.address, auction.tokenId, formData.bid, signer);
             } else if (auction.auctionType === AuctionType.ENGLISH){
 
                 if(formData.bid > auction.currentPrice + auction.minIncrement){
-                    success = await writePlaceBidEnglish(auction.collection.address, auction.tokenId, formData.bid, appContext.signer);    
+                    success = await writePlaceBidEnglish(auction.collection.address, auction.tokenId, formData.bid, signer);    
                 } else {
                     MySwal.fire({
                         title: "Check you bid",
@@ -88,7 +86,7 @@ export default function Auction({ auction, signer }: AuctionProps){
     }
 
     async function withdraw(){
-        const success = await retrieveBid(auction.collection.address, auction.tokenId, appContext.signer);
+        const success = await retrieveBid(auction.collection.address, auction.tokenId, signer);
         if(success){
             MySwal.fire({
                 title: "Withdraw",
@@ -102,9 +100,9 @@ export default function Auction({ auction, signer }: AuctionProps){
     async function endAuction(){
         let success = false;
         if(auction.auctionType === AuctionType.CLASSIC){
-            success = await writeEndClassicAuction(auction.collection.address, auction.tokenId, appContext.signer);
+            success = await writeEndClassicAuction(auction.collection.address, auction.tokenId, signer);
         } else if (auction.auctionType === AuctionType.ENGLISH){
-            success = await writeEndEnglishAuction(auction.collection.address, auction.tokenId, appContext.signer);
+            success = await writeEndEnglishAuction(auction.collection.address, auction.tokenId, signer);
         }
         if(success){
             MySwal.fire({
@@ -117,7 +115,7 @@ export default function Auction({ auction, signer }: AuctionProps){
     }
 
     const choseButtonsToShow = () => {
-        if(!auction.ended && signer !== auction.seller && Math.floor(Date.now() / 1000) < auction.endTime){
+        if(!auction.ended && signerAddress !== auction.seller && Math.floor(Date.now() / 1000) < auction.endTime){
             return (
                 <>
                 {auction.auctionType !== AuctionType.DUTCH &&
@@ -159,11 +157,11 @@ export default function Auction({ auction, signer }: AuctionProps){
                 </Button>
                 </>
             );
-        } else if (signer && auction.auctionType === AuctionType.CLASSIC && auction.ended && signer !== auction.seller && signer !== auction.highestBidder ){//&& se presente nell'elenco dei bidders
+        } else if (signer && auction.auctionType === AuctionType.CLASSIC && auction.ended && signerAddress !== auction.seller && signerAddress !== auction.highestBidder ){//&& se presente nell'elenco dei bidders
             return (
                 <Button size="small" variant="outlined" sx={{mr: 1}} onClick={withdraw} fullWidth>Withdraw Bid</Button>
             );
-        } else if (signer && !auction.ended && signer === auction.seller && Math.floor(Date.now() / 1000) >= auction.endTime){
+        } else if (signer && !auction.ended && signerAddress === auction.seller && Math.floor(Date.now() / 1000) >= auction.endTime){
             return ( 
                 <Button size="small" variant="contained" color="error" sx={{mr: 1}} onClick={endAuction} fullWidth>Finalize Auction</Button>
             )
@@ -232,7 +230,7 @@ export default function Auction({ auction, signer }: AuctionProps){
                 { (auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH) &&
                 <>
                     <Grid textAlign="left">{auction.highestBid} wei</Grid>
-                    <Grid textAlign="left">{formatAddress(auction.highestBidder, signer)}</Grid>
+                    <Grid textAlign="left">{formatAddress(auction.highestBidder, signerAddress)}</Grid>
                 </>
                 }
                 { auction.auctionType === AuctionType.DUTCH &&

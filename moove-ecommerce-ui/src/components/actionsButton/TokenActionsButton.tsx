@@ -11,14 +11,13 @@ import { useEffect, useRef, useState } from 'react';
 import { TokenActionsButtonProps } from '../../utils/Interfaces';
 
 
-const options = ['Start Auction', 'Update Price', 'Transfer'];
+const options = ['Update Price', 'Start Auction', 'Transfer'];
 
-export default function TokenActionsButton({ token, handleCreateAuction, handleUpdatePrice, handleTransfer}: TokenActionsButtonProps) {
+export default function TokenActionsButton({ token, auctionTokenId, handleCreateAuction, handleUpdatePrice, handleTransfer}: TokenActionsButtonProps) {
     const [open, setOpen] = useState(false);
     const anchorRef = useRef<HTMLDivElement>(null);
     const [selectedIndex, setSelectedIndex] = useState(0);
-    // const MySwal = withReactContent(Swal);
-    // const appContext = useAppContext();
+    // const MySwal = withReactContent(Swa
 
     const [menuWidth, setMenuWidth] = useState(0);
     useEffect(() => {
@@ -30,9 +29,9 @@ export default function TokenActionsButton({ token, handleCreateAuction, handleU
     //HANDLERS
     const handleClick = () => {
         if(selectedIndex === 0){
-            handleCreateAuction(token.id);
-        } else if(selectedIndex === 1){
             handleUpdatePrice(token.id, token.price);
+        } else if(selectedIndex === 1){
+            handleCreateAuction(token.id);
         } else {
             handleTransfer(token.id);
         }
@@ -94,9 +93,9 @@ export default function TokenActionsButton({ token, handleCreateAuction, handleU
                     <Paper sx={{ width: menuWidth }}>
                         <ClickAwayListener onClickAway={handleClose}>
                             <MenuList>
-                            <MenuItem onClick={(() => handleMenuItemClick(0))}> Start Auction </MenuItem>
-                            <MenuItem onClick={(() => handleMenuItemClick(1))}> Update Price </MenuItem>
-                            <MenuItem onClick={(() => handleMenuItemClick(2))}> Transfer </MenuItem>
+                            <MenuItem onClick={(() => handleMenuItemClick(0))}> {options[0]} </MenuItem>
+                            <MenuItem disabled={auctionTokenId>0} onClick={(() => handleMenuItemClick(1))}> {options[1]} </MenuItem>
+                            <MenuItem onClick={(() => handleMenuItemClick(2))}> {options[2]} </MenuItem>
                             </MenuList>
                         </ClickAwayListener>
                     </Paper>

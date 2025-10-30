@@ -12,8 +12,9 @@ import Loader from "../commons/Loader";
 import AuctionPreview from "./AuctionPreview";
 import CollectionPreview from "./CollectionsPreview";
 import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
+import { Sections } from "../../utils/enums/Sections";
 
-export function Marketplace({collectionAddresses, connectMetamask}: MarketplaceProps) {
+export function Marketplace({collectionAddresses, connectMetamask, showCollection }: MarketplaceProps) {
     const isMobile = useMediaQuery('(max-width: 1400px)');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const appContext = useAppContext();
@@ -94,7 +95,7 @@ export function Marketplace({collectionAddresses, connectMetamask}: MarketplaceP
     const PrevArrow = () => { return ( <div style={{display: "none"}} /> );};
     const NextArrow = (props: any) => {
         const { onClick } = props;
-  return (
+        return (
         <Box
             onClick={onClick}
             sx={{
@@ -110,6 +111,10 @@ export function Marketplace({collectionAddresses, connectMetamask}: MarketplaceP
             </Box>
         );
     };
+
+    function handleShowCollection(collection: CollectionDTO){
+        showCollection(collection);
+    }
 
     const settings = {
         fade: true,
@@ -177,7 +182,7 @@ export function Marketplace({collectionAddresses, connectMetamask}: MarketplaceP
                     {appContext.collections
                     .filter((collection) => collection.active === true)
                     .map((collection, index) => (
-                        <CollectionPreview key={index} idx={index} collection={collection} connectMetamask={connectMetamask}/>
+                        <CollectionPreview key={index} idx={index} collection={collection} connectMetamask={connectMetamask} showCollection={handleShowCollection}/>
                     ))}
                     </Slider>
                 }
@@ -210,7 +215,7 @@ export function Marketplace({collectionAddresses, connectMetamask}: MarketplaceP
                 ))}
                 {appContext.auctions.length > 0 && !isMobile &&
                 <Box textAlign={"right"}>
-                    <Button sx={{color: "#f7a642ff"}} variant="text"> View All </Button>
+                    <Button sx={{color: "#f7a642ff"}} variant="text" onClick={() => appContext.updateSection(Sections.AUCTIONS)}> View All </Button>
                 </Box>
                 }
             </Box>

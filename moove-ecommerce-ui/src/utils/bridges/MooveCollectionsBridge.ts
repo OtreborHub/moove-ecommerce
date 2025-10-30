@@ -258,9 +258,8 @@ export async function retrieveBid(collectionAddress: string, tokenId: number, si
   }
 }
 
-export async function writeDisableCollection(collectionAddress: string, provider: BrowserProvider){
+export async function writeDisableCollection(collectionAddress: string, signer: Signer){
   try {
-    const signer = await provider.getSigner();
     const signerContract = getContractInstance(collectionAddress, signer);
     await signerContract?.disableCollection();
     return true;

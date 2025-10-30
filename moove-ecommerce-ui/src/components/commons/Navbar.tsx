@@ -27,7 +27,7 @@ export default function Navbar({connectMetamask}: NavbarProps) {
           <img src={logoCutted} alt="Noove" style={{ maxHeight: '70px', marginRight: '0px', marginBottom: "1rem", marginTop: "1rem" }} />
           {!isPhone && appContext.section === Sections.FACTORY && 
           <img src={logo2} alt="Factory" style={{ maxHeight: '50px', marginRight: '10px', marginTop: '.2rem'}} />}
-          {!isPhone && appContext.section === Sections.MARKETPLACE &&
+          {!isPhone && appContext.section !== Sections.FACTORY &&
           <img src={logo3} alt="Marketplace" style={{ maxHeight: '50px', marginRight: '10px', marginTop: '.2rem' }} />}
           
           {appContext.signer !== emptySigner &&
@@ -38,7 +38,7 @@ export default function Navbar({connectMetamask}: NavbarProps) {
           {appContext.signer === emptySigner && 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: 'auto', marginRight: '1rem'}}>
               <ButtonGroup>
-                {!isPhone && <Button key="word" variant="contained" size="large" sx={{ color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px'}}>
+                {!isPhone && <Button key="word" variant="contained" size="large" sx={{ fontSize: "1  rem", color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px', paddingRight:'.5rem'}}>
                   <b>Connect</b>
                 </Button> 
                 }

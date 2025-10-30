@@ -39,9 +39,8 @@ export async function readCollections() {
     }
   }
 
-export async function writeCreateCollection(name: string, symbol: string, maxSupply: number, provider: BrowserProvider) {
+export async function writeCreateCollection(name: string, symbol: string, maxSupply: number, signer: Signer) {
   try{
-    const signer = await provider.getSigner();
     const signerContract = getContractInstance(signer);
     await signerContract?.createCollection(name, symbol, maxSupply);
     return true;

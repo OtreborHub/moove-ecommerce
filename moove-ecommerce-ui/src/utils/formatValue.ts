@@ -19,7 +19,7 @@ export function formatAddress(address: string, signer?: string) {
 
 export function formatPrice(value: string | number, unit: "wei" | "finney" | "eth" = "wei") {
   // Assumi che value sia sempre in wei
-  const bn = typeof value === "string" ? BigInt(value) : BigInt(value);
+  const bn =  BigInt(value);
   if (unit === "wei") {
     return bn.toString();
   }
@@ -29,6 +29,23 @@ export function formatPrice(value: string | number, unit: "wei" | "finney" | "et
   }
   // eth
   return ethers.formatEther(bn);
+}
+
+export function toWei(value: number, unit: string) : string{
+  // Assumi che value sia sempre in wei
+  const strValue =  value.toString();
+  if (unit === "wei") {
+    return BigInt(strValue).toString();
+  }
+  let wei: bigint
+  if (unit === "finney") {
+      // 1 finney = 10^-3 eth → quindi parse come eth e moltiplica per 1e3
+      wei = ethers.parseUnits(strValue, "finney");
+    } else {
+      wei = ethers.parseEther(strValue); // parseUnits(value, 18)
+    }
+
+  return wei.toString();
 }
 
 export function formatToRomeTime(unixTimestamp: number): string {

@@ -15,11 +15,14 @@ import { infuraProvider } from './utils/bridges/MooveCollectionsBridge';
 import { addFactoryContractListeners, readCollections, readIsAdmin } from './utils/bridges/MooveFactoryBridge';
 import { Role } from './utils/enums/Role';
 import { Sections } from './utils/enums/Sections';
+import CollectionDTO from './utils/DTO/CollectionDTO';
+import Auctions from './components/commons/Auctions';
 
 function App() {
   const appContext = useAppContext();
   const isMobile = useMediaQuery('(max-width: 1400px)');
   const [appStarting, setAppStarting] = useState<boolean>(true);
+  const [shownCollection, setShownCollection] = useState<CollectionDTO>(CollectionDTO.emptyInstance());
 
   const { isConnected } = useAppKitAccount();
   const { walletProvider }: any = useAppKitProvider('eip155');
@@ -163,6 +166,15 @@ function App() {
     setAppStarting(false);
   }
 
+  function showCollection(collection: CollectionDTO){
+    appContext.updateSection(Sections.COLLECTION);
+    setShownCollection(collection)
+  }
+
+  function back(){
+    appContext.updateSection(Sections.MARKETPLACE);
+    setShownCollection(CollectionDTO.emptyInstance());
+  }
 
   return (
     <div className="App" id="app">
@@ -222,14 +234,17 @@ function App() {
 
       <div className="main-div primary-bg-color">
         <Box>
-            {appContext.section === Sections.MARKETPLACE && !appContext.shownCollection.name &&
-              <Marketplace connectMetamask={connectMetamask} collectionAddresses={appContext.collectionAddresses} />
+            {appContext.section === Sections.MARKETPLACE &&
+              <Marketplace connectMetamask={connectMetamask} collectionAddresses={appContext.collectionAddresses} showCollection={showCollection}/>
             }
-            {appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY && !appContext.shownCollection.name &&
+            {appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY &&
               <Factory/>
             }
-            {appContext.shownCollection.address && 
-              <Collection collection={appContext.shownCollection} connectMetamask={connectMetamask}/>
+            {shownCollection.address !== CollectionDTO.emptyInstance().address && 
+              <Collection collection={shownCollection} connectMetamask={connectMetamask} goBack={back}/>
+            }
+            {appContext.section === Sections.AUCTIONS && appContext.auctions.length > 0 &&
+              <Auctions auctions={appContext.auctions} connectMetamask={connectMetamask} goBack={back}></Auctions>
             }
         </Box>      
       </div>

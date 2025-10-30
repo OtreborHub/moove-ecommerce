@@ -13,35 +13,17 @@ import walletconnect_logo from '../../assets/wallet-connect.svg';
 
 const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
 
-export default function Token({ collection, token, tokenId, auction, metadata, signerAddress, connectWC, connectMetamask, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice}: TokenProps) {
+export default function Token({ collection, token, auction, metadata, signerAddress, signer, connectWC, connectMetamask, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice}: TokenProps) {
     const [section, setSection] = useState<number>(auction.tokenId > 0 ? 1 : 0);
-    const [tokenData, setTokenData] = useState<TokenDTO>(token);
-    const [tokenMetadata, setTokenMetadata] = useState<Metadata>();
-    const [tokenAuction, setTokenAuction] = useState<AuctionDTO>();
     const [imageUrl, setImageUrl] = useState(moove_logo);
     const isPhone = useMediaQuery('(max-width: 650px)');
     
     useEffect(() => {
-        if(token.id === 0 && tokenId !== 0){
-            getTokenData();
-        } else {
-            setTokenData(token);
-            setTokenMetadata(token.metadata);
-        }
-
-        setTokenAuction(auction);
         getTokenImage();
-    }, [])
-
-    async function getTokenData() {
-        const responseTokenData = await readTokenData(collection.address, tokenId);
-        setTokenData(responseTokenData!);
-        setTokenMetadata(metadata);
-    }
+    }, []);
 
     async function getTokenImage(){
         try {
-            // se token.imageCID è già disponibile, salta la lettura del tokenURI (da TokenPreview)
             if (metadata.cid) {
                 const imageUrl = `${IPFS_gateway}${metadata.cid}`;
                 const success = await loadImageWithTimeout(imageUrl, 8000);
@@ -50,49 +32,9 @@ export default function Token({ collection, token, tokenId, auction, metadata, s
                     setImageUrl(moove_logo);
                 }
                 return;
-            } else {
-                // fallback: leggi il tokenURI dal contratto e ricava il CID dai metadata (da AuctionPreview)
-                const tokenURI = await readTokenURI(collection.address, tokenId);
-                if (!tokenURI) {
-                    console.log("Token URI is undefined");
-                    setImageUrl(moove_logo);
-                    return;
-                }
-                await fetchMetadata(tokenURI);
             }
         } catch (error) {
             console.error("Error getting token image:", error);
-            setImageUrl(moove_logo);
-        }
-    }
-
-    async function fetchMetadata(tokenURI: string){
-        try {
-            const metadataUrl = `${IPFS_gateway}${tokenURI}`;
-            
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-            const response = await fetch(metadataUrl, { signal: controller.signal });
-            clearTimeout(timeoutId);
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const metadata = await response.json();
-            const imageCID = metadata.cid;
-            setTokenMetadata(metadata);
-
-            const imageUrl = `${IPFS_gateway}${imageCID}`;
-            const success = await loadImageWithTimeout(imageUrl, 8000);
-            if (!success) {
-                console.warn('⚠️ Using fallback logo');
-                setImageUrl(moove_logo);
-            }
-            
-        } catch (error) {
-            console.error("Error fetching metadata:", error);
             setImageUrl(moove_logo);
         }
     }
@@ -124,18 +66,24 @@ export default function Token({ collection, token, tokenId, auction, metadata, s
                 <Grid size={6}>
                     <CardMedia
                     component="img"
-                    sx={{ width: '100%', height: 'auto', objectFit: 'contain', mt:1.5}}
+                    sx={{ width: '100%', height: 'auto', objectFit: 'contain', mt:1.5,
+                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                        "&:hover": {
+                        transform: "scale(1.25)",
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.2)"
+                        }
+                    }}
                     src={imageUrl}
                     alt={"NFT Preview not available..."}
                     />
                 </Grid>
                 <Grid size={6}>
-                    <Grid textAlign="left" sx={{ fontSize: '1.5rem'}}><b>{collection?.symbol}#{tokenId}</b>
+                    <Grid textAlign="left" sx={{ fontSize: '1.5rem'}}><b>{collection?.symbol}#{token.id}</b>
                      {/* • {collection?.name}  */}
                     </Grid>
                     <Grid textAlign="left">{collection?.name}</Grid>
-                    <Grid textAlign="left">Owner: {formatAddress(tokenData.owner, signerAddress)}</Grid>
-                    <Grid textAlign="left" sx={{ mb: .5}}>Current price: {formatPrice(tokenData.price)} wei</Grid>
+                    <Grid textAlign="left">Owner: {formatAddress(token.owner, signerAddress)}</Grid>
+                    <Grid textAlign="left" sx={{ mb: .5}}>Current price: {formatPrice(token.price)} wei</Grid>
                     {/* <Grid textAlign="left">URI: {token.URI}</Grid> */}
 
                     {signerAddress === "" && 
@@ -223,19 +171,20 @@ export default function Token({ collection, token, tokenId, auction, metadata, s
                         </ButtonGroup>
                     }
 
-                    {signerAddress !== "" && signerAddress !== tokenData.owner &&
+                    {signerAddress && signerAddress !== token.owner &&
                         <Button 
                             variant="contained" 
-                            onClick={() => handleBuy(tokenData.id, tokenData.price)}
+                            onClick={() => handleBuy(token.id, token.price)}
                             sx={{ mt: 1, width:"100%", backgroundColor:'#f7a642ff'}}>
                             Buy NFT
                         </Button>
                     }
                     
-                    {signerAddress  !== "" && signerAddress === tokenData.owner &&
+                    {signerAddress && signerAddress === token.owner &&
                     <Box display="flex" justifyContent="center" mt={2}>
                         <TokenActionsButton 
-                            token={tokenData}
+                            token={token}
+                            auctionTokenId={auction.tokenId}
                             handleCreateAuction={handleCreateAuction}
                             handleUpdatePrice={handleUpdatePrice}
                             handleTransfer={handleTransfer}/>
@@ -254,26 +203,26 @@ export default function Token({ collection, token, tokenId, auction, metadata, s
             </Box>
             <hr/>
             
-            {section === 0 && tokenMetadata && 
+            {section === 0 && metadata && 
             <Box>
                 {/* <Typography variant="h6">Name: {token.metadata.name}</Typography>
                 <Typography variant="body1">Image CID: {token.metadata.cid}</Typography> */}
 
-                {tokenMetadata.attributes && tokenMetadata.attributes.length > 0 &&
+                {metadata.attributes && metadata.attributes.length > 0 &&
                     <Box mt={1} textAlign={"left"}>
-                        <Typography><b>Type</b>: {tokenMetadata?.attributes[0].type}</Typography>
-                        <Typography><b>Color</b>: {tokenMetadata?.attributes[0].color}</Typography>
-                        <Typography><b>Background Color</b>: {tokenMetadata?.attributes[0].backgroundColor}</Typography>
+                        <Typography><b>Type</b>: {metadata?.attributes[0].type}</Typography>
+                        <Typography><b>Color</b>: {metadata?.attributes[0].color}</Typography>
+                        <Typography><b>Background Color</b>: {metadata?.attributes[0].backgroundColor}</Typography>
                     </Box>
                 }
             </Box>
         }
 
-            {section === 1 && tokenAuction && tokenAuction.tokenId > 0 && 
-                <Auction auction={tokenAuction} signer={signerAddress} />
+            {section === 1 && auction && auction.tokenId > 0 && 
+                <Auction auction={auction} signer={signer} signerAddress={signerAddress}/>
             }
 
-            {section === 1 && tokenAuction && tokenAuction.tokenId === 0 && 
+            {section === 1 && auction && auction.tokenId === 0 && 
                 <Typography>No auction found for this token</Typography>
             }
             

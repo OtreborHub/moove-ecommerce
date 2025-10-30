@@ -14,8 +14,9 @@ import UpdateTokenPriceForm from "../forms/UpdateTokenPriceForm";
 import Loader from "./Loader";
 import TokenPreview from "./TokenPreview";
 import TransferToForm from "../forms/TransferToForm";
+import { Sections } from "../../utils/enums/Sections";
 
-export default function Collection({collection, connectMetamask} : CollectionProps) {
+export default function Collection({collection, connectMetamask, goBack} : CollectionProps) {
   const [tokens, setTokens] = useState<TokenDTO[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const MySwal = withReactContent(Swal);
@@ -154,14 +155,14 @@ export default function Collection({collection, connectMetamask} : CollectionPro
     }
   }
 
-  function goBack(){
-    appContext.updateShownCollection(CollectionDTO.emptyInstance());
+  function back(){
+    if(goBack) goBack();
   }
 
   return (
     <>
       <Box alignContent={"left"} m={3.5}>
-        <Button variant="outlined" sx={{borderColor: '#f7a642ff', color: '#f7a642ff', m:2}} onClick={goBack}> Back </Button>
+        <Button variant="outlined" sx={{borderColor: '#f7a642ff', color: '#f7a642ff', m:2}} onClick={back}> Back </Button>
         {appContext.role === Role.ADMIN &&
         <Button variant="contained" onClick={showMintTokenForm} sx={{ backgroundColor:'#f7a642ff'}}> Mint NFT </Button>
         }

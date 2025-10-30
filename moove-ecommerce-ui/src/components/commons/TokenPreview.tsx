@@ -107,7 +107,6 @@ export default function TokenPreview({token, connectMetamask, isLoading, handleB
       console.error("❌ Error fetching metadata:", error);
       setImageUrl(moove_logo);
     } finally {
-      // ✅ SEMPRE rimuovi il loader
       isLoading(false);
     }
   }
@@ -115,11 +114,6 @@ export default function TokenPreview({token, connectMetamask, isLoading, handleB
   function closeAndConnectMetamask(){
     MySwal.close();
     connectMetamask();
-  }
-
-  function closeAndConnectWC(){
-    MySwal.close();
-    open();
   }
 
   function closeAndHandleCreateAuction(){
@@ -143,9 +137,9 @@ export default function TokenPreview({token, connectMetamask, isLoading, handleB
             isLoading={isLoading}
             collection={appContext.shownCollection}
             token={token} 
-            tokenId={token.id}
             auction={token.auction}
             metadata={metadata}
+            signer={appContext.signer}
             signerAddress={appContext.signerAddress}
             connectWC={closeAndConnectMetamask} 
             connectMetamask={close}
