@@ -171,17 +171,15 @@ export async function transferTo(collectionAddress: string, addressTo: string, t
 }
 
 export async function readCurrentPriceDutch(collectionAddress: string, tokenId: number){
-  const contractInstance = getContractInstance(collectionAddress);
-  if(contractInstance){
     try {
-      const currentPrice = await contractInstance.getCurrentDutchPrice(tokenId);
+      const contractInstance = getContractInstance(collectionAddress);
+      const currentPrice = await contractInstance?.getCurrentDutchPrice(tokenId);
       return currentPrice;
     } catch (error) {
       console.log("Read Current Price Dutch action: " + ErrorMessage.RD);
       swalError(ErrorMessage.RD, Action.RD_DATA, error);
       return 0;
     }
-  }
 }
 
 export async function writePlaceBidClassic(collectionAddress: string, tokenId: number, bid: number, signer: Signer){

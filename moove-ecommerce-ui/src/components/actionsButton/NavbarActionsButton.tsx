@@ -2,7 +2,7 @@ import FactoryIcon from '@mui/icons-material/Factory';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MuseumIcon from '@mui/icons-material/Museum';
 import BackpackIcon from '@mui/icons-material/Backpack';
-import { Box } from '@mui/material';
+import { Box, useMediaQuery } from '@mui/material';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
@@ -22,6 +22,7 @@ import metamask_logo from '../../assets/metamask.svg';
 import walletconnect_logo from '../../assets/wallet-connect.svg';
 
 export default function NavbarActionsButton() {
+    const isPhone = useMediaQuery('(max-width: 650px)');
     const [open, setOpen] = useState(false);
     const anchorRef = useRef<HTMLDivElement>(null);
     const appContext = useAppContext();
@@ -76,8 +77,8 @@ export default function NavbarActionsButton() {
                 aria-haspopup="menu"
                 sx={{ borderColor: walletProvider ? 'whitesmoke' : '#f7a642ff', color: walletProvider ? 'whitesmoke':'#f7a642ff'}}
                 onClick={handleToggle}
-            > Profile
-            <img height="24" style={{ marginLeft: "1rem"}} src={walletProvider ? walletconnect_logo : metamask_logo}></img>
+            >{isPhone? "" : "Profile"}
+            <img height="24" style={{ marginLeft: isPhone?  "":"1rem"}} src={walletProvider ? walletconnect_logo : metamask_logo}></img>
             </Button>
         </ButtonGroup>
         <Popper

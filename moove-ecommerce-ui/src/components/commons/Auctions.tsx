@@ -93,7 +93,7 @@ useEffect(() => {
     </Box>
     <Box display="flex" justifyContent="center" margin={"auto"} flexDirection={"column"} alignItems="center" maxWidth={isMobile ? "90%":  isPhone ? "100%": "55%"} gap={2}>
     <img src={auctions_title} alt="Logo" style={{ maxHeight: '75px' }} />
-    <TableContainer component={Paper} sx={{ zIndex:1, border: '.15rem solid #000000' }}>
+    <TableContainer component={Paper} sx={{ zIndex:1, border: '.15rem solid #000000', borderRadius: 2 }}>
       <Table aria-label="simple table">
         <TableHead sx={{ backgroundColor: '#f7a642ff', borderBottom: '.15rem solid #000000'}}>
           <TableRow>

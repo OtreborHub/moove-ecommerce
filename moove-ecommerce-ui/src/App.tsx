@@ -116,7 +116,9 @@ function App() {
     
             const isAdmin = await readIsAdmin(signer);
             appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
-            appContext.updateSection(Sections.MARKETPLACE);
+            if(appContext.section === Sections.MYNFTS || appContext.section === Sections.FACTORY){
+              appContext.updateSection(Sections.MARKETPLACE);
+            }
             if(isAdmin){
               addFactoryContractListeners(signer);
             }
@@ -156,7 +158,9 @@ function App() {
       appContext.updateBalance(0);
       appContext.updateChainId(0);
       appContext.updateRole(Role.NONE);
-      appContext.updateSection(Sections.MARKETPLACE);
+      if(appContext.section === Sections.MYNFTS || appContext.section === Sections.FACTORY){
+        appContext.updateSection(Sections.MARKETPLACE);
+      }
       //await disconnect();
       await close();
   };

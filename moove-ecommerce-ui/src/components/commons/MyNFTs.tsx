@@ -108,14 +108,14 @@ export default function MyNFTs({}){
         if(collection){
             MySwal.fire({
                 title: "Update Price",
-                html: <UpdateTokenPriceForm tokenId={tokenId} tokenPrice={tokenPrice} collectionAddress={collection.address} handleSubmit={handleSetTokenPrice} />,
+                html: <UpdateTokenPriceForm tokenId={tokenId} tokenPrice={tokenPrice} collectionAddress={collection.address} handleSubmit={handleUpdateTokenPrice} />,
                 showConfirmButton: false,
                 showCloseButton: true,
             });
         }
       }
     
-      async function handleSetTokenPrice(tokenId: number, price: number, collectionAddress?: string){
+      async function handleUpdateTokenPrice(tokenId: number, price: number, collectionAddress?: string){
         setIsLoading(true);
         if(collectionAddress){
             var success = await writeTokenPrice(collectionAddress, tokenId, price, appContext.signer);

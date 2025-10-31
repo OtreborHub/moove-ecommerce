@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AuctionDTO from "../../utils/DTO/AuctionDTO";
 import { Box, Button, Collapse, Grid, IconButton, TableCell, TableRow, Tooltip, Typography, useMediaQuery } from "@mui/material";
 import { formatAddress, formatPrice, formatToRomeTime } from '../../utils/formatValue';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { AuctionType, getAuctionStatus, getAuctionTypeDescription } from "../../utils/enums/Auction";
+import AuctionActionsButton from "../actionsButton/AuctionActionsButton";
+import { readCurrentPriceDutch } from "../../utils/bridges/MooveCollectionsBridge";
+import Loader from "./Loader";
 
 type AuctionWithImage = {auction: AuctionDTO} & { imageUrl: string };
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
@@ -12,9 +15,23 @@ const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the 
 const tooltipTextEngTypographyshAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
 
 export default function Auction({ auctionWithImage }: { auctionWithImage: AuctionWithImage }){
+  const [isLoadingUpdateDutch, setIsLoading] = useState<boolean>(false);
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width: 1400px)');
   const isPhone = useMediaQuery('(max-width: 650px)');
+
+  useEffect(() => {
+    if(auctionWithImage.auction.auctionType === AuctionType.DUTCH){
+        readDutchPrice();
+    }
+  });
+
+  async function readDutchPrice(){
+      setIsLoading(true);
+      var currentPrice = await readCurrentPriceDutch(auctionWithImage.auction.collection.address, auctionWithImage.auction.tokenId);
+      auctionWithImage.auction.currentPrice = currentPrice;
+      setIsLoading(false);
+  }
 
   const chooseTooltipText = (auction: AuctionDTO) => {
     switch(auction.auctionType){
@@ -46,7 +63,7 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
         transition: 'transform 0.3s ease-in-out',
         "&:hover": {
           transform: 'scale(1.05)',
-          zIndex: 2, // opzionale, per farlo sopra le altre card
+          zIndex: 2
         }
       }}>
         <img
@@ -59,12 +76,12 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
         <Box display={"flex"} flexDirection={"column"}>
           <Typography variant='body2'><b> {auctionWithImage.auction.collection.symbol}#{auctionWithImage.auction.tokenId}</b></Typography>
           <Typography variant='body2'>{getAuctionTypeDescription(auctionWithImage.auction.auctionType)} Auction </Typography>
-          <Typography variant='body2'>Current Price: {formatPrice(auctionWithImage.auction.currentPrice, 'wei')} wei</Typography>
+          <Typography variant='body2'>{auctionWithImage.auction.auctionType === AuctionType.DUTCH ? "Place a bid": "Buy now"} for {formatPrice(auctionWithImage.auction.currentPrice, 'wei')} wei</Typography>
           <Typography variant='body2'>{getAuctionStatus(auctionWithImage.auction)}</Typography>
-          <Typography variant='body2'>End Time: {isPhone ? formatToRomeTime(auctionWithImage.auction.endTime).substring(0,10) : formatToRomeTime(auctionWithImage.auction.endTime)}</Typography>
+          <Typography variant='body2'>Ends at: {isPhone ? formatToRomeTime(auctionWithImage.auction.endTime).substring(0,10) : formatToRomeTime(auctionWithImage.auction.endTime)}</Typography>
         </Box>
       </TableCell>}
-      <TableCell align="center"><Button>Azioni Auctions</Button></TableCell>
+      <TableCell align="center"><AuctionActionsButton auction={auctionWithImage.auction}/></TableCell>
     </TableRow>
     <TableRow>
       <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -98,13 +115,20 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
                           >?</Box>
                         </Tooltip>    
                       </Typography>
-                      <Typography variant='body2'><b>Seller</b>: {formatAddress(auctionWithImage.auction.seller)}</Typography>
-                      <Typography variant='body2'><b>Start Price:</b>{formatPrice(auctionWithImage.auction.startPrice, 'wei')} wei</Typography>
-                      <Typography variant='body2'><b>Current Price:</b>{formatPrice(auctionWithImage.auction.currentPrice, 'wei')} wei</Typography>
+                      <Typography variant='body2'><b>Seller:</b> {formatAddress(auctionWithImage.auction.seller)}</Typography>
+                      <Typography variant='body2'><b>Start Price:</b> {formatPrice(auctionWithImage.auction.startPrice, 'wei')} wei</Typography>
+                      <Typography variant='body2'><b>Current Price:</b> {formatPrice(auctionWithImage.auction.currentPrice, 'wei')} wei
+                              {auctionWithImage.auction.auctionType === AuctionType.DUTCH && 
+                              <Box display={"inline-flex"}>
+                                <Button size="small" variant="text" sx={{ml:.5, p:0}} onClick={() => readDutchPrice()}>Update</Button>
+                                <Loader loading={isLoadingUpdateDutch}/>
+                              </Box>
+                              }
+                      </Typography>
                     </Grid>
                     <Grid size={6} textAlign={"left"} marginTop={isMobile? '1rem': ''}>
-                      <Typography variant='body2'><b>Highest Bidder:</b>{formatAddress(auctionWithImage.auction.highestBidder)}</Typography>
-                      <Typography variant='body2'><b>Min increment:</b>{formatPrice(auctionWithImage.auction.minIncrement, 'wei')} wei</Typography>
+                      <Typography variant='body2'><b>Highest Bidder:</b> {formatAddress(auctionWithImage.auction.highestBidder)}</Typography>
+                      <Typography variant='body2'><b>Min increment:</b> {formatPrice(auctionWithImage.auction.minIncrement, 'wei')} wei</Typography>
                       <Typography variant='body2'><b>Start Time:</b> {formatToRomeTime(auctionWithImage.auction.startPrice)}</Typography>
                       <Typography variant='body2'><b>End Time:</b> {formatToRomeTime(auctionWithImage.auction.endTime)}</Typography>
                       <Typography variant='body2'><b>Status:</b> {getAuctionStatus(auctionWithImage.auction)}</Typography>

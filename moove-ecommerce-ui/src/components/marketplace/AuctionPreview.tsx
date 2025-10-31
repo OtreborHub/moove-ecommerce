@@ -144,7 +144,7 @@ export default function AuctionPreview({auction, connectMetamask}: AuctionPrevie
             connectMetamask={closeAndConnectMetamask}
             handleBuy={closeAndHandleBuy}
             handleCreateAuction={showCreateAuctionForm}
-            handleUpdatePrice={showSetTokenPriceForm}
+            handleUpdatePrice={showUpdateTokenPriceForm}
             handleTransfer={showTransferForm}
             />,
             showConfirmButton: false,
@@ -204,16 +204,16 @@ export default function AuctionPreview({auction, connectMetamask}: AuctionPrevie
     }
   }
 
-  function showSetTokenPriceForm(tokenId: number, tokenPrice: number){
+  function showUpdateTokenPriceForm(tokenId: number, tokenPrice: number){
     MySwal.fire({
         title: "Update Price",
-        html: <UpdateTokenPriceForm tokenId={tokenId} tokenPrice={tokenPrice} handleSubmit={handleSetTokenPrice} />,
+        html: <UpdateTokenPriceForm tokenId={tokenId} tokenPrice={tokenPrice} handleSubmit={handleUpdateTokenPrice} />,
         showConfirmButton: false,
         showCloseButton: true,
     });
   }
 
-  async function handleSetTokenPrice(tokenId: number, price: number){
+  async function handleUpdateTokenPrice(tokenId: number, price: BigInt){
     setIsLoading(true);
     var success = await writeTokenPrice(auction.collection.address, tokenId, price, appContext.signer);
     setIsLoading(false);

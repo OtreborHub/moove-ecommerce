@@ -86,6 +86,10 @@ interface TokenActionsButtonProps {
     handleTransfer: (tokenId: number) => void;
 }
 
+interface AuctionActionsButtonProps {
+    auction: AuctionDTO;
+}
+
 interface LoaderProps {
     loading: boolean
 }
@@ -135,4 +139,4 @@ interface FormProps {
 }
 // END FORMS ----------------------------------
 
-export type { NavbarProps, MarketplaceProps, CollectionProps, AuctionProps, AuctionsProps, AuctionPreviewProps, CreateCollectionFormProps, TableCollectionProps, LoaderProps, MintTokenFormProps, DeleteCollectionFormProps, TokenProps, TokenPreviewProps, UpdateTokenPriceFormProps, TrasferFormProps, CreateAuctionFormProps, PlaceBidFormProps, FactoryActionsButtonProps, TokenActionsButtonProps};
+export type { NavbarProps, MarketplaceProps, CollectionProps, AuctionProps, AuctionsProps, AuctionPreviewProps, CreateCollectionFormProps, TableCollectionProps, LoaderProps, MintTokenFormProps, DeleteCollectionFormProps, TokenProps, TokenPreviewProps, UpdateTokenPriceFormProps, TrasferFormProps, CreateAuctionFormProps, PlaceBidFormProps, FactoryActionsButtonProps, TokenActionsButtonProps, AuctionActionsButtonProps};

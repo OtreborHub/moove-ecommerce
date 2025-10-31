@@ -16,9 +16,9 @@ export default function TokenAuction({ auction, signer, signerAddress }: Auction
     const [isLoadingUpdateDutch, setIsLoading] = useState<boolean>(false);
     const [auctionStatus, setAuctionStatus] = useState<AuctionStatus>(AuctionStatus.NONE); //Usare per comandare visualizzazione dei pulsanti?
     const MySwal = withReactContent(Swal);
-        const [formData, setFormData] = useState({
-        bid: auction.auctionType === AuctionType.ENGLISH ? auction.currentPrice + auction.minIncrement: 0,
-        unit: 'Wei'
+    const [formData, setFormData] = useState({
+    bid: auction.auctionType === AuctionType.ENGLISH ? auction.currentPrice + auction.minIncrement: 0,
+    unit: 'Wei'
     });
 
     useEffect(() => {
