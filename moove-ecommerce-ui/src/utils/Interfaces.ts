@@ -21,6 +21,7 @@ interface CollectionProps{
 }
 
 interface TokenPreviewProps {
+    collection: CollectionDTO;
     token: TokenDTO;
     isLoading: (isLoading: boolean) => void,
     handleBuy: (tokenId: number, price: number) => void;
@@ -65,12 +66,14 @@ interface AuctionsProps {
 }
 interface TableCollectionProps {
     collections: CollectionDTO[];
+    showCollection: (collection: CollectionDTO) => void;
     handleMint: (collectionAddress: string, tokenURI: string, price: number) => void;
     handleDisable: (collectionAddress: string) => void;
 }
 
 interface FactoryActionsButtonProps {
     collection: CollectionDTO;
+    showCollection: (collection: CollectionDTO) => void;
     handleMint: (collectionAddress: string, tokenURI: string, price: number) => void;
     handleDisable: (collectionAddress: string) => void;
 }

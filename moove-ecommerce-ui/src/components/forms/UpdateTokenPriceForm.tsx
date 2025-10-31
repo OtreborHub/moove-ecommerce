@@ -28,11 +28,10 @@ export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}
                 newWeiValue = toWei(formData.price, value.toLowerCase());
             }
 
-            if (BigInt(newWeiValue) <= BigInt(weiTokenPrice)) {
-                setError("The new price must be higher than the current one.");
-            } else {
+            if (BigInt(newWeiValue) >= BigInt(weiTokenPrice)) {
                 setError("");
             }
+
         } catch (err){
             swalError(ErrorMessage.IO);
         }
@@ -41,17 +40,9 @@ export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}
     };
 
     function submit() {
-        let priceInWei = formData.price;
-        if (formData.unit === "ETH") {
-            priceInWei = Number(ethers.parseEther(formData.price.toString()));
-        } else if (formData.unit === "Gwei") {
-            priceInWei = Number(ethers.parseUnits(formData.price.toString(), "gwei"));
-        }  else if (formData.unit === "Finney") {
-            priceInWei = Number(ethers.parseUnits(formData.price.toString(), "finney"));
-        }
-        if(formData.price < tokenPrice) { setError("New price has to be greater then the current price")}
-        else { handleSubmit(tokenId, priceInWei) }
-        
+        let priceInWei = toWei(formData.price, formData.unit.toLowerCase());
+        if(BigInt(priceInWei) < BigInt(tokenPrice)) { setError("New price has to be greater then the current price")}
+        else { handleSubmit(tokenId, Number(priceInWei)) }
     };
 
 
@@ -70,7 +61,7 @@ export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}
                         id="price"
                         name="price"
                         label="New Price"
-                        error={toWei(formData.price, formData.unit.toLowerCase()) <= weiTokenPrice}
+                        error={BigInt(toWei(formData.price, formData.unit.toLowerCase())) < BigInt(weiTokenPrice)}
                         value={formData.price}
                         onChange={handleChange}
                         />

@@ -19,7 +19,7 @@ import { useEffect, useRef, useState } from 'react';
 
 const options = ['View', 'Mint', 'Disable'];
 
-export default function FactoryActionsButton({ collection, handleMint, handleDisable}: FactoryActionsButtonProps) {
+export default function FactoryActionsButton({ collection, handleMint, handleDisable, showCollection}: FactoryActionsButtonProps) {
     const [open, setOpen] = useState(false);
     const anchorRef = useRef<HTMLDivElement>(null);
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -34,14 +34,14 @@ export default function FactoryActionsButton({ collection, handleMint, handleDis
     }, [anchorRef.current, open]); 
 
     //ACTIONS
-    function viewCollection() {
-        appContext.updateShownCollection(collection);
+    function handleGoToCollection() {
+        showCollection(collection);
     }
     
     function showMintTokenForm(){
         MySwal.fire({
             title: "Mint token",
-            html: <MintTokenForm collectionAddress={collection.address} signer={appContext.signer} handleSubmit={handleMint}/>,
+            html: <MintTokenForm collectionAddress={collection.address} signer={appContext.signerAddress} handleSubmit={handleMint}/>,
             showConfirmButton: false,
             showCloseButton: true,
         });
@@ -60,7 +60,7 @@ export default function FactoryActionsButton({ collection, handleMint, handleDis
     const handleClick = () => {
         // console.info(`You clicked ${options[selectedIndex]}`);
         if(selectedIndex === 0){
-            viewCollection();
+            handleGoToCollection();
         } else if(selectedIndex === 1){
             showMintTokenForm();
         } else {

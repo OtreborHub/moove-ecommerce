@@ -2,7 +2,7 @@ import { Box, Button, Card, CardActionArea, CardContent, CardMedia, Tooltip, Typ
 import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import moove_logo from "../../assets/moove.png";
+import moove_logo from "../../assets/moove_logo.svg";
 import { emptySigner, useAppContext } from "../../Context";
 import { payableBuyNFT, readTokenData, readTokenURI, retrieveBid, transferTo, writeBuyDutch, writeCreateAuction, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish, writeTokenPrice } from '../../utils/bridges/MooveCollectionsBridge';
 import { AuctionStatus, AuctionType, getAuctionStatus } from '../../utils/enums/Auction';

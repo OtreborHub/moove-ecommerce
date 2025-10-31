@@ -4,7 +4,6 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAppContext } from "../../Context";
 import { payableBuyNFT, readTokenData, transferTo, writeCreateAuction, writeMintNFT, writeTokenPrice } from "../../utils/bridges/MooveCollectionsBridge";
-import CollectionDTO from "../../utils/DTO/CollectionDTO";
 import TokenDTO from "../../utils/DTO/TokenDTO";
 import { Role } from "../../utils/enums/Role";
 import { CollectionProps } from "../../utils/Interfaces";
@@ -14,7 +13,6 @@ import UpdateTokenPriceForm from "../forms/UpdateTokenPriceForm";
 import Loader from "./Loader";
 import TokenPreview from "./TokenPreview";
 import TransferToForm from "../forms/TransferToForm";
-import { Sections } from "../../utils/enums/Sections";
 
 export default function Collection({collection, connectMetamask, goBack} : CollectionProps) {
   const [tokens, setTokens] = useState<TokenDTO[]>([]);
@@ -109,7 +107,7 @@ export default function Collection({collection, connectMetamask, goBack} : Colle
     }
   }
 
-  function showSetTokenPriceForm(tokenId: number, tokenPrice: number){
+  function showUpdateTokenPriceForm(tokenId: number, tokenPrice: number){
     MySwal.fire({
         title: "Update Price",
         html: <UpdateTokenPriceForm tokenId={tokenId} tokenPrice={tokenPrice} handleSubmit={handleSetTokenPrice} />,
@@ -190,13 +188,14 @@ export default function Collection({collection, connectMetamask, goBack} : Colle
               }}
             >
               <TokenPreview 
+                collection={collection}
                 token={token} 
                 isLoading={loadingPropagation}
                 connectMetamask={connectMetamask} 
                 handleBuy={handleBuy} 
                 handleCreateAuction={showCreateAuctionForm}
                 handleTransfer={showTransferForm}
-                handleUpdatePrice={showSetTokenPriceForm}/>
+                handleUpdatePrice={showUpdateTokenPriceForm}/>
               </Grid>
           ))}
           </Grid>

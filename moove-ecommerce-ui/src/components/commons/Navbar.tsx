@@ -5,11 +5,11 @@ import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import { useAppKit } from '@reown/appkit/react';
 import { emptySigner, useAppContext } from '../../Context';
-import logo2 from '../../assets/factory.png';
-import logo3 from '../../assets/markeplace.png';
+import factory_subtitle from '../../assets/factory_subtitle.svg';
+import marketplace_subtitle from '../../assets/marketplace_subtitle.svg';
 import metamask_logo from '../../assets/metamask.svg';
 import walletconnect_logo from '../../assets/wallet-connect.svg';
-import logoCutted from '../../assets/mooveCutted.png';
+import moove_logo from '../../assets/moove_logo.svg';
 import { NavbarProps } from '../../utils/Interfaces';
 import { Sections } from '../../utils/enums/Sections';
 import NavbarActionsButton from '../actionsButton/NavbarActionsButton';
@@ -24,11 +24,11 @@ export default function Navbar({connectMetamask}: NavbarProps) {
       <AppBar position="static" style={{ backgroundColor: '#26547C'}}>
         <Toolbar>
           
-          <img src={logoCutted} alt="Noove" style={{ maxHeight: '70px', marginRight: '0px', marginBottom: "1rem", marginTop: "1rem" }} />
+          <img src={moove_logo} alt="Noove" style={{ maxHeight: '65px', marginTop: "1rem", marginLeft: "1.5rem", marginBottom:"1rem", marginRight: '0rem'}} />
           {!isPhone && appContext.section === Sections.FACTORY && 
-          <img src={logo2} alt="Factory" style={{ maxHeight: '50px', marginRight: '10px', marginTop: '.2rem'}} />}
+          <img src={factory_subtitle} alt="Factory" style={{ maxHeight: '26px', marginRight: '10px', marginTop: '2.2rem'}} />}
           {!isPhone && appContext.section !== Sections.FACTORY &&
-          <img src={logo3} alt="Marketplace" style={{ maxHeight: '50px', marginRight: '10px', marginTop: '.2rem' }} />}
+          <img src={marketplace_subtitle} alt="Marketplace" style={{ maxHeight: '35px', marginRight: '10px', marginTop: '2.5rem' }} />}
           
           {appContext.signer !== emptySigner &&
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: 'auto', marginRight: '1rem'}}>

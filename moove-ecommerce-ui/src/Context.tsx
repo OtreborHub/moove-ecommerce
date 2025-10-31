@@ -18,7 +18,6 @@ const appContext = createContext({
   updateNFTBalance: (NFTBalance: number) => {},
   updateRole: (role: Role) => {},
   updateSection: (section: Sections) => {},
-  updateShownCollection: (collection: CollectionDTO) => {},
   updateCollectionAddresses: (collectionAddresses: string[]) => {},
   updateCollections: (collections: CollectionDTO[]) => {},
   updateAuctions: (auction: AuctionDTO[]) => {},
@@ -30,7 +29,6 @@ const appContext = createContext({
   NFTBalance: 0,
   role: Role.NONE,
   section: Sections.MARKETPLACE,
-  shownCollection: CollectionDTO.emptyInstance(),
   collectionAddresses: [] as string[],
   collections: [] as CollectionDTO[],
   auctions: [] as AuctionDTO[],
@@ -66,7 +64,6 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
   function updateNFTBalance(NFTBalance: number) { setNFTBalance(NFTBalance); }
   function updateRole(role: Role) { setRole(role); }
   function updateSection(section: Sections) { setSection(section); }
-  function updateShownCollection(collection: CollectionDTO) { setShownCollection(collection); }
   function updateCollectionAddresses(collectionAddresses: string[]) { setCollectionAddresses(collectionAddresses); }
   function updateCollections(collections: CollectionDTO[]) { setCollections(collections); }
   function updateAuctions(auctions: AuctionDTO[]) { setAuctions(auctions); }
@@ -81,7 +78,6 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       updateNFTBalance,
       updateRole,
       updateSection,
-      updateShownCollection,
       updateCollectionAddresses,
       updateCollections,
       updateAuctions,
@@ -93,7 +89,6 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       NFTBalance,
       role,
       section,
-      shownCollection,
       collectionAddresses,
       collections,
       auctions,

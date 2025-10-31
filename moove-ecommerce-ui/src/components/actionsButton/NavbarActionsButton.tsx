@@ -31,7 +31,6 @@ export default function NavbarActionsButton() {
     //ACTIONS
     function changeSection() {
         setOpen(false);
-        appContext.updateShownCollection(CollectionDTO.emptyInstance());
         appContext.section === Sections.FACTORY ? 
             appContext.updateSection(Sections.MARKETPLACE) : 
             appContext.updateSection(Sections.FACTORY);

@@ -183,7 +183,7 @@ function App() {
 
       {/* background images */}
       
-      <Box
+      {/* <Box
         sx={{
           position: 'absolute',
           top: 130,
@@ -205,10 +205,10 @@ function App() {
             marginRight: '0.5rem'
           }}
         />
-      </Box>
+      </Box> */}
       
       {/* rimuovere per schermi piccoli */}
-      <Box
+      {/* <Box
         sx={{
           position: 'absolute',
           left: -200,
@@ -229,7 +229,7 @@ function App() {
             marginLeft: '0.5rem'
           }}
         />
-      </Box>
+      </Box> */}
       {/* end background images */}
 
       <div className="main-div primary-bg-color">
@@ -238,7 +238,7 @@ function App() {
               <Marketplace connectMetamask={connectMetamask} collectionAddresses={appContext.collectionAddresses} showCollection={showCollection}/>
             }
             {appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY &&
-              <Factory/>
+              <Factory showCollection={showCollection}/>
             }
             {shownCollection.address !== CollectionDTO.emptyInstance().address && 
               <Collection collection={shownCollection} connectMetamask={connectMetamask} goBack={back}/>

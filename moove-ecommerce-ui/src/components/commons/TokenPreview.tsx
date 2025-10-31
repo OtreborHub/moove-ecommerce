@@ -2,23 +2,16 @@ import { Card, CardActionArea, CardContent, CardMedia, Typography } from "@mui/m
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import moove_logo from "../../assets/moove.png";
+import moove_logo from "../../assets/moove_logo.svg";
 import { useAppContext } from "../../Context";
 import { formatPrice } from "../../utils/formatValue";
 import { TokenPreviewProps } from "../../utils/Interfaces";
 import Token from "./Token";
 import { useAppKit } from "@reown/appkit/react";
 
-// ✅ Gateway IPFS multipli con fallback
-// const IPFS_GATEWAYS = [
-//   'https://nftstorage.link/ipfs',
-//   'https://ipfs.io/ipfs',
-//   'https://cloudflare-ipfs.com/ipfs',
-//   'https://gateway.pinata.cloud/ipfs'
-// ];
 const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
 
-export default function TokenPreview({token, connectMetamask, isLoading, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice}: TokenPreviewProps) {
+export default function TokenPreview({collection, token, connectMetamask, isLoading, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice}: TokenPreviewProps) {
   const [imageUrl, setImageUrl] = useState(moove_logo);
   const [metadata, setMetadata] = useState({name:"", cid:"", attributes: []});
   const [hovered, setHovered] = useState(false);
@@ -38,7 +31,7 @@ export default function TokenPreview({token, connectMetamask, isLoading, handleB
   function fillTokenAuction(){
     if(appContext.auctions.length > 0){
       appContext.auctions.filter((auction) => {
-        if(auction.collection.address === appContext.shownCollection.address && auction.tokenId === token?.id){
+        if(auction.collection.address === collection.address && auction.tokenId === token?.id){
           token.auction = auction;
         }
       });
@@ -135,7 +128,7 @@ export default function TokenPreview({token, connectMetamask, isLoading, handleB
       MySwal.fire({
           html: <Token 
             isLoading={isLoading}
-            collection={appContext.shownCollection}
+            collection={collection}
             token={token} 
             auction={token.auction}
             metadata={metadata}
@@ -202,7 +195,7 @@ export default function TokenPreview({token, connectMetamask, isLoading, handleB
           component="div"
           sx={{ fontWeight: "bold", color: "text.primary" }}
         >
-          {appContext.shownCollection.symbol}#{token.id}
+          {collection.symbol}#{token.id}
         </Typography>
       </CardContent>
 

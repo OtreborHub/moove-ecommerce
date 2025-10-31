@@ -34,6 +34,8 @@ export function formatPrice(value: string | number, unit: "wei" | "finney" | "et
 export function toWei(value: number, unit: string) : string{
   // Assumi che value sia sempre in wei
   const strValue =  value.toString();
+  if(!strValue) {return "0"};
+  
   if (unit === "wei") {
     return BigInt(strValue).toString();
   }

@@ -3,14 +3,15 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAppContext } from "../../Context";
-import collections_logo from "../../assets/collections.png";
+import collections_title from "../../assets/collections_title.svg";
 import { writeDisableCollection, writeMintNFT } from "../../utils/bridges/MooveCollectionsBridge";
 import { writeCreateCollection } from "../../utils/bridges/MooveFactoryBridge";
 import Loader from "../commons/Loader";
 import CreateCollectionForm from "../forms/CreateCollectionForm";
 import TableCollection from "./FactoryTableCollections";
+import CollectionDTO from "../../utils/DTO/CollectionDTO";
 
-export function Factory() {
+export function Factory({showCollection}: {showCollection: (collection: CollectionDTO) => void}) {
     const isMobile = useMediaQuery('(max-width: 1400px)');
     const isPhone = useMediaQuery('(max-width: 650px)');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -79,10 +80,10 @@ export function Factory() {
     return (
         <>
         {/* COLLECTIONS */}
-        <Box display="flex" justifyContent="center" margin={"auto"} flexDirection={"column"} alignItems="center" maxWidth={isMobile ? "90%":  isPhone ? "100%": "75%"} gap={2}>
-            <img src={collections_logo} alt="Logo" style={{ maxHeight: '100px' }} />
+        <Box display="flex" justifyContent="center" margin={"auto"} flexDirection={"column"} alignItems="center" maxWidth={isMobile ? "90%":  isPhone ? "100%": "85%"} gap={2} mt={2}>
+            <img src={collections_title} alt="Collections" style={{ maxHeight: '85px' }} />
             <Button variant="contained" size="large"  onClick={createCollection} sx={{ borderRadius:'10px', backgroundColor:'#f7a642ff'}}> Create new collection </Button>
-            <TableCollection collections={appContext.collections} handleMint={handleMint} handleDisable={handleDisable}/>
+            <TableCollection collections={appContext.collections} handleMint={handleMint} handleDisable={handleDisable} showCollection={showCollection}/>
         </Box>
         <Loader loading={isLoading} />    
         </>

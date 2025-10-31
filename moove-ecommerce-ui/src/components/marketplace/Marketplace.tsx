@@ -1,8 +1,8 @@
 import { Box, Button, useMediaQuery } from "@mui/material";
 import { useEffect, useState } from "react";
 import Slider from "react-slick";
-import auction_logo from "../../assets/auctions.png";
-import collections_logo from "../../assets/collections.png";
+import auction_logo from "../../assets/auctions_title.svg";
+import collections_logo from "../../assets/collections_title.svg";
 import { useAppContext } from "../../Context";
 import { readAuction, readCollectionData } from "../../utils/bridges/MooveCollectionsBridge";
 import AuctionDTO from "../../utils/DTO/AuctionDTO";
@@ -156,12 +156,12 @@ export function Marketplace({collectionAddresses, connectMetamask, showCollectio
         <>
         <Box display= {isMobile? "block": "flex"} 
             justifyContent= {isMobile ? "":"space-between" }
-            marginLeft={isMobile ? "": "2rem" }
+            marginLeft={isMobile ? "": "3rem" }
             marginRight={isMobile ? "": "3rem" }
             textAlign={isMobile ? "center": "left"}
             marginTop="1rem">
-            <img src={collections_logo} alt="Logo" style={{ maxHeight: '90px' }} />
-            { !isMobile && <img src={auction_logo} alt="Collections" style={{ maxHeight: '100px' }} />}
+            <img src={collections_logo} alt="Logo" style={{ maxHeight: '75px' }} />
+            { !isMobile && <img src={auction_logo} alt="Collections" style={{ maxHeight: '63px', marginRight: "-.7rem" }} />}
         </Box>
 
         <Box display="flex" flexDirection={ isMobile ? "column": "row" } justifyContent="space-between">

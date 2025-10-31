@@ -1,13 +1,10 @@
 import { Box, Button, ButtonGroup, CardMedia, Grid, Typography, useMediaQuery } from "@mui/material";
 import { useEffect, useState } from "react";
-import moove_logo from "../../assets/moove.png";
+import moove_logo from "../../assets/moove_logo.svg";
 import { TokenProps } from "../../utils/Interfaces";
 import { formatAddress, formatPrice } from "../../utils/formatValue";
 import Auction from "./Auction";
 import TokenActionsButton from "../actionsButton/TokenActionsButton";
-import { readTokenData, readTokenURI } from "../../utils/bridges/MooveCollectionsBridge";
-import TokenDTO, { Metadata } from "../../utils/DTO/TokenDTO";
-import AuctionDTO from "../../utils/DTO/AuctionDTO";
 import metamask_logo from '../../assets/metamask.svg';
 import walletconnect_logo from '../../assets/wallet-connect.svg';
 
@@ -78,12 +75,12 @@ export default function Token({ collection, token, auction, metadata, signerAddr
                     />
                 </Grid>
                 <Grid size={6}>
-                    <Grid textAlign="left" sx={{ fontSize: '1.5rem'}}><b>{collection?.symbol}#{token.id}</b>
+                    <Grid textAlign="left" sx={{ fontSize: '1.5rem'}}><b>{collection.symbol}#{token.id}</b>
                      {/* • {collection?.name}  */}
                     </Grid>
-                    <Grid textAlign="left">{collection?.name}</Grid>
+                    <Grid textAlign="left">{collection.name}</Grid>
                     <Grid textAlign="left">Owner: {formatAddress(token.owner, signerAddress)}</Grid>
-                    <Grid textAlign="left" sx={{ mb: .5}}>Current price: {formatPrice(token.price)} wei</Grid>
+                    {signerAddress === token.owner && <Grid textAlign="left">Current Price: {formatPrice(token.price, 'wei')} wei</Grid>}
                     {/* <Grid textAlign="left">URI: {token.URI}</Grid> */}
 
                     {signerAddress === "" && 
@@ -172,12 +169,18 @@ export default function Token({ collection, token, auction, metadata, signerAddr
                     }
 
                     {signerAddress && signerAddress !== token.owner &&
+                        <>
                         <Button 
                             variant="contained" 
                             onClick={() => handleBuy(token.id, token.price)}
-                            sx={{ mt: 1, width:"100%", backgroundColor:'#f7a642ff'}}>
-                            Buy NFT
+                            disabled={auction.tokenId > 0}
+                            sx={{ mt: 1, width:"100%", backgroundColor:'#f7a642ff', textTransform: 'none', fontSize: 16}}>
+                            Buy now for {formatPrice(token.price)} wei
                         </Button>
+                        {auction.tokenId > 0 && 
+                        <Typography color="grey" variant="subtitle2" align="left">Buy disabled with active auction</Typography>
+                        }  
+                        </>
                     }
                     
                     {signerAddress && signerAddress === token.owner &&
@@ -223,7 +226,7 @@ export default function Token({ collection, token, auction, metadata, signerAddr
             }
 
             {section === 1 && auction && auction.tokenId === 0 && 
-                <Typography>No auction found for this token</Typography>
+                <Typography variant="h6">No auction found for this token</Typography>
             }
             
         </Box>
