@@ -1,11 +1,11 @@
 import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import { useState } from "react";
-import { SetTokenPriceFormProps } from "../../utils/Interfaces";
+import { UpdateTokenPriceFormProps } from "../../utils/Interfaces";
 import { ethers } from "ethers";
 import { toWei } from "../../utils/formatValue";
 import { ErrorMessage, swalError } from "../../utils/enums/Errors";
 
-export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}: SetTokenPriceFormProps) {
+export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}: UpdateTokenPriceFormProps) {
     const [formData, setFormData] = useState({
         price: tokenPrice,
         unit: "Wei"
@@ -42,7 +42,7 @@ export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}
     function submit() {
         let priceInWei = toWei(formData.price, formData.unit.toLowerCase());
         if(BigInt(priceInWei) < BigInt(tokenPrice)) { setError("New price has to be greater then the current price")}
-        else { handleSubmit(tokenId, Number(priceInWei)) }
+        else { handleSubmit(tokenId, BigInt(priceInWei)) }
     };
 
 

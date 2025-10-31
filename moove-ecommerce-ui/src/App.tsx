@@ -17,6 +17,7 @@ import { Role } from './utils/enums/Role';
 import { Sections } from './utils/enums/Sections';
 import CollectionDTO from './utils/DTO/CollectionDTO';
 import Auctions from './components/commons/Auctions';
+import MyNFTs from './components/commons/MyNFTs';
 
 function App() {
   const appContext = useAppContext();
@@ -240,11 +241,14 @@ function App() {
             {appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY &&
               <Factory showCollection={showCollection}/>
             }
-            {shownCollection.address !== CollectionDTO.emptyInstance().address && 
+            {appContext.section === Sections.COLLECTION && shownCollection.address !== CollectionDTO.emptyInstance().address && 
               <Collection collection={shownCollection} connectMetamask={connectMetamask} goBack={back}/>
             }
             {appContext.section === Sections.AUCTIONS && appContext.auctions.length > 0 &&
               <Auctions auctions={appContext.auctions} connectMetamask={connectMetamask} goBack={back}></Auctions>
+            }
+            {appContext.section === Sections.MYNFTS &&
+              <MyNFTs />
             }
         </Box>      
       </div>

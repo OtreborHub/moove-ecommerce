@@ -27,7 +27,7 @@ const tooltipTextEnglishAuction = (
   </>
 );
 
-export default function CreateAuctionForm({ tokenId, collectionSymbol: collectionName, handleSubmit }: CreateAuctionFormProps) {
+export default function CreateAuctionForm({ tokenId, collectionSymbol, handleSubmit }: CreateAuctionFormProps) {
   const [durationError, setDurationError] = useState<boolean>(false);
   const [auctionTypeError, setAuctionTypeError] = useState<boolean>(false);
   const [formData, setFormData] = useState({
@@ -124,7 +124,7 @@ export default function CreateAuctionForm({ tokenId, collectionSymbol: collectio
             label="Token"
             type="text"
             disabled
-            value={`${collectionName}#${tokenId}`}
+            value={`${collectionSymbol}#${tokenId}`}
             />
         </Grid>
         <Grid size={4}>

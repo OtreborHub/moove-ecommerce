@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import moove_logo from "../../assets/moove_logo.svg";
 import { TokenProps } from "../../utils/Interfaces";
 import { formatAddress, formatPrice } from "../../utils/formatValue";
-import Auction from "./Auction";
+import TokenAuction from "./TokenAuction";
 import TokenActionsButton from "../actionsButton/TokenActionsButton";
 import metamask_logo from '../../assets/metamask.svg';
 import walletconnect_logo from '../../assets/wallet-connect.svg';
@@ -222,7 +222,7 @@ export default function Token({ collection, token, auction, metadata, signerAddr
         }
 
             {section === 1 && auction && auction.tokenId > 0 && 
-                <Auction auction={auction} signer={signer} signerAddress={signerAddress}/>
+                <TokenAuction auction={auction} signer={signer} signerAddress={signerAddress}/>
             }
 
             {section === 1 && auction && auction.tokenId === 0 && 

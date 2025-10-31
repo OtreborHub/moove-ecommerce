@@ -108,10 +108,10 @@ interface DeleteCollectionFormProps {
     handleSubmit: (collectionAddress: string) => void;
 }
 
-interface SetTokenPriceFormProps {
+interface UpdateTokenPriceFormProps {
     tokenId: number,
     tokenPrice: number,
-    handleSubmit: (tokenId: number, price: number) => void;
+    handleSubmit: (tokenId: number, price: BigInt) => void;
 }
 
 interface TrasferFormProps {
@@ -135,4 +135,4 @@ interface FormProps {
 }
 // END FORMS ----------------------------------
 
-export type { NavbarProps, MarketplaceProps, CollectionProps, AuctionProps, AuctionsProps, AuctionPreviewProps, CreateCollectionFormProps, TableCollectionProps, LoaderProps, MintTokenFormProps, DeleteCollectionFormProps, TokenProps, TokenPreviewProps, SetTokenPriceFormProps, TrasferFormProps, CreateAuctionFormProps, PlaceBidFormProps, FactoryActionsButtonProps, TokenActionsButtonProps};
+export type { NavbarProps, MarketplaceProps, CollectionProps, AuctionProps, AuctionsProps, AuctionPreviewProps, CreateCollectionFormProps, TableCollectionProps, LoaderProps, MintTokenFormProps, DeleteCollectionFormProps, TokenProps, TokenPreviewProps, UpdateTokenPriceFormProps, TrasferFormProps, CreateAuctionFormProps, PlaceBidFormProps, FactoryActionsButtonProps, TokenActionsButtonProps};

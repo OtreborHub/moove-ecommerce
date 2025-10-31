@@ -4,4 +4,5 @@ export enum Sections {
   //COLLECTIONS = 'collections',
   COLLECTION = 'collection',
   AUCTIONS = 'auctions',
+  MYNFTS = 'mynfts'
 }

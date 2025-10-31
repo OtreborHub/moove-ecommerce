@@ -1,257 +1,131 @@
-import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Tooltip } from "@mui/material";
-import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
-import { AuctionProps } from "../../utils/Interfaces";
-import { readCurrentPriceDutch, retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from "../../utils/bridges/MooveCollectionsBridge";
-import { AuctionStatus, AuctionType, getAuctionStatus, getAuctionTypeDescription } from "../../utils/enums/Auction";
-import { formatAddress, formatToRomeTime } from "../../utils/formatValue";
-import Loader from "./Loader";
+import { useState } from "react";
+import AuctionDTO from "../../utils/DTO/AuctionDTO";
+import { Box, Button, Collapse, Grid, IconButton, TableCell, TableRow, Tooltip, Typography, useMediaQuery } from "@mui/material";
+import { formatAddress, formatPrice, formatToRomeTime } from '../../utils/formatValue';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import { AuctionType, getAuctionStatus, getAuctionTypeDescription } from "../../utils/enums/Auction";
 
+type AuctionWithImage = {auction: AuctionDTO} & { imageUrl: string };
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
 const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the price suits you.</>
-const tooltipTextEnglishAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
+const tooltipTextEngTypographyshAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
 
-export default function Auction({ auction, signer, signerAddress }: AuctionProps){
-    const [isLoadingUpdateDutch, setIsLoading] = useState<boolean>(false);
-    const [auctionStatus, setAuctionStatus] = useState<AuctionStatus>(AuctionStatus.NONE); //Usare per comandare visualizzazione dei pulsanti?
-    const MySwal = withReactContent(Swal);
-        const [formData, setFormData] = useState({
-        bid: auction.auctionType === AuctionType.ENGLISH ? auction.currentPrice + auction.minIncrement: 0,
-        unit: 'Wei'
-    });
+export default function Auction({ auctionWithImage }: { auctionWithImage: AuctionWithImage }){
+  const [open, setOpen] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 1400px)');
+  const isPhone = useMediaQuery('(max-width: 650px)');
 
-    useEffect(() => {
-        setAuctionStatus(getAuctionStatus(auction));
-        if(auction.auctionType === AuctionType.DUTCH){
-            readDutchPrice();
-        }
-        console.log("highest bidder:" +  auction.highestBidder)
-        console.log("highest seller:" +  auction.seller)
-    }, []);
-
-    const chooseTooltipText = () => {
-        switch(auction.auctionType){
-            case AuctionType.CLASSIC:
-                return tooltipTextClassicAuction;
-            case AuctionType.DUTCH:
-                return tooltipTextDutchAuction;
-            case AuctionType.ENGLISH:
-                return tooltipTextEnglishAuction;
-            default:
-                return "";
-        }
+  const chooseTooltipText = (auction: AuctionDTO) => {
+    switch(auction.auctionType){
+        case AuctionType.CLASSIC:
+            return tooltipTextClassicAuction;
+        case AuctionType.DUTCH:
+            return tooltipTextDutchAuction;
+        case AuctionType.ENGLISH:
+            return tooltipTextEngTypographyshAuction;
+        default:
+            return "";
     }
+  }
 
-    const handleChange = (event: any) => {
-        const { name, value } = event.target;
-        let valueForced = 0;
-        setFormData({...formData, [name]: valueForced > 0 ? valueForced : value });
-    };
+  return (
+    <>
+    <TableRow key={auctionWithImage.auction.tokenId + "_" + auctionWithImage.auction.collection.address} sx={{'&:last-child td, &:last-child th': { border: 0 } }}>
+      <TableCell align='center' size='small'>
+          <IconButton
+          aria-label="expand row"
+          size="small"
+          onClick={() => (setOpen(!open))}
+        >
+          {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+        </IconButton> 
 
-    async function buyPlaceBid(){
-        if(signer){
-            let success = false;
-            if(auction.auctionType === AuctionType.DUTCH){
-                success = await writeBuyDutch(auction.collection.address, auction.tokenId, auction.currentPrice, signer);
-            } if(auction.auctionType === AuctionType.CLASSIC){
-                success = await writePlaceBidClassic(auction.collection.address, auction.tokenId, formData.bid, signer);
-            } else if (auction.auctionType === AuctionType.ENGLISH){
-
-                if(formData.bid > auction.currentPrice + auction.minIncrement){
-                    success = await writePlaceBidEnglish(auction.collection.address, auction.tokenId, formData.bid, signer);    
-                } else {
-                    MySwal.fire({
-                        title: "Check you bid",
-                        text: "It should be at least the current price added to minimun increment.",
-                        icon: "warning",
-                        confirmButtonColor: "#3085d6",
-                    });
-                }
-            }
-            
-            if(success){
-            MySwal.fire({
-                title: auction.auctionType === AuctionType.DUTCH ? "Buy Dutch" : "Bid Place",
-                text: auction.auctionType === AuctionType.DUTCH ? "The buy request was successful!": "The bid place request was successfull!",
-                icon: "success",
-                confirmButtonColor: "#3085d6",
-            });
-            }
+      </TableCell>
+      <TableCell align="center" size='small' padding='none' sx={{
+        transition: 'transform 0.3s ease-in-out',
+        "&:hover": {
+          transform: 'scale(1.05)',
+          zIndex: 2, // opzionale, per farlo sopra le altre card
         }
-    }
-
-    function verifyBid(){
-        return formData.bid > auction.currentPrice + auction.minIncrement;
-    }
-
-    async function withdraw(){
-        const success = await retrieveBid(auction.collection.address, auction.tokenId, signer);
-        if(success){
-            MySwal.fire({
-                title: "Withdraw",
-                text: "The withdraw request was successful!",
-                icon: "success",
-                confirmButtonColor: "#3085d6",
-            });
-        }
-    }
-
-    async function endAuction(){
-        let success = false;
-        if(auction.auctionType === AuctionType.CLASSIC){
-            success = await writeEndClassicAuction(auction.collection.address, auction.tokenId, signer);
-        } else if (auction.auctionType === AuctionType.ENGLISH){
-            success = await writeEndEnglishAuction(auction.collection.address, auction.tokenId, signer);
-        }
-        if(success){
-            MySwal.fire({
-                title: "Finalize Auction",
-                text: "The close auction request was successful!",
-                icon: "success",
-                confirmButtonColor: "#3085d6",
-            });
-        }
-    }
-
-    const choseButtonsToShow = () => {
-        if(!auction.ended && signerAddress !== auction.seller && Math.floor(Date.now() / 1000) < auction.endTime){
-            return (
-                <>
-                {auction.auctionType !== AuctionType.DUTCH &&
-                <Grid container spacing={2}>
-                    <Grid size={8}>
-                        <TextField
-                            fullWidth
-                            margin="normal"
-                            type="number"
-                            id="bid"
-                            name="bid"
-                            label="Your bid"
-                            value={formData.bid}
-                            onChange={handleChange}
-                        />
+      }}>
+        <img
+            src={auctionWithImage.imageUrl}
+            alt={`NFT ${auctionWithImage.auction.tokenId}`}
+            style={{ width: 120, height: 120, objectFit: "contain"}}
+          />
+      </TableCell>
+      {!isPhone && <TableCell align="left">
+        <Box display={"flex"} flexDirection={"column"}>
+          <Typography variant='body2'><b> {auctionWithImage.auction.collection.symbol}#{auctionWithImage.auction.tokenId}</b></Typography>
+          <Typography variant='body2'>{getAuctionTypeDescription(auctionWithImage.auction.auctionType)} Auction </Typography>
+          <Typography variant='body2'>Current Price: {formatPrice(auctionWithImage.auction.currentPrice, 'wei')} wei</Typography>
+          <Typography variant='body2'>{getAuctionStatus(auctionWithImage.auction)}</Typography>
+          <Typography variant='body2'>End Time: {isPhone ? formatToRomeTime(auctionWithImage.auction.endTime).substring(0,10) : formatToRomeTime(auctionWithImage.auction.endTime)}</Typography>
+        </Box>
+      </TableCell>}
+      <TableCell align="center"><Button>Azioni Auctions</Button></TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <Collapse in={open} timeout="auto" unmountOnExit>
+          <Box sx={{ margin: 1 }}>
+            <Typography variant="h6" gutterBottom component="div">
+              <Grid container>
+                <Grid size={isMobile ? 12 : 8} textAlign={"center"}>
+                  <Typography variant='body1'><b>Auction Data</b></Typography>
+                  <hr/>
+                  <Grid container>
+                    <Grid size={6} textAlign={"left"}>
+                      <Typography variant='body2'><b>{auctionWithImage.auction.collection.symbol}#{auctionWithImage.auction.tokenId}</b></Typography>
+                      <Typography variant='body2'><b>{getAuctionTypeDescription(auctionWithImage.auction.auctionType)}</b> Auction 
+                        <Tooltip title={chooseTooltipText(auctionWithImage.auction)}>
+                          <Box
+                              component="span"
+                              sx={{
+                              backgroundColor: '#f7a64280',
+                              color: 'white',
+                              borderRadius: '50%',
+                              width: 15,
+                              height: 15,
+                              fontSize: 14,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'help',
+                              ml: 0.3,
+                              }}
+                          >?</Box>
+                        </Tooltip>    
+                      </Typography>
+                      <Typography variant='body2'><b>Seller</b>: {formatAddress(auctionWithImage.auction.seller)}</Typography>
+                      <Typography variant='body2'><b>Start Price:</b>{formatPrice(auctionWithImage.auction.startPrice, 'wei')} wei</Typography>
+                      <Typography variant='body2'><b>Current Price:</b>{formatPrice(auctionWithImage.auction.currentPrice, 'wei')} wei</Typography>
                     </Grid>
-                    <Grid size={4}>
-                        <FormControl fullWidth margin="normal">
-                            <InputLabel id="unit-label">Unit</InputLabel>
-                            <Select
-                            labelId="unit-label"
-                            id="unit"
-                            name="unit"
-                            label="Unit"
-                            value={formData.unit}
-                            onChange={handleChange}
-                            >
-                            <MenuItem value="ETH">ETH</MenuItem>
-                            <MenuItem value="Finney">Finney</MenuItem>
-                            <MenuItem value="Gwei">Gwei</MenuItem>
-                            <MenuItem value="Wei">Wei</MenuItem>
-                            </Select>
-                        </FormControl>
+                    <Grid size={6} textAlign={"left"} marginTop={isMobile? '1rem': ''}>
+                      <Typography variant='body2'><b>Highest Bidder:</b>{formatAddress(auctionWithImage.auction.highestBidder)}</Typography>
+                      <Typography variant='body2'><b>Min increment:</b>{formatPrice(auctionWithImage.auction.minIncrement, 'wei')} wei</Typography>
+                      <Typography variant='body2'><b>Start Time:</b> {formatToRomeTime(auctionWithImage.auction.startPrice)}</Typography>
+                      <Typography variant='body2'><b>End Time:</b> {formatToRomeTime(auctionWithImage.auction.endTime)}</Typography>
+                      <Typography variant='body2'><b>Status:</b> {getAuctionStatus(auctionWithImage.auction)}</Typography>
                     </Grid>
+                  </Grid>
                 </Grid>
-                }
-                <Button size="large" variant="contained" onClick={buyPlaceBid} sx={{mr: 1}} fullWidth disabled={!signer}>
-                    {auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH? "Place Bid" : "Buy now"}
-                </Button>
-                </>
-            );
-        } else if (signer && auction.auctionType === AuctionType.CLASSIC && auction.ended && signerAddress !== auction.seller && signerAddress !== auction.highestBidder ){//&& se presente nell'elenco dei bidders
-            return (
-                <Button size="small" variant="outlined" sx={{mr: 1}} onClick={withdraw} fullWidth>Withdraw Bid</Button>
-            );
-        } else if (signer && !auction.ended && signerAddress === auction.seller && Math.floor(Date.now() / 1000) >= auction.endTime){
-            return ( 
-                <Button size="small" variant="contained" color="error" sx={{mr: 1}} onClick={endAuction} fullWidth>Finalize Auction</Button>
-            )
-        }
-    }
-
-    async function readDutchPrice(){
-        setIsLoading(true);
-        var currentPrice = await readCurrentPriceDutch(auction.collection.address, auction.tokenId);
-        auction.currentPrice = currentPrice;
-        setIsLoading(false);
-    }
-
-    return (
-        <Grid container spacing={3} mt={2} ml={2} >
-            <>
-            <Grid size={5}>
-                <Grid textAlign="left"><b>Type</b></Grid>
-                <Grid textAlign="left"><b>Status</b></Grid>
-                <Grid textAlign="left"><b>Seller</b> </Grid>
-                <Grid textAlign="left"><b>Start Price</b></Grid>
-                { (auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH) &&
-                <>
-                    <Grid textAlign="left"><b>Highest bid</b></Grid>
-                    <Grid textAlign="left"><b>Highest bidder</b></Grid>
-                </>
-                }
-                { auction.auctionType === AuctionType.DUTCH &&
-                    <Grid textAlign="left"><b>Current Price</b></Grid>
-                }
-                { auction.auctionType === AuctionType.ENGLISH &&
-                    <>
-                    <Grid textAlign="left"><b>Min increment</b></Grid>
-                    <Grid textAlign="left"><b>Time extension</b></Grid>
-                    </>
-                }
-                <Grid textAlign="left"><b>Ends at</b></Grid>
-            </Grid>
-            <Grid size={7}>
-                <Grid textAlign="left">{getAuctionTypeDescription(auction.auctionType)} 
-                    <Tooltip title={chooseTooltipText()}>
-                                        
-                        <Box
-                            component="span"
-                            sx={{
-                            backgroundColor: '#f7a64280',
-                            color: 'white',
-                            borderRadius: '50%',
-                            width: 15,
-                            height: 15,
-                            fontSize: 14,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'help',
-                            ml: 0.3,
-                            }}
-                        >?</Box>
-
-                    </Tooltip>    
-
+                <Grid size={isMobile ? 12 : 4}>
+                  <Typography variant='body1'><b>Collection Data</b></Typography>
+                  <hr/>
+                  <Typography variant='body2'><b>{auctionWithImage.auction.collection.name} | {auctionWithImage.auction.collection.symbol}</b></Typography>
+                  <Typography variant='body2'><b>Address</b>: {formatAddress(auctionWithImage.auction.collection.address)}</Typography>
+                  <Typography variant='body2'><b>Owner</b>: {formatAddress(auctionWithImage.auction.collection.owner)}</Typography>
+                  <Typography variant='body2'><b>#Total NFTs</b>: {auctionWithImage.auction.collection.totalSupply}</Typography>
+                  <Typography variant='body2'><b>#Active NFTs</b>: {auctionWithImage.auction.collection.tokenIds}</Typography>
                 </Grid>
-                <Grid textAlign="left">{getAuctionStatus(auction)}</Grid>
-                <Grid textAlign="left">{formatAddress(auction.seller)}</Grid>
-                <Grid textAlign="left">{auction.startPrice} wei</Grid>
-                { (auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH) &&
-                <>
-                    <Grid textAlign="left">{auction.highestBid} wei</Grid>
-                    <Grid textAlign="left">{formatAddress(auction.highestBidder, signerAddress)}</Grid>
-                </>
-                }
-                { auction.auctionType === AuctionType.DUTCH &&
-                    <Grid textAlign="left">{auction.currentPrice} wei
-                        <Button size="small" variant="text" sx={{ml:.5, p:0}} onClick={() => readDutchPrice()}>Update</Button>
-                        <Loader loading={isLoadingUpdateDutch}/>
-                    </Grid>
-                }
-                { auction.auctionType === AuctionType.ENGLISH &&
-                    <>
-                    <Grid textAlign="left">{auction.minIncrement} wei</Grid>
-                    <Grid textAlign="left">5 minutes</Grid>
-                    </>
-
-                }
-                <Grid textAlign="left">{formatToRomeTime(auction.endTime)}</Grid>
-            </Grid>
-            <Grid size={12} alignSelf="center">
-                {choseButtonsToShow()}
-            </Grid>
-            </>
-        </Grid>
-    );
+              </Grid>
+            </Typography>
+          </Box>
+        </Collapse>
+      </TableCell>
+    </TableRow>
+    </>
+  );
 }

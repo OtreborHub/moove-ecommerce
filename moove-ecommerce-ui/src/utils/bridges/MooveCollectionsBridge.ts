@@ -146,7 +146,7 @@ export async function writeCreateAuction(collectionAddress: string, tokenId: num
   }
 }
 
-export async function writeTokenPrice(collectionAddress: string, tokenId: number, price: number, signer: Signer){
+export async function writeTokenPrice(collectionAddress: string, tokenId: number, price: BigInt, signer: Signer){
   try {
     const signerContract = getContractInstance(collectionAddress, signer);
     await signerContract?.setTokenPrice(tokenId, price);

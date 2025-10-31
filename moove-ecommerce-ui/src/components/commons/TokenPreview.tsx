@@ -7,7 +7,6 @@ import { useAppContext } from "../../Context";
 import { formatPrice } from "../../utils/formatValue";
 import { TokenPreviewProps } from "../../utils/Interfaces";
 import Token from "./Token";
-import { useAppKit } from "@reown/appkit/react";
 
 const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
 
@@ -17,7 +16,6 @@ export default function TokenPreview({collection, token, connectMetamask, isLoad
   const [hovered, setHovered] = useState(false);
   const MySwal = withReactContent(Swal);
   const appContext = useAppContext();
-  const { open } = useAppKit();
 
   useEffect(() => {
       init();
@@ -119,7 +117,7 @@ export default function TokenPreview({collection, token, connectMetamask, isLoad
     handleTransfer(token.id);
   }
 
-  function closeAndHandleTokenPrice(){
+  function closeAndHandleUpdateTokenPrice(){
     MySwal.close();
     handleUpdatePrice(token.id, token.price);
   }
@@ -138,7 +136,7 @@ export default function TokenPreview({collection, token, connectMetamask, isLoad
             connectMetamask={close}
             handleBuy={handleBuy}
             handleCreateAuction={closeAndHandleCreateAuction}
-            handleUpdatePrice={closeAndHandleTokenPrice}
+            handleUpdatePrice={closeAndHandleUpdateTokenPrice}
             handleTransfer={closeAndHandleTransfer}
             />,
           showConfirmButton: false,
