@@ -3,14 +3,12 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAppContext } from "../../Context";
-import { payableBuyNFT, readTokenData, transferTo, writeCreateAuction, writeMintNFT, writeTokenPrice } from "../../utils/bridges/MooveCollectionsBridge";
+import { payableBuyNFT, readTokenData, writeMintNFT } from "../../utils/bridges/MooveCollectionsBridge";
 import TokenDTO from "../../utils/DTO/TokenDTO";
 import { Role } from "../../utils/enums/Role";
+import { formatAddress } from "../../utils/formatValue";
 import { CollectionProps } from "../../utils/Interfaces";
-import CreateAuctionForm from "../forms/CreateAuctionForm";
 import MintTokenForm from "../forms/MintTokenForm";
-import TransferToForm from "../forms/TransferToForm";
-import UpdateTokenPriceForm from "../forms/UpdateTokenPriceForm";
 import Loader from "./Loader";
 import TokenPreview from "./TokenPreview";
 
@@ -101,7 +99,7 @@ export default function Collection({collection, connectMetamask, goBack} : Colle
         
         <Box textAlign={"left"} display={"flex"} flexDirection={"column"} ml={2}>
           <Typography variant="h5" color="#f7a642ff"> <b>{collection.name.toUpperCase()}</b> </Typography>
-          <Typography variant="body2" color="#f7a642ff"> {collection.address} </Typography>
+          <Typography variant="body2" color="#f7a642ff"> {formatAddress(collection.address)} </Typography>
         </Box>
 
         {/* <Box display={"flex"} justifyContent={"left"} margin={2}> */}

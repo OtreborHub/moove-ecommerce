@@ -228,7 +228,7 @@ export default function Token({ collection, token, auction, metadata, signerAddr
             }
 
             {section === 1 && auction && auction.tokenId === 0 && 
-                <Typography variant="h6">No auction found for this token</Typography>
+                <Typography variant="body2">No auction found for this token</Typography>
             }
             
         </Box>

@@ -59,7 +59,7 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
         buyDutch(auctionWithImage.auction.tokenId, auctionWithImage.auction.currentPrice);
     } else {
         MySwal.fire({
-            title: "Place BID",
+            title: "Place a bid",
             html: <PlaceBidForm auction={auctionWithImage.auction} handleSubmit={closeAndHandlePlaceBid}/>,
             showConfirmButton: false,
             showCloseButton: true,
@@ -73,7 +73,7 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
       setIsLoading(false);
       if(success){
           MySwal.fire({
-              title: "Place Bid",
+              title: "Buy Dutch",
               text: "The buy request was successful!",
               icon: "success",
               confirmButtonColor: "#3085d6",

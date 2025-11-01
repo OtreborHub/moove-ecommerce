@@ -11,7 +11,7 @@ import Navbar from './components/commons/Navbar';
 import { Factory } from './components/factory/Factory';
 import { Marketplace } from './components/marketplace/Marketplace';
 import { emptySigner, useAppContext } from './Context';
-import { infuraProvider } from './utils/bridges/MooveCollectionsBridge';
+import { addCollectionsContractListeners, infuraProvider } from './utils/bridges/MooveCollectionsBridge';
 import { addFactoryContractListeners, readCollections, readIsAdmin } from './utils/bridges/MooveFactoryBridge';
 import { Role } from './utils/enums/Role';
 import { Sections } from './utils/enums/Sections';
@@ -72,10 +72,11 @@ function App() {
       if (isAdmin) {
         addFactoryContractListeners(signer);
       }
+      addCollectionsContractListeners(appContext.collectionAddresses, signer);
       
     } catch (error) {
       console.error("Init session error:", error);
-      await handleDisconnect();
+      handleDisconnect();
     }
   };
 
@@ -122,7 +123,8 @@ function App() {
             }
             if(isAdmin){
               addFactoryContractListeners(signer);
-            }
+            } 
+            addCollectionsContractListeners(appContext.collectionAddresses, signer);
           }
           // else {
           // Swal.error()  
@@ -150,6 +152,7 @@ function App() {
       console.log('Please connect to Metamask.');
       handleDisconnect();
     }
+    appContext.updateSection(Sections.MARKETPLACE);
   };
 
   async function handleDisconnect() {

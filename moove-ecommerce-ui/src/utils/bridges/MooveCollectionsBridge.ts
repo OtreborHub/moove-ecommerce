@@ -269,7 +269,7 @@ export async function writeDisableCollection(collectionAddress: string, signer: 
   }
 }
 
-export async function addFactoryContractListeners(collectionAddresses: string[], signer: Signer) {
+export async function addCollectionsContractListeners(collectionAddresses: string[], signer: Signer) {
 
   //const signer = await browserProvider.getSigner();
   for(const collectionAddress of collectionAddresses){

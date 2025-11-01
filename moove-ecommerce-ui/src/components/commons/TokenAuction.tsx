@@ -42,7 +42,7 @@ export default function TokenAuction({ auction, signer, signerAddress }: TokenAu
           buyDutch(auction.tokenId, auction.currentPrice);
       } else {
           MySwal.fire({
-              title: "Place BID",
+              title: "Place a bid",
               html: <PlaceBidForm auction={auction} handleSubmit={closeAndHandlePlaceBid}/>,
               showConfirmButton: false,
               showCloseButton: true,
@@ -56,7 +56,7 @@ export default function TokenAuction({ auction, signer, signerAddress }: TokenAu
         setIsLoading(false);
         if(success){
             MySwal.fire({
-                title: "Place Bid",
+                title: "Buy Dutch",
                 text: "The buy request was successful!",
                 icon: "success",
                 confirmButtonColor: "#3085d6",
