@@ -206,7 +206,6 @@ export default function CreateAuctionForm({ tokenId, collectionSymbol, handleSub
                 >
                 <MenuItem value="ETH">ETH</MenuItem>
                 <MenuItem value="Finney">Finney</MenuItem>
-                <MenuItem value="Gwei">Gwei</MenuItem>
                 <MenuItem value="Wei">Wei</MenuItem>
                 </Select>
             </FormControl>
@@ -275,7 +274,6 @@ export default function CreateAuctionForm({ tokenId, collectionSymbol, handleSub
                 >
                 <MenuItem value="ETH">ETH</MenuItem>
                 <MenuItem value="Finney">Finney</MenuItem>
-                <MenuItem value="Gwei">Gwei</MenuItem>
                 <MenuItem value="Wei">Wei</MenuItem>
                 </Select>
             </FormControl>

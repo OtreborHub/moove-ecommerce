@@ -8,9 +8,9 @@ import MenuList from '@mui/material/MenuList';
 import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
 import { useEffect, useRef, useState } from 'react';
-import { AuctionActionsButtonProps, TokenActionsButtonProps } from '../../utils/Interfaces';
+import { AuctionActionsButtonProps } from '../../utils/Interfaces';
 import { emptySigner, useAppContext } from '../../Context';
-import { AuctionType } from '../../utils/enums/Auction';
+import { AuctionStatus, AuctionType, getAuctionStatus } from '../../utils/enums/Auction';
 import { retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from '../../utils/bridges/MooveCollectionsBridge';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
@@ -21,7 +21,7 @@ const options = ['Place a Bid', 'Buy now', 'Withdraw', 'Finalize', 'Connect to a
 export default function AuctionActionsButton({ auction }: AuctionActionsButtonProps) {
     const [open, setOpen] = useState(false);
     const anchorRef = useRef<HTMLDivElement>(null);
-    const [selectedIndex, setSelectedIndex] = useState(0);
+    
     const appContext = useAppContext();
     const MySwal = withReactContent(Swal);
     const [menuWidth, setMenuWidth] = useState(0);
@@ -36,6 +36,26 @@ export default function AuctionActionsButton({ auction }: AuctionActionsButtonPr
       }
     }, [anchorRef.current, open]); 
     
+    const defaultSelectedIndex = () => {
+        if(auction.seller === appContext.signerAddress) {
+            return 3;
+        }
+        if(auction.ended && auction.seller !== appContext.signerAddress){
+            return 2;
+        }
+        if(!auction.ended && getAuctionStatus(auction) === AuctionStatus.OPEN) {
+            if(auction.auctionType === AuctionType.DUTCH){
+                return 1;
+            } else {
+            return 0;
+            }
+        } else {
+            return 0;
+        }
+    }
+
+    const [selectedIndex, setSelectedIndex] = useState(defaultSelectedIndex());
+
     async function buyPlaceBid(){
         if(appContext.signer !== emptySigner){
             let success = false;
@@ -99,9 +119,9 @@ export default function AuctionActionsButton({ auction }: AuctionActionsButtonPr
     
     //HANDLERS
     const handleClick = () => {
-        if(selectedIndex === 0){
+        if(selectedIndex === 0 || selectedIndex === 1){
             buyPlaceBid();
-        } else if(selectedIndex === 1){
+        } else if(selectedIndex === 2){
             withdraw();
         } else {
             endAuction();
@@ -172,9 +192,24 @@ export default function AuctionActionsButton({ auction }: AuctionActionsButtonPr
                     <Paper sx={{ width: menuWidth }}>
                         <ClickAwayListener onClickAway={handleClose}>
                             <MenuList>
-                            <MenuItem onClick={(() => handleMenuItemClick(auction.auctionType === AuctionType.DUTCH ? 1 : 0))}> {auction.auctionType === AuctionType.DUTCH ? options[1]:options[0]} </MenuItem>
-                            <MenuItem disabled={auction.ended} onClick={(() => handleMenuItemClick(2))}> {options[2]} </MenuItem>
-                            <MenuItem sx={{ color: "red" }} onClick={(() => handleMenuItemClick(3))}> {options[3]} </MenuItem>
+
+                            <MenuItem 
+                                disabled={auction.seller === appContext.signerAddress || auction.ended} 
+                                onClick={(() => handleMenuItemClick(auction.auctionType === AuctionType.DUTCH ? 1 : 0))}> 
+                                    {auction.auctionType === AuctionType.DUTCH ? options[1]:options[0]}
+                            </MenuItem>
+                            
+                            <MenuItem disabled={!auction.ended} onClick={(() => handleMenuItemClick(2))}> {options[2]} </MenuItem>
+                            
+                            {auction.seller === appContext.signerAddress &&
+                                <MenuItem 
+                                    disabled={auction.ended} 
+                                    sx={{ color: "red" }} 
+                                    onClick={(() => handleMenuItemClick(3))}>
+                                        {options[3]}
+                                </MenuItem>
+                            }
+
                             </MenuList>
                         </ClickAwayListener>
                     </Paper>

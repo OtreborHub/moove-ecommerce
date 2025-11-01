@@ -1,4 +1,4 @@
-import { Box, useMediaQuery } from '@mui/material';
+import { BottomNavigation, BottomNavigationAction, Box, Paper, Typography, useMediaQuery } from '@mui/material';
 import { sepolia } from '@reown/appkit/networks';
 import { useAppKit, useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
 import { ethers } from 'ethers';
@@ -18,6 +18,7 @@ import { Sections } from './utils/enums/Sections';
 import CollectionDTO from './utils/DTO/CollectionDTO';
 import Auctions from './components/commons/Auctions';
 import MyNFTs from './components/commons/MyNFTs';
+import CopyrightIcon from '@mui/icons-material/Copyright';
 
 function App() {
   const appContext = useAppContext();
@@ -256,6 +257,14 @@ function App() {
             }
         </Box>      
       </div>
+
+      <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={5}>
+        <BottomNavigation sx={{ backgroundColor: '#26547C', display:"flex", justifyContent:"space-around", alignItems:"center"}}  >
+          <Typography display={"inline-flex"}> <CopyrightIcon sx={{mr: 1}}/>2025 Moove Marketplace. All rights reserved. </Typography>
+          <Typography >Altre info qui </Typography>
+          <Typography >Infine altre ancora qui </Typography>
+        </BottomNavigation>
+      </Paper>
     </div>
   );
 }

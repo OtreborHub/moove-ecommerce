@@ -16,6 +16,7 @@ import { useAppKit } from '@reown/appkit/react';
 import CreateAuctionForm from '../forms/CreateAuctionForm';
 import TransferToForm from '../forms/TransferToForm';
 import UpdateTokenPriceForm from '../forms/UpdateTokenPriceForm';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
@@ -449,15 +450,16 @@ export default function AuctionPreview({auction, connectMetamask}: AuctionPrevie
           {/* Captions and Buttons */}
           <Box sx={{display: 'flex', flexDirection: 'column', gap: 1, height: 120, justifyContent:'flex-start', width: '30%', '& button': {width: "75%"}}}>
               
-              <Box sx={{ alignSelf: 'flex-end', alignItems: 'flex-end', alignContent:'flex-end', textAlign: 'right', width: '100%', mr: 1 }}>
+              <Box sx={{ alignSelf: 'flex-end', alignItems: 'flex-end', alignContent:'flex-end', textAlign: 'right', width: '100%', mr: 1, mt:1 }}>
                   <Typography variant="caption" color={auction.ended === true ? "#6f1a1aff": "#000"}>
                   {getAuctionStatus(auction)}
                   </Typography>
               </Box>
 
-              <Box sx={{ alignSelf: 'flex-end', alignItems: 'flex-end', alignContent:'flex-end', textAlign: 'right', width: '100%' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center',  justifyContent: 'flex-end', textAlign: 'right', height: '50%'  }}>
                   {/* <Button size="small" variant="outlined" sx={{mb: 1, mr: 1}} onClick={showNFTAuction}>View</Button> */}
-                  {choseButtonsToShow()}
+                  {/* {choseButtonsToShow()} */}
+                  <ArrowForwardIosIcon fontSize='medium' />
               </Box>
           </Box>
           </CardActionArea>

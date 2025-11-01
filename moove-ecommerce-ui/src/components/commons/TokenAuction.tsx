@@ -145,7 +145,6 @@ export default function TokenAuction({ auction, signer, signerAddress }: Auction
                             >
                             <MenuItem value="ETH">ETH</MenuItem>
                             <MenuItem value="Finney">Finney</MenuItem>
-                            <MenuItem value="Gwei">Gwei</MenuItem>
                             <MenuItem value="Wei">Wei</MenuItem>
                             </Select>
                         </FormControl>

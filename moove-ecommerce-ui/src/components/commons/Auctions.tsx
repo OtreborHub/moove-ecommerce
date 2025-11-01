@@ -92,27 +92,27 @@ useEffect(() => {
       <Button variant="outlined" sx={{borderColor: '#f7a642ff', color: '#f7a642ff', m:2}} onClick={back}> Back </Button>
     </Box>
     <Box display="flex" justifyContent="center" margin={"auto"} flexDirection={"column"} alignItems="center" maxWidth={isMobile ? "90%":  isPhone ? "100%": "55%"} gap={2}>
-    <img src={auctions_title} alt="Logo" style={{ maxHeight: '75px' }} />
-    <TableContainer component={Paper} sx={{ zIndex:1, border: '.15rem solid #000000', borderRadius: 2 }}>
-      <Table aria-label="simple table">
-        <TableHead sx={{ backgroundColor: '#f7a642ff', borderBottom: '.15rem solid #000000'}}>
-          <TableRow>
-            {/* {(isMobile) && <TableCell align="center"><b>Actions</b></TableCell>} */}
-            <TableCell align="center" size='small'><b>Details</b></TableCell>
-            <TableCell align="center" size='small'><b>NFT</b></TableCell>
-            {!isPhone && <TableCell align="left"><b>Auction</b></TableCell>}
-            {/* <TableCell align="left"><b>Collection Data</b></TableCell> */}
-            {<TableCell align="center"><b>Actions</b></TableCell>}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {auctionsData
-          .map((auctionData: AuctionWithImage) => (
-            <Auction auctionWithImage={auctionData} />
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+      <img src={auctions_title} alt="Logo" style={{ maxHeight: '75px' }} />
+    
+      <TableContainer component={Paper} sx={{ zIndex:1, border: '.15rem solid #000000', borderRadius: 2 }}>
+        <Table aria-label="simple table">
+          <TableHead sx={{ backgroundColor: '#f7a642ff', borderBottom: '.15rem solid #000000'}}>
+            <TableRow>
+              <TableCell align="center" size='small'><b>Details</b></TableCell>
+              <TableCell align="center" size='small'><b>NFT</b></TableCell>
+              {!isPhone && <TableCell align="left"><b>Auction</b></TableCell>}
+              <TableCell align="center"><b>Actions</b></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {auctionsData
+            .map((auctionData: AuctionWithImage) => (
+              <Auction key={auctionData.auction.tokenId + auctionData.auction.collection.address}auctionWithImage={auctionData}/>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      
     </Box>
     <Loader loading={isLoading} /> 
     </>

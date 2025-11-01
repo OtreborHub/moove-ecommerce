@@ -213,7 +213,7 @@ export function Marketplace({collectionAddresses, connectMetamask, showCollectio
                 {displayedAuctions.map((auction, index) => (
                     <AuctionPreview key={index} auction={auction} connectMetamask={connectMetamask}/>
                 ))}
-                {appContext.auctions.length > 0 && !isMobile &&
+                {appContext.auctions.length > 0 &&
                 <Box textAlign={"right"}>
                     <Button sx={{color: "#f7a642ff"}} variant="text" onClick={() => appContext.updateSection(Sections.AUCTIONS)}> View All </Button>
                 </Box>
