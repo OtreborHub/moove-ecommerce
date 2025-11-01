@@ -81,6 +81,7 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
     function buyNFT(uint256 tokenId) isActive public payable {
         require(msg.value == tokenPrices[tokenId], "Incorrect price");
         require(ownerOf(tokenId) != address(0), "Token does not exist");
+        require(!auctions[tokenId].ended, "Token is in auction");
 
         address seller = ownerOf(tokenId);
         _transfer(seller, msg.sender, tokenId);
@@ -161,11 +162,15 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
         Auction storage auction = auctions[tokenId];
         require(auction.auctionType == AuctionType.Dutch, "Not dutch auction");
         require(block.timestamp < auction.endTime, "Auction ended");
+        require(!auction.ended, "Already ended");
         uint256 price = getCurrentDutchPrice(tokenId);
         require(msg.value >= price, "Insufficient payment");
-        require(!auction.ended, "Already ended");
-
+        
+        auction.currentPrice = price;
+        auction.highestBidder = msg.sender;
+        auction.highestBid = msg.value;
         auction.ended = true;
+        
         _transfer(auction.seller, msg.sender, tokenId);
         payable(auction.seller).transfer(msg.value);
         emit AuctionEnded(tokenId, msg.sender, msg.value);
