@@ -107,7 +107,8 @@ useEffect(() => {
           <TableBody>
             {auctionsData
             .map((auctionData: AuctionWithImage) => (
-              <Auction key={auctionData.auction.tokenId + auctionData.auction.collection.address}auctionWithImage={auctionData}/>
+              <Auction key={auctionData.auction.tokenId + auctionData.auction.collection.address}
+                auctionWithImage={auctionData}/>
             ))}
           </TableBody>
         </Table>

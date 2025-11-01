@@ -258,11 +258,11 @@ function App() {
         </Box>      
       </div>
 
-      <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={5}>
-        <BottomNavigation sx={{ backgroundColor: '#26547C', display:"flex", justifyContent:"space-around", alignItems:"center"}}  >
+      <Paper sx={{ position: 'static', mt: 'auto' }} elevation={5}>
+        <BottomNavigation sx={{ backgroundColor: '#26547C', display:"flex", justifyContent:"center", alignItems:"center"}}  >
           <Typography display={"inline-flex"}> <CopyrightIcon sx={{mr: 1}}/>2025 Moove Marketplace. All rights reserved. </Typography>
-          <Typography >Altre info qui </Typography>
-          <Typography >Infine altre ancora qui </Typography>
+          {/* <Typography >Altre info qui </Typography>
+          <Typography >Infine altre ancora qui </Typography> */}
         </BottomNavigation>
       </Paper>
     </div>

@@ -37,19 +37,25 @@ export default function Navbar({connectMetamask}: NavbarProps) {
           }
           {appContext.signer === emptySigner && 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: 'auto', marginRight: '1rem'}}>
-              <ButtonGroup>
-                {!isPhone && <Button key="word" variant="contained" size="large" sx={{ fontSize: "1  rem", color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px', paddingRight:'.5rem'}}>
-                  <b>Connect</b>
-                </Button> 
-                }
-                <Button key="meta" variant="contained" onClick={connectMetamask} size="medium" sx={{ color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px'}}>
-                  <img height="24" alt="meta" src={metamask_logo}></img>
-                </Button>  
+              {!isPhone && <ButtonGroup>
+                  <Button key="word" variant="contained" size="large" sx={{ fontSize: "1  rem", color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius: '10px',  paddingRight:'.5rem'}}>
+                    <b>Connect</b>
+                  </Button> 
+                   
+                  <Button key="meta" variant="contained" onClick={connectMetamask} size="medium" sx={{ color:'#f7a642ff', backgroundColor: 'whitesmoke'}}>
+                    <img height="24" alt="meta" src={metamask_logo}></img>
+                  </Button> 
+                
                 <Button key="wc" variant="contained" onClick={() => open()} size="medium" sx={{ color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px'}}>
                   <img height="24" alt="wc" src={walletconnect_logo}></img>
                 </Button> 
               </ButtonGroup>
-              
+              }
+              {isPhone &&
+                <Button key="wc" variant="contained" onClick={() => open()} size="medium" sx={{ color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius:'10px'}}>
+                  <img height="24" alt="wc" src={walletconnect_logo}></img>
+                </Button>
+              }
             </Box>
           }
         </Toolbar>

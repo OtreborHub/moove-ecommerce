@@ -88,6 +88,9 @@ interface TokenActionsButtonProps {
 
 interface AuctionActionsButtonProps {
     auction: AuctionDTO;
+    handleBuyPlaceBid: (tokenId: number, price: number) => void;
+    handleFinalizeAuction: (tokenId: number) => void;
+    handleWithdrawFunds: (tokenId: number) => void;
 }
 
 interface LoaderProps {

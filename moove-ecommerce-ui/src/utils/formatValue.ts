@@ -7,7 +7,7 @@ export function formatAddress(address: string, signer?: string) {
     return "Moove";
   } else {
     if(Number(address.substring(address.length - 8, address.length)) === 0){
-        return "None";
+        return "none";
     } else if(signer && address === signer){
         return "You"
     } else {

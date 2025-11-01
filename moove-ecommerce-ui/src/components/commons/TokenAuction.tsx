@@ -1,11 +1,11 @@
-import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Tooltip } from "@mui/material";
+import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Tooltip, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { AuctionProps } from "../../utils/Interfaces";
 import { readCurrentPriceDutch, retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from "../../utils/bridges/MooveCollectionsBridge";
 import { AuctionStatus, AuctionType, getAuctionStatus, getAuctionTypeDescription } from "../../utils/enums/Auction";
-import { formatAddress, formatToRomeTime } from "../../utils/formatValue";
+import { formatAddress, formatPrice, formatToRomeTime } from "../../utils/formatValue";
 import Loader from "./Loader";
 
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
@@ -177,30 +177,53 @@ export default function TokenAuction({ auction, signer, signerAddress }: Auction
     return (
         <Grid container spacing={3} mt={2} ml={2} >
             <>
-            <Grid size={5}>
-                <Grid textAlign="left"><b>Type</b></Grid>
-                <Grid textAlign="left"><b>Status</b></Grid>
-                <Grid textAlign="left"><b>Seller</b> </Grid>
-                <Grid textAlign="left"><b>Start Price</b></Grid>
+            <Grid size={12}>
+                <Typography textAlign="left"><b>{getAuctionTypeDescription(auction.auctionType)} </b> Auction 
+                    <Tooltip title={chooseTooltipText()}>
+                            <Box
+                                component="span"
+                                sx={{
+                                backgroundColor: '#f7a64280',
+                                color: 'white',
+                                borderRadius: '50%',
+                                width: 15,
+                                height: 15,
+                                fontSize: 14,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'help',
+                                ml: 0.3,
+                                }}
+                            >?</Box>
+                        </Tooltip>    
+                </Typography>
+                <Typography textAlign="left"><b>Status:</b> {getAuctionStatus(auction)}</Typography>
+                <Typography textAlign="left"><b>Seller:</b> {formatAddress(auction.seller)}</Typography>
+                <Typography textAlign="left"><b>Start Price:</b> {formatPrice(auction.startPrice, 'wei')} wei</Typography>
                 { (auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH) &&
                 <>
-                    <Grid textAlign="left"><b>Highest bid</b></Grid>
-                    <Grid textAlign="left"><b>Highest bidder</b></Grid>
+                    <Typography textAlign="left"><b>Highest bid:</b> {formatPrice(auction.highestBid, 'wei')} wei</Typography>
+                    <Typography textAlign="left"><b>Highest bidder:</b> {formatAddress(auction.highestBidder, signerAddress)}</Typography>
                 </>
                 }
                 { auction.auctionType === AuctionType.DUTCH &&
-                    <Grid textAlign="left"><b>Current Price</b></Grid>
+                    <Typography textAlign="left"><b>Current Price: </b> {formatPrice(auction.currentPrice, 'wei')} wei
+                        <Button size="small" variant="text" sx={{ml:.5, p:0}} onClick={() => readDutchPrice()}>Update</Button>
+                        <Loader loading={isLoadingUpdateDutch}/>
+                    </Typography>
                 }
                 { auction.auctionType === AuctionType.ENGLISH &&
                     <>
-                    <Grid textAlign="left"><b>Min increment</b></Grid>
-                    <Grid textAlign="left"><b>Time extension</b></Grid>
+                    <Typography textAlign="left"><b>Min increment:</b> {formatPrice(auction.minIncrement,'wei')} wei</Typography>
+                    <Typography textAlign="left"><b>Time extension:</b> 5 minutes</Typography>
                     </>
                 }
-                <Grid textAlign="left"><b>Ends at</b></Grid>
+                <Typography textAlign="left"><b>Ends at</b> {formatToRomeTime(auction.endTime)}</Typography>
             </Grid>
+            {/*
             <Grid size={7}>
-                <Grid textAlign="left">{getAuctionTypeDescription(auction.auctionType)} 
+                <Typography textAlign="left">{getAuctionTypeDescription(auction.auctionType)} 
                     <Tooltip title={chooseTooltipText()}>
                         <Box
                             component="span"
@@ -220,14 +243,14 @@ export default function TokenAuction({ auction, signer, signerAddress }: Auction
                         >?</Box>
                     </Tooltip>    
 
-                </Grid>
-                <Grid textAlign="left">{getAuctionStatus(auction)}</Grid>
-                <Grid textAlign="left">{formatAddress(auction.seller)}</Grid>
-                <Grid textAlign="left">{auction.startPrice} wei</Grid>
+                </Typography>
+                <Typography textAlign="left">{getAuctionStatus(auction)}</Typography>
+                <Typography textAlign="left">{formatAddress(auction.seller)}</Typography>
+                <Typography textAlign="left">{auction.startPrice} wei</Typography>
                 { (auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH) &&
                 <>
-                    <Grid textAlign="left">{auction.highestBid} wei</Grid>
-                    <Grid textAlign="left">{formatAddress(auction.highestBidder, signerAddress)}</Grid>
+                    <Typography textAlign="left">{auction.highestBid} wei</Typography>
+                    <Typography textAlign="left">{formatAddress(auction.highestBidder, signerAddress)}</Typography>
                 </>
                 }
                 { auction.auctionType === AuctionType.DUTCH &&
@@ -238,13 +261,13 @@ export default function TokenAuction({ auction, signer, signerAddress }: Auction
                 }
                 { auction.auctionType === AuctionType.ENGLISH &&
                     <>
-                    <Grid textAlign="left">{auction.minIncrement} wei</Grid>
-                    <Grid textAlign="left">5 minutes</Grid>
+                    <Typography textAlign="left">{auction.minIncrement} wei</Typography>
+                    <Typography textAlign="left">5 minutes</Typography>
                     </>
 
                 }
-                <Grid textAlign="left">{formatToRomeTime(auction.endTime)}</Grid>
-            </Grid>
+                <Typography textAlign="left">{formatToRomeTime(auction.endTime)}</Typography>
+            </Grid>*/}
             <Grid size={12} alignSelf="center">
                 {choseButtonsToShow()}
             </Grid>

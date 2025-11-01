@@ -75,12 +75,14 @@ export default function Token({ collection, token, auction, metadata, signerAddr
                     />
                 </Grid>
                 <Grid size={6}>
-                    <Grid textAlign="left" sx={{ fontSize: '1.5rem'}}><b>{collection.symbol}#{token.id}</b>
+                    <Typography textAlign="left" sx={{ fontSize: '1.5rem'}}><b>{collection.symbol}#{token.id}</b>
                      {/* • {collection?.name}  */}
-                    </Grid>
-                    <Grid textAlign="left">{collection.name}</Grid>
-                    <Grid textAlign="left">Owner: {formatAddress(token.owner, signerAddress)}</Grid>
-                    {signerAddress === token.owner && <Grid textAlign="left">Current Price: {formatPrice(token.price, 'wei')} wei</Grid>}
+                    </Typography>
+                    <Typography textAlign="left">{collection.name}</Typography>
+                    <Typography textAlign="left">Owner: {formatAddress(token.owner, signerAddress)}</Typography>
+                    {signerAddress === token.owner && 
+                        <Typography textAlign="left">Current Price: {formatPrice(token.price, 'wei')} wei</Typography>}
+                    
                     {/* <Grid textAlign="left">URI: {token.URI}</Grid> */}
 
                     {signerAddress === "" && 
@@ -213,9 +215,9 @@ export default function Token({ collection, token, auction, metadata, signerAddr
 
                 {metadata.attributes && metadata.attributes.length > 0 &&
                     <Box mt={1} textAlign={"left"}>
-                        <Typography><b>Type</b>: {metadata?.attributes[0].type}</Typography>
-                        <Typography><b>Color</b>: {metadata?.attributes[0].color}</Typography>
-                        <Typography><b>Background Color</b>: {metadata?.attributes[0].backgroundColor}</Typography>
+                        <Typography><b>Type:</b> {metadata?.attributes[0].type}</Typography>
+                        <Typography><b>Color:</b> {metadata?.attributes[0].color}</Typography>
+                        <Typography><b>Background Color:</b> {metadata?.attributes[0].backgroundColor}</Typography>
                     </Box>
                 }
             </Box>

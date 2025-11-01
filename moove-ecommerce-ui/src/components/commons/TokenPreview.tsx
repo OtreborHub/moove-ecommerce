@@ -214,13 +214,13 @@ export default function TokenPreview({collection, token, connectMetamask, isLoad
         }}
       >
         <Typography
-          variant="body1"
+          variant="inherit"
           sx={{ color: "text.secondary", mb: 0.5 }}
         >
           Buy for {formatPrice(token.price, "wei")} wei
         </Typography>
         <Typography
-          variant="caption"
+          variant="inherit"
           sx={{ color: "text.secondary" }}
         >
           Click to show details

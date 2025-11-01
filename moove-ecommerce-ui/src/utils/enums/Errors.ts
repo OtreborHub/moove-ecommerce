@@ -112,8 +112,8 @@ export function swalError(errorMessage: ErrorMessage, action?: Action, error?: a
             break;
 
         case ErrorMessage.AE:
-            title = "Auction already ended";
-            text = "Wait for seller to finalize the auction to proceed to withdraw or look for other active auctions";
+            title = "Awaiting seller finalization";
+            text = "This auction has ended and is waiting for the seller to finalize it.\nAfter that, you can withdraw your funds if you didn't win. Bidding will reopen only in future or other auctions.";
             break;
 
         default: 
