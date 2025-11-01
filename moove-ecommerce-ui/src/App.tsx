@@ -253,16 +253,14 @@ function App() {
               <Auctions auctions={appContext.auctions} connectMetamask={connectMetamask} goBack={back}></Auctions>
             }
             {appContext.section === Sections.MYNFTS &&
-              <MyNFTs />
+              <MyNFTs connectMetamask={connectMetamask} />
             }
         </Box>      
       </div>
 
-      <Paper sx={{ position: 'static', mt: 'auto' }} elevation={5}>
+      <Paper sx={{ position: 'static', mt: 'auto' }} elevation={24}>
         <BottomNavigation sx={{ backgroundColor: '#26547C', display:"flex", justifyContent:"center", alignItems:"center"}}  >
-          <Typography display={"inline-flex"}> <CopyrightIcon sx={{mr: 1}}/>2025 Moove Marketplace. All rights reserved. </Typography>
-          {/* <Typography >Altre info qui </Typography>
-          <Typography >Infine altre ancora qui </Typography> */}
+          <Typography display={"inline-flex"}><CopyrightIcon sx={{mr: .5}}/>2025 Moove Marketplace. All rights reserved. </Typography>
         </BottomNavigation>
       </Paper>
     </div>

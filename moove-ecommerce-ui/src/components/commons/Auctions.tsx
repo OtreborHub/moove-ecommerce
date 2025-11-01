@@ -26,7 +26,7 @@ export default function Auctions({ auctions, connectMetamask, goBack} : Auctions
   const isMobile = useMediaQuery('(max-width: 1400px)');
   const isPhone = useMediaQuery('(max-width: 650px)');
   const [auctionsData, setAuctionsData] = useState<AuctionWithImage[]>(
-    auctions.map(auction => ({ auction: auction, imageUrl: "" }))
+    auctions.map(auction => ({ auction: auction, imageUrl: moove_logo }))
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -86,6 +86,28 @@ useEffect(() => {
     if(goBack) goBack();
   }
 
+  const sortedAuctions = auctionsData
+    .slice()
+    .sort((a, b) => {
+      const now = Date.now();
+      const aEnd = new Date(a.auction.endTime).getTime();
+      const bEnd = new Date(b.auction.endTime).getTime();
+
+      const aIsClosed = a.auction.ended;
+      const bIsClosed = b.auction.ended;
+
+      const aIsExpired = aEnd < now;
+      const bIsExpired = bEnd < now;
+
+      if (aIsClosed && !bIsClosed) return 1;
+      if (!aIsClosed && bIsClosed) return -1;
+
+      if (aIsExpired && !bIsExpired) return -1;
+      if (!aIsExpired && bIsExpired) return 1;
+
+      return aEnd - bEnd;
+    });
+
   return (
     <>
     <Box alignContent={"left"} mt={3.5} ml={3.5}>
@@ -105,7 +127,7 @@ useEffect(() => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {auctionsData
+            {sortedAuctions
             .map((auctionData: AuctionWithImage) => (
               <Auction key={auctionData.auction.tokenId + auctionData.auction.collection.address}
                 auctionWithImage={auctionData}/>

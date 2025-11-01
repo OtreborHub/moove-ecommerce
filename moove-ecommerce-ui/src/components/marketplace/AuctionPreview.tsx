@@ -6,7 +6,7 @@ import moove_logo from "../../assets/moove_logo.svg";
 import { emptySigner, useAppContext } from "../../Context";
 import { payableBuyNFT, readTokenData, readTokenURI, retrieveBid, transferTo, writeBuyDutch, writeCreateAuction, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish, writeTokenPrice } from '../../utils/bridges/MooveCollectionsBridge';
 import { AuctionStatus, AuctionType, getAuctionStatus } from '../../utils/enums/Auction';
-import { formatToRomeTime, formatAuctionType } from "../../utils/formatValue";
+import { formatToRomeTime, formatAuctionType, formatPrice } from "../../utils/formatValue";
 import { AuctionPreviewProps } from '../../utils/Interfaces';
 import Loader from '../commons/Loader';
 import PlaceBidForm from '../forms/PlaceBidForm';
@@ -311,10 +311,10 @@ export default function AuctionPreview({auction, connectMetamask}: AuctionPrevie
                   
               </Typography>
               <Typography variant="body2">
-                  {!isPhone && auction.auctionType === AuctionType.CLASSIC && <>Highest Bid: {auction.highestBid} Wei<br/></>}
-                  {!isPhone && <>Current Price: {auction.currentPrice} Wei</>}
+                  {!isPhone && auction.auctionType === AuctionType.CLASSIC && <>Highest Bid: {formatPrice(auction.highestBid, 'wei')} wei<br/></>}
+                  {!isPhone && <>Current Price: {formatPrice(auction.currentPrice, 'wei')} wei</>}
               </Typography>
-              {!isPhone && auction.minIncrement > 0 && <Typography variant="body2">Min. increment: {auction.minIncrement} Wei</Typography>}
+              {!isPhone && auction.minIncrement > 0 && <Typography variant="body2">Min. increment: {formatPrice(auction.minIncrement, 'wei')} wei</Typography>}
               <Typography variant="body2">Ends at: {isPhone ? formatToRomeTime(auction.endTime).substring(0,10) : formatToRomeTime(auction.endTime)}</Typography>
           </CardContent>
 
@@ -328,8 +328,6 @@ export default function AuctionPreview({auction, connectMetamask}: AuctionPrevie
               </Box>
 
               <Box sx={{ display: 'flex', alignItems: 'center',  justifyContent: 'flex-end', textAlign: 'right', height: '50%'  }}>
-                  {/* <Button size="small" variant="outlined" sx={{mb: 1, mr: 1}} onClick={showNFTAuction}>View</Button> */}
-                  {/* {choseButtonsToShow()} */}
                   <ArrowForwardIosIcon fontSize='medium' />
               </Box>
           </Box>

@@ -1,17 +1,21 @@
 import { Card, CardActionArea, CardContent, CardMedia, Typography } from "@mui/material";
+import { useAppKit } from "@reown/appkit/react";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import moove_logo from "../../assets/moove_logo.svg";
 import { useAppContext } from "../../Context";
+import { transferTo, writeCreateAuction, writeTokenPrice } from "../../utils/bridges/MooveCollectionsBridge";
 import { formatPrice } from "../../utils/formatValue";
 import { TokenPreviewProps } from "../../utils/Interfaces";
+import CreateAuctionForm from "../forms/CreateAuctionForm";
+import TransferToForm from "../forms/TransferToForm";
+import UpdateTokenPriceForm from "../forms/UpdateTokenPriceForm";
 import Token from "./Token";
-import { useAppKit } from "@reown/appkit/react";
 
 const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
 
-export default function TokenPreview({collection, token, connectMetamask, isLoading, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice}: TokenPreviewProps) {
+export default function TokenPreview({collection, token, connectMetamask, isLoading, handleBuy}: TokenPreviewProps) {
   const [imageUrl, setImageUrl] = useState(moove_logo);
   const [metadata, setMetadata] = useState({name:"", cid:"", attributes: []});
   const [hovered, setHovered] = useState(false);
@@ -109,19 +113,76 @@ export default function TokenPreview({collection, token, connectMetamask, isLoad
     connectMetamask();
   }
 
-  function closeAndHandleCreateAuction(){
+  function closeAndShowCreateAuctionForm(){
     MySwal.close();
-    handleCreateAuction(token.id);
+    MySwal.fire({
+        title: "Create Auction",
+        html: <CreateAuctionForm tokenId={token.id} collectionSymbol={collection.symbol} handleSubmit={handleCreateAuction}/>,
+        showConfirmButton: false,
+        showCloseButton: true,
+    });
   }
 
-  function closeAndHandleTransfer(){
+  function closeAndShowTransferForm(){
     MySwal.close();
-    handleTransfer(token.id);
+        MySwal.fire({
+        title: "Trasfer NFT",
+        html: <TransferToForm tokenId={token.id} handleSubmit={handleTrasferFrom}/>,
+        showConfirmButton: false,
+        showCloseButton: true,
+    });
   }
 
-  function closeAndHandleUpdateTokenPrice(){
+  function closeAndShowUpdateTokenPriceForm(){
     MySwal.close();
-    handleUpdatePrice(token.id, token.price);
+    MySwal.fire({
+        title: "Update Price",
+        html: <UpdateTokenPriceForm tokenId={token.id} tokenPrice={token.price} handleSubmit={handleUpdateTokenPrice} />,
+        showConfirmButton: false,
+        showCloseButton: true,
+    });
+  }
+
+  async function handleCreateAuction(tokenId: number, auctionType: number, startPrice: number, duration: number, minIncrement: number){
+    isLoading(true);
+    const success = await writeCreateAuction(collection.address, tokenId, auctionType, startPrice, duration, minIncrement, appContext.signer);
+    isLoading(false);
+    if(success){
+      MySwal.fire({
+        title: "Create Auction",
+        text: "The auction creation request was successful!",
+        icon: "success",
+        confirmButtonColor: "#3085d6",
+      });
+    }
+  }
+
+  async function handleTrasferFrom(tokenId: number, addressTo: string){
+    isLoading(true);
+    var success = await transferTo(collection.address, addressTo, tokenId, appContext.signer);
+    isLoading(false);
+    if(success){
+      MySwal.fire({
+        title: "Transfer NFT",
+        text: "The transfer request was successful!",
+        icon: "success",
+        confirmButtonColor: "#3085d6",
+      });
+    }
+  }
+
+  async function handleUpdateTokenPrice(tokenId: number, price: BigInt){
+    isLoading(true);
+    var success = await writeTokenPrice(collection.address, tokenId, price, appContext.signer);
+    isLoading(false);
+    if(success){
+      MySwal.fire({
+        title: "Update NFT Price",
+        text: "The update request was successful!",
+        icon: "success",
+        confirmButtonColor: "#3085d6",
+      });
+    }
   }
 
   function openTokenDetail(){
@@ -137,9 +198,9 @@ export default function TokenPreview({collection, token, connectMetamask, isLoad
             connectWC={open} 
             connectMetamask={closeAndConnectMetamask}
             handleBuy={handleBuy}
-            handleCreateAuction={closeAndHandleCreateAuction}
-            handleUpdatePrice={closeAndHandleUpdateTokenPrice}
-            handleTransfer={closeAndHandleTransfer}
+            handleCreateAuction={closeAndShowCreateAuctionForm}
+            handleUpdatePrice={closeAndShowUpdateTokenPriceForm}
+            handleTransfer={closeAndShowTransferForm}
             />,
           showConfirmButton: false,
           showCloseButton: true,

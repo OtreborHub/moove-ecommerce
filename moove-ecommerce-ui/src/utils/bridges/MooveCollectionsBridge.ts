@@ -5,6 +5,7 @@ import { Action } from "../enums/Actions";
 import CollectionDTO from "../DTO/CollectionDTO";
 import TokenDTO from "../DTO/TokenDTO";
 import AuctionDTO from "../DTO/AuctionDTO";
+import Swal from "sweetalert2";
 
 export var collectionContract: Contract;
 
@@ -265,5 +266,68 @@ export async function writeDisableCollection(collectionAddress: string, signer: 
     console.log("Disable collection action: " + error);
     swalError(ErrorMessage.TR, Action.WC_DATA, error);
     return false;
+  }
+}
+
+export async function addFactoryContractListeners(collectionAddresses: string[], signer: Signer) {
+
+  //const signer = await browserProvider.getSigner();
+  for(const collectionAddress of collectionAddresses){
+    const collection = getContractInstance(collectionAddress, signer);
+    collection?.on("AuctionCreated", (tokenId, auctionType, startPrice, endTime) => {
+      if (tokenId) {
+        Swal.fire({
+          title: "Auction created!",
+          text: "Your NFT auction has been successfully created. The app will now reload to update the data.",
+          icon: "success",
+          confirmButtonColor: "#3085d6"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload();
+          }
+        });
+      }
+    });
+
+    collection?.on("BidPlaced", (tokenId, bidder, amount) => {
+      if (tokenId && signer.getAddress() === bidder) {
+        Swal.fire({
+          title: "Bid placed!",
+          text: "Your bid has been successfully placed. The app will now reload to update the data.",
+          icon: "success",
+          confirmButtonColor: "#3085d6"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload();
+          }
+        });
+      }
+    });
+
+    collection?.on("AuctionEnded", (tokenId, winner, amount) => {
+      if (tokenId && signer.getAddress() === winner) {
+        Swal.fire({
+          title: "Auction ended!",
+          text: "You have won the auction! The app will now reload to update the data.",
+          icon: "success",
+          confirmButtonColor: "#3085d6"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload();
+          }
+        });
+      }
+    });
+    
+    collection?.on("RefundWithdrawn", (tokenId, winner, amount) => {
+      if (tokenId && signer.getAddress() === winner) {
+        Swal.fire({
+          title: "Refund withdrawn!",
+          text: "You have successfully withdrawn your refund!",
+          icon: "success",
+          confirmButtonColor: "#3085d6"
+        });
+      }
+    });
   }
 }

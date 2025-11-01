@@ -12,11 +12,12 @@ import PlaceBidForm from "../forms/PlaceBidForm";
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
 import { useAppContext } from "../../Context";
+import moove_logo from "../../assets/moove_logo.svg";
 
 type AuctionWithImage = {auction: AuctionDTO} & { imageUrl: string };
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
 const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the price suits you.</>
-const tooltipTextEngTypographyshAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
+const tooltipTextEnglishAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
 
 export default function Auction({ auctionWithImage }: { auctionWithImage: AuctionWithImage }){
   const isPhone = useMediaQuery('(max-width: 650px)');
@@ -31,7 +32,7 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
     if(auctionWithImage.auction.auctionType === AuctionType.DUTCH){
         readDutchPrice();
     }
-  }, [auctionWithImage.auction]);
+  }, [auctionWithImage.auction, auctionWithImage.imageUrl]);
 
   async function readDutchPrice(){
       setIsLoading(true);
@@ -47,7 +48,7 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
         case AuctionType.DUTCH:
             return tooltipTextDutchAuction;
         case AuctionType.ENGLISH:
-            return tooltipTextEngTypographyshAuction;
+            return tooltipTextEnglishAuction;
         default:
             return "";
     }
@@ -162,7 +163,7 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
       {!isPhone && <TableCell align="left">
         <Box display={"flex"} flexDirection={"column"}>
           <Typography variant='body2'><b> {auctionWithImage.auction.collection.symbol}#{auctionWithImage.auction.tokenId}</b></Typography>
-          <Typography variant='body2' sx={{ color: auctionStatus === AuctionStatus.OPEN ? "green" : auctionStatus === AuctionStatus.CLOSED ? "red" : "grey"}}>{auctionStatus}</Typography>
+          <Typography variant='body2' sx={{ color: auctionStatus === AuctionStatus.OPEN ? "green" : auctionStatus === AuctionStatus.CLOSED ? "#6f1a1aff" : "grey"}}>{auctionStatus}</Typography>
           <Typography variant='body2'>{getAuctionTypeDescription(auctionWithImage.auction.auctionType)} Auction </Typography>
           {auctionStatus === AuctionStatus.OPEN && <Typography variant='body2'>{auctionWithImage.auction.auctionType === AuctionType.DUTCH ? "Buy now": "Place a bid"} for {formatPrice(auctionWithImage.auction.currentPrice, 'wei')} wei</Typography>}
           <Typography variant='body2'>Ends at {isPhone ? formatToRomeTime(auctionWithImage.auction.endTime).substring(0,10) : formatToRomeTime(auctionWithImage.auction.endTime)}</Typography>
@@ -171,7 +172,7 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
 
       {/* ACTIONS BUTTON */}
       <TableCell align="center">
-        <AuctionActionsButton auction={auctionWithImage.auction} handleBuyPlaceBid={buyPlaceBid} handleFinalizeAuction={endAuction} handleWithdrawFunds={withdraw} />
+        <AuctionActionsButton auction={auctionWithImage.auction} signer={appContext.signer} signerAddress={appContext.signerAddress} handleBuyPlaceBid={buyPlaceBid} handleFinalizeAuction={endAuction} handleWithdrawFunds={withdraw} />
       </TableCell>
 
     </TableRow>
@@ -179,7 +180,7 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
       <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6} sx={{borderBottom: open? '2px solid #444343ff': '', paddingBottom: "2rem" }}>
         <Collapse in={open} timeout="auto" unmountOnExit>
           <Box sx={{ margin: 1 }}>
-            <Typography variant="h6" gutterBottom component="div">
+            <Typography variant="h6" gutterBottom>
               <Grid container>
                 <Grid size={isMobile ? 12 : 8} textAlign={"center"}>
                   <Typography variant='body1'><b>Auction Data</b></Typography>

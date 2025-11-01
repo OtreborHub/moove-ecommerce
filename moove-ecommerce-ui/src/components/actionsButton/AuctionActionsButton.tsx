@@ -1,4 +1,5 @@
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
@@ -11,28 +12,32 @@ import { useEffect, useRef, useState } from 'react';
 import { AuctionActionsButtonProps } from '../../utils/Interfaces';
 import { emptySigner, useAppContext } from '../../Context';
 import { AuctionStatus, AuctionType, getAuctionStatus } from '../../utils/enums/Auction';
+import Auction from '../commons/Auction';
 
 
 const options = ['Place a Bid', 'Buy now', 'Withdraw', 'Finalize', 'Connect to access', 'No actions available'];
 
-export default function AuctionActionsButton({ auction, handleBuyPlaceBid, handleFinalizeAuction, handleWithdrawFunds }: AuctionActionsButtonProps) {
+export default function AuctionActionsButton({ auction, signer, signerAddress, handleBuyPlaceBid, handleFinalizeAuction, handleWithdrawFunds }: AuctionActionsButtonProps) {
     const [open, setOpen] = useState(false);
     const anchorRef = useRef<HTMLDivElement>(null);
+    const [auctionStatus] = useState<AuctionStatus>(getAuctionStatus(auction));
     const appContext = useAppContext();
     const [menuWidth, setMenuWidth] = useState(0);
+    const usedSignerAddress = appContext.signerAddress ?? signerAddress ?? "";
+    const usedSigner = appContext.signer !== emptySigner ? appContext.signer : signer;
 
     useEffect(() => {
       if (anchorRef.current) {
           setMenuWidth(anchorRef.current.offsetWidth);
       }
       setSelectedIndex(defaultSelectedIndex());
-    }, [anchorRef.current, open, appContext.signer]); 
+    }, [anchorRef.current, open, usedSigner]); 
     
     function defaultSelectedIndex() {
-      const isSeller = auction.seller === appContext.signerAddress;
+      const isSeller = auction.seller === usedSignerAddress;
       const isDutch = auction.auctionType === AuctionType.DUTCH;
 
-      if(appContext.signer === emptySigner){
+      if(usedSigner === emptySigner){
           return 4; // Connect to access
       }
 
@@ -119,18 +124,18 @@ export default function AuctionActionsButton({ auction, handleBuyPlaceBid, handl
           variant="contained"
           ref={anchorRef}
           aria-label="Button group"
-          sx={{ width: 'fit-content', borderColor: selectedIndex === 3 ? 'error': 'primary'}}
+          sx={{ width: 'inherit', borderColor: selectedIndex === 3 ? 'error': 'primary'}}
           color={selectedIndex === 3 ? 'error': 'primary'}
-          disabled={appContext.signer === emptySigner || selectedIndex === 5 }
+          disabled={usedSigner === emptySigner || selectedIndex === 5 }
       >
           
           <Button 
             onClick={handleClick} 
             sx={{ flexGrow: 1 }}>
-              {appContext.signer !== emptySigner ? options[selectedIndex]: options[4]}
+              {usedSigner !== emptySigner ? options[selectedIndex]: options[4]}
           </Button>
 
-          {(appContext.signer !== emptySigner && selectedIndex < 4) && 
+          {(usedSigner !== emptySigner && selectedIndex < 4) && 
            <Button
             size="small"
             aria-controls={open ? 'split-button-menu' : undefined}
@@ -138,7 +143,7 @@ export default function AuctionActionsButton({ auction, handleBuyPlaceBid, handl
             aria-label="select merge strategy"
             aria-haspopup="menu"
             onClick={handleToggle}>
-            <ArrowDropDownIcon/>
+            {appContext.signerAddress ? <ArrowDropDownIcon/> : <ArrowDropUpIcon/>}
           </Button>}
 
       </ButtonGroup>
@@ -148,7 +153,7 @@ export default function AuctionActionsButton({ auction, handleBuyPlaceBid, handl
         anchorEl={anchorRef.current}
         role={undefined}
         transition
-        placement="bottom"
+        placement={appContext.signerAddress ? "bottom": "top"}
         disablePortal
         modifiers={[
           { name: "flip", enabled: false }
@@ -161,14 +166,18 @@ export default function AuctionActionsButton({ auction, handleBuyPlaceBid, handl
                         <MenuList>
 
                         <MenuItem 
-                            disabled={auction.seller === appContext.signerAddress || auction.ended} 
+                            disabled={auction.seller === usedSignerAddress || auctionStatus === AuctionStatus.CLOSED} 
                             onClick={(() => handleMenuItemClick(auction.auctionType === AuctionType.DUTCH ? 1 : 0))}> 
                                 {auction.auctionType === AuctionType.DUTCH ? options[1]:options[0]}
                         </MenuItem>
                         
-                        <MenuItem disabled={auction.seller === appContext.signerAddress || !auction.ended} onClick={(() => handleMenuItemClick(2))}> {options[2]} </MenuItem>
+                        <MenuItem disabled={
+                          auction.seller === usedSignerAddress ||
+                          auctionStatus === AuctionStatus.WAITING_FOR_SELLER || auctionStatus === AuctionStatus.OPEN} onClick={(() => handleMenuItemClick(2))}> {options[2]} </MenuItem>
                         
-                        {auction.seller === appContext.signerAddress && auction.auctionType !== AuctionType.DUTCH &&
+                        {auction.seller === usedSignerAddress && 
+                         auctionStatus === AuctionStatus.WAITING_FOR_SELLER &&
+                         auction.auctionType !== AuctionType.DUTCH &&
                             <MenuItem 
                                 disabled={auction.ended} 
                                 sx={{ color: "red" }} 

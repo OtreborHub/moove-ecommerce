@@ -25,9 +25,6 @@ interface TokenPreviewProps {
     token: TokenDTO;
     isLoading: (isLoading: boolean) => void,
     handleBuy: (tokenId: number, price: number) => void;
-    handleCreateAuction: (tokenId: number) => void;
-    handleTransfer: (tokenId: number) => void;
-    handleUpdatePrice: (tokenId: number, price: number) => void;
     connectMetamask: () => void;
 }
 
@@ -52,7 +49,7 @@ interface AuctionPreviewProps {
     connectMetamask: () => void;
 }
 
-interface AuctionProps {
+interface TokenAuctionProps {
     auction: AuctionDTO;
     signer: Signer;
     signerAddress: string;
@@ -88,6 +85,8 @@ interface TokenActionsButtonProps {
 
 interface AuctionActionsButtonProps {
     auction: AuctionDTO;
+    signer?: Signer;
+    signerAddress?: string;
     handleBuyPlaceBid: (tokenId: number, price: number) => void;
     handleFinalizeAuction: (tokenId: number) => void;
     handleWithdrawFunds: (tokenId: number) => void;
@@ -142,4 +141,8 @@ interface FormProps {
 }
 // END FORMS ----------------------------------
 
-export type { NavbarProps, MarketplaceProps, CollectionProps, AuctionProps, AuctionsProps, AuctionPreviewProps, CreateCollectionFormProps, TableCollectionProps, LoaderProps, MintTokenFormProps, DeleteCollectionFormProps, TokenProps, TokenPreviewProps, UpdateTokenPriceFormProps, TrasferFormProps, CreateAuctionFormProps, PlaceBidFormProps, FactoryActionsButtonProps, TokenActionsButtonProps, AuctionActionsButtonProps};
+interface MyNFTsProps {
+    connectMetamask: () => void;
+}
+
+export type { NavbarProps, MarketplaceProps, CollectionProps, TokenAuctionProps, AuctionsProps, AuctionPreviewProps, CreateCollectionFormProps, TableCollectionProps, LoaderProps, MintTokenFormProps, DeleteCollectionFormProps, TokenProps, TokenPreviewProps, UpdateTokenPriceFormProps, TrasferFormProps, CreateAuctionFormProps, PlaceBidFormProps, FactoryActionsButtonProps, TokenActionsButtonProps, AuctionActionsButtonProps, MyNFTsProps};

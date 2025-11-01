@@ -9,10 +9,10 @@ import { Role } from "../../utils/enums/Role";
 import { CollectionProps } from "../../utils/Interfaces";
 import CreateAuctionForm from "../forms/CreateAuctionForm";
 import MintTokenForm from "../forms/MintTokenForm";
+import TransferToForm from "../forms/TransferToForm";
 import UpdateTokenPriceForm from "../forms/UpdateTokenPriceForm";
 import Loader from "./Loader";
 import TokenPreview from "./TokenPreview";
-import TransferToForm from "../forms/TransferToForm";
 
 export default function Collection({collection, connectMetamask, goBack} : CollectionProps) {
   const [tokens, setTokens] = useState<TokenDTO[]>([]);
@@ -55,75 +55,6 @@ export default function Collection({collection, connectMetamask, goBack} : Colle
       MySwal.fire({
         title: "Acquire NFT",
         text: "The buy request was successful!",
-        icon: "success",
-        confirmButtonColor: "#3085d6",
-      });
-    }
-  }
-
-  function showCreateAuctionForm(tokenId: number){
-    MySwal.fire({
-        title: "Create Auction",
-        html: <CreateAuctionForm tokenId={tokenId} collectionSymbol={collection.symbol} handleSubmit={handleCreateAuction}/>,
-        showConfirmButton: false,
-        showCloseButton: true,
-    });
-  }
-
-  async function handleCreateAuction(tokenId: number, auctionType: number, startPrice: number, duration: number, minIncrement: number){
-    setIsLoading(true);
-    const success = await writeCreateAuction(collection.address, tokenId, auctionType, startPrice, duration, minIncrement, appContext.signer);
-    setIsLoading(false);
-    if(success){
-      MySwal.fire({
-        title: "Create Auction",
-        text: "The auction creation request was successful!",
-        icon: "success",
-        confirmButtonColor: "#3085d6",
-      });
-    }
-  }
-
-  function showTransferForm(tokenId: number){
-    MySwal.fire({
-        title: "Trasfer NFT",
-        html: <TransferToForm tokenId={tokenId} handleSubmit={handleTrasferFrom}/>,
-        showConfirmButton: false,
-        showCloseButton: true,
-    });
-  }
-
-  async function handleTrasferFrom(tokenId: number, addressTo: string){
-    setIsLoading(true);
-    var success = await transferTo(collection.address, addressTo, tokenId, appContext.signer);
-    setIsLoading(false);
-    if(success){
-      MySwal.fire({
-        title: "Transfer NFT",
-        text: "The transfer request was successful!",
-        icon: "success",
-        confirmButtonColor: "#3085d6",
-      });
-    }
-  }
-
-  function showUpdateTokenPriceForm(tokenId: number, tokenPrice: number){
-    MySwal.fire({
-        title: "Update Price",
-        html: <UpdateTokenPriceForm tokenId={tokenId} tokenPrice={tokenPrice} handleSubmit={handleUpdateTokenPrice} />,
-        showConfirmButton: false,
-        showCloseButton: true,
-    });
-  }
-
-  async function handleUpdateTokenPrice(tokenId: number, price: BigInt){
-    setIsLoading(true);
-    var success = await writeTokenPrice(collection.address, tokenId, price, appContext.signer);
-    setIsLoading(false);
-    if(success){
-      MySwal.fire({
-        title: "Update NFT Price",
-        text: "The update request was successful!",
         icon: "success",
         confirmButtonColor: "#3085d6",
       });
@@ -192,17 +123,14 @@ export default function Collection({collection, connectMetamask, goBack} : Colle
                 token={token} 
                 isLoading={loadingPropagation}
                 connectMetamask={connectMetamask} 
-                handleBuy={handleBuy} 
-                handleCreateAuction={showCreateAuctionForm}
-                handleTransfer={showTransferForm}
-                handleUpdatePrice={showUpdateTokenPriceForm}/>
+                handleBuy={handleBuy}/>
               </Grid>
           ))}
           </Grid>
         {/* </Box> */}
 
         {tokens.length === 0 && !isLoading &&
-          <Typography variant="h6" component="div" alignSelf="center" sx={{ flexGrow: 1, marginTop: 5, marginBottom: 5 }}>
+          <Typography variant="h6" component="div" alignSelf="center" sx={{ flexGrow: 1, marginTop: 5, marginBottom: 5, color: '#f7a642ff' }}>
             No tokens found for this collection.
           </Typography>
         }
