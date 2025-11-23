@@ -220,13 +220,15 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
                       </Typography>
                     </Grid>
                     <Grid size={6} textAlign={"left"} marginTop={isMobile? '1rem': ''}>
+                      
+                      <Typography variant='body2'><b>Highest Bid:</b> {formatPrice(auctionWithImage.auction.highestBid, 'wei')} wei</Typography>
                       <Typography variant='body2'><b>Highest Bidder:</b> {formatAddress(auctionWithImage.auction.highestBidder)}</Typography>
                       {auctionWithImage.auction.auctionType === AuctionType.ENGLISH && 
                         <Typography variant='body2'><b>Min increment:</b> {formatPrice(auctionWithImage.auction.minIncrement, 'wei')} wei</Typography>
                       }
                       <Typography variant='body2'><b>Start Time:</b> {formatToRomeTime(auctionWithImage.auction.startTime)}</Typography>
                       <Typography variant='body2'><b>End Time:</b> {formatToRomeTime(auctionWithImage.auction.endTime)}</Typography>
-                      <Typography variant='body2'><b>Status:</b> {auctionStatus}</Typography>
+                      {/* <Typography variant='body2'><b>Status:</b> {auctionStatus}</Typography> */}
                     </Grid>
                   </Grid>
                 </Grid>

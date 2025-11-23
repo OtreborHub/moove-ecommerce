@@ -14,7 +14,7 @@ import { NavbarProps } from '../../utils/Interfaces';
 import { Sections } from '../../utils/enums/Sections';
 import NavbarActionsButton from '../actionsButton/NavbarActionsButton';
 
-export default function Navbar({connectMetamask}: NavbarProps) {
+export default function Navbar({handleConnect, connectMetamask}: NavbarProps) {
   const isPhone = useMediaQuery('(max-width: 650px)');
   const appContext = useAppContext();
   const { open } = useAppKit();
@@ -38,7 +38,7 @@ export default function Navbar({connectMetamask}: NavbarProps) {
           {appContext.signer === emptySigner && 
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: 'auto', marginRight: '1rem'}}>
               {!isPhone && <ButtonGroup>
-                  <Button key="word" variant="contained" size="large" sx={{ fontSize: "1  rem", color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius: '10px',  paddingRight:'.5rem'}}>
+                  <Button key="word" onClick={handleConnect}variant="contained" size="large" sx={{ fontSize: "1  rem", color:'#f7a642ff', backgroundColor: 'whitesmoke', borderRadius: '10px',  paddingRight:'.5rem'}}>
                     <b>Connect</b>
                   </Button> 
                    

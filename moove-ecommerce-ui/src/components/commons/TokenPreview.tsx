@@ -13,9 +13,9 @@ import TransferToForm from "../forms/TransferToForm";
 import UpdateTokenPriceForm from "../forms/UpdateTokenPriceForm";
 import Token from "./Token";
 
-const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
+export const IPFS_GATEWAY: string = import.meta.env.VITE_IPFS_GATEWAY as string;
 
-export default function TokenPreview({collection, token, connectMetamask, isLoading, handleBuy}: TokenPreviewProps) {
+export default function TokenPreview({collection, token, handleConnect, isLoading, handleBuy}: TokenPreviewProps) {
   const [imageUrl, setImageUrl] = useState(moove_logo);
   const [metadata, setMetadata] = useState({name:"", cid:"", attributes: []});
   const [hovered, setHovered] = useState(false);
@@ -69,7 +69,7 @@ export default function TokenPreview({collection, token, connectMetamask, isLoad
     isLoading(true);
     
     try {
-      const metadataURL = `${IPFS_gateway}${token.URI}`;
+      const metadataURL = `${IPFS_GATEWAY}${token.URI}`;
       console.log(`📥 Fetching metadata from: ${metadataURL}`);
       
       const controller = new AbortController();
@@ -92,7 +92,7 @@ export default function TokenPreview({collection, token, connectMetamask, isLoad
       token.metadata = metadata;
       setMetadata(metadata);
 
-      const url = `${IPFS_gateway}${metadata.cid}`;
+      const url = `${IPFS_GATEWAY}${metadata.cid}`;
       const success = await loadImageWithTimeout(url);
       
       if (!success) {
@@ -106,11 +106,6 @@ export default function TokenPreview({collection, token, connectMetamask, isLoad
     } finally {
       isLoading(false);
     }
-  }
-
-  function closeAndConnectMetamask(){
-    MySwal.close();
-    connectMetamask();
   }
 
   function closeAndShowCreateAuctionForm(){
@@ -195,8 +190,7 @@ export default function TokenPreview({collection, token, connectMetamask, isLoad
             metadata={metadata}
             signer={appContext.signer}
             signerAddress={appContext.signerAddress}
-            connectWC={open} 
-            connectMetamask={closeAndConnectMetamask}
+            handleConnect={handleConnect}
             handleBuy={handleBuy}
             handleCreateAuction={closeAndShowCreateAuctionForm}
             handleUpdatePrice={closeAndShowUpdateTokenPriceForm}

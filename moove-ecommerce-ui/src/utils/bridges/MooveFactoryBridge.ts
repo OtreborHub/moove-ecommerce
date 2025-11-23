@@ -30,14 +30,24 @@ export async function readIsAdmin(signer: Signer) {
   }
 
 export async function readCollections() {
-    try {
-      const contract = getContractInstance();
-      return await contract?.getCollections();
-    } catch (error: any) {
-      console.log("readCollections action: " + ErrorMessage.RD);
-      swalError(ErrorMessage.RD, Action.RD_DATA, error);
-    }
+  try {
+    const contract = getContractInstance();
+    return await contract?.getCollections();
+  } catch (error: any) {
+    console.log("readCollections action: " + ErrorMessage.RD);
+    swalError(ErrorMessage.RD, Action.RD_DATA, error);
   }
+}
+
+export async function readAdmins() {
+  try {
+    const contract = getContractInstance();
+    return await contract?.admins();
+  } catch (error: any) {
+    console.log("readCollections action: " + ErrorMessage.RD);
+    swalError(ErrorMessage.RD, Action.RD_DATA, error);
+  }
+}
 
 export async function writeCreateCollection(name: string, symbol: string, maxSupply: number, signer: Signer) {
   try{
@@ -46,6 +56,28 @@ export async function writeCreateCollection(name: string, symbol: string, maxSup
     return true;
   } catch (error: any) {
     console.log("writeCreateCollection action: " + ErrorMessage.TR);
+    swalError(ErrorMessage.TR, Action.WC_DATA, error);
+  }
+}
+
+export async function writeAddAdmin(newAdmin: string, signer: Signer) {
+  try{
+    const signerContract = getContractInstance(signer); 
+    await signerContract?.addAdmin(newAdmin);
+    return true;
+  } catch (error: any) {
+    console.log("writeAddAdmin action: " + ErrorMessage.TR);
+    swalError(ErrorMessage.TR, Action.WC_DATA, error);
+  }
+}
+
+export async function writeRemoveAdmin(newAdmin: string, signer: Signer) {
+  try{
+    const signerContract = getContractInstance(signer); 
+    await signerContract?.removeAdmin(newAdmin);
+    return true;
+  } catch (error: any) {
+    console.log("writeAddAdmin action: " + ErrorMessage.TR);
     swalError(ErrorMessage.TR, Action.WC_DATA, error);
   }
 }

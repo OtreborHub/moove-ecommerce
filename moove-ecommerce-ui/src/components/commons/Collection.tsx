@@ -12,7 +12,7 @@ import MintTokenForm from "../forms/MintTokenForm";
 import Loader from "./Loader";
 import TokenPreview from "./TokenPreview";
 
-export default function Collection({collection, connectMetamask, goBack} : CollectionProps) {
+export default function Collection({collection, handleConnect, goBack} : CollectionProps) {
   const [tokens, setTokens] = useState<TokenDTO[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const MySwal = withReactContent(Swal);
@@ -112,7 +112,7 @@ export default function Collection({collection, connectMetamask, goBack} : Colle
                 transition: 'transform 0.3s ease-in-out',
                 "&:hover": {
                   transform: 'scale(1.15)',
-                  zIndex: 2, // opzionale, per farlo sopra le altre card
+                  zIndex: 2,
                 }
               }}
             >
@@ -120,7 +120,7 @@ export default function Collection({collection, connectMetamask, goBack} : Colle
                 collection={collection}
                 token={token} 
                 isLoading={loadingPropagation}
-                connectMetamask={connectMetamask} 
+                handleConnect={handleConnect} 
                 handleBuy={handleBuy}/>
               </Grid>
           ))}

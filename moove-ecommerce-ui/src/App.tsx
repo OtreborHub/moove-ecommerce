@@ -1,11 +1,9 @@
-import { BottomNavigation, BottomNavigationAction, Box, Paper, Typography, useMediaQuery } from '@mui/material';
+import { BottomNavigation, Box, Button, Paper, Typography, useMediaQuery } from '@mui/material';
 import { sepolia } from '@reown/appkit/networks';
 import { useAppKit, useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import './App.css';
-import bici from './assets/bici.png';
-import motorino from './assets/motorino.png';
 import Collection from './components/commons/Collection';
 import Navbar from './components/commons/Navbar';
 import { Factory } from './components/factory/Factory';
@@ -19,16 +17,20 @@ import CollectionDTO from './utils/DTO/CollectionDTO';
 import Auctions from './components/commons/Auctions';
 import MyNFTs from './components/commons/MyNFTs';
 import CopyrightIcon from '@mui/icons-material/Copyright';
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
+import metamask_logo from './assets/metamask.svg';
+import walletconnect_logo from './assets/wallet-connect.svg';
 
 function App() {
   const appContext = useAppContext();
-  const isMobile = useMediaQuery('(max-width: 1400px)');
+  // const isMobile = useMediaQuery('(max-width: 1400px)');
   const [appStarting, setAppStarting] = useState<boolean>(true);
   const [shownCollection, setShownCollection] = useState<CollectionDTO>(CollectionDTO.emptyInstance());
-
+  const MySwal = withReactContent(Swal);
   const { isConnected } = useAppKitAccount();
   const { walletProvider }: any = useAppKitProvider('eip155');
-  const { close } = useAppKit();
+  const { open, close } = useAppKit();
   
   useEffect(() => {
     if(appStarting){
@@ -43,9 +45,6 @@ function App() {
       initCollections();
     }
   }, [isConnected, walletProvider]);
-
-  
-  
 
  //------------------ Wallet Connect KitApp
   async function connectWCKitApp() {
@@ -180,80 +179,88 @@ function App() {
     setShownCollection(collection)
   }
 
+  function showConnect() {
+    
+    MySwal.fire({
+      title: "Connect your wallet",
+      html: swalConnect(), 
+      showConfirmButton: false,
+      showCloseButton: true,
+      didOpen: () => {
+        // wire buttons to actions (user gesture)
+        document.getElementById('swal-metamask')?.addEventListener('click', async () => {
+          connectMetamask();
+          MySwal.close();
+        });
+        document.getElementById('swal-wc')?.addEventListener('click', async () => {
+          open();
+          MySwal.close();
+        });
+      }
+
+    })
+  }
+
   function back(){
     appContext.updateSection(Sections.MARKETPLACE);
     setShownCollection(CollectionDTO.emptyInstance());
   }
 
+
+  const swalConnect = () => {
+    return (<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'stretch' }}>
+          <Box sx={{ textAlign: 'left' }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Choose a method to sign in</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              Make sure your wallet is set to the <strong>Sepolia</strong> network (chainId 11155111) before proceeding.
+            </Typography>
+          </Box>
+
+          <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Button
+              id="swal-metamask"
+              variant="contained"
+              startIcon={<img src={metamask_logo} alt="MetaMask" style={{ width: 20, height: 20 }} />}
+              sx={{ justifyContent: 'flex-start', py: 1.5 }}
+            >
+              MetaMask (Browser)
+            </Button>
+
+            <Button
+              id="swal-wc"
+              variant="outlined"
+              startIcon={<img src={walletconnect_logo} alt="WalletConnect" style={{ width: 20, height: 20 }} />}
+              sx={{ justifyContent: 'flex-start', py: 1.5 }}
+            >
+              WalletConnect (QR / Mobile)
+            </Button>
+          </Box>
+
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+            We never collect your private keys. All transactions must be confirmed in your wallet.
+          </Typography>
+        </Box>
+      );
+  }
+
   return (
     <div className="App" id="app">
 
-      <Navbar connectMetamask={connectMetamask}/>
-
-      {/* background images */}
-      
-      {/* <Box
-        sx={{
-          position: 'absolute',
-          top: 130,
-          right: 0,
-          zIndex: 0,
-          height: '100vh',
-          display: 'flex',
-          alignItems: 'flex-end',
-          pointerEvents: 'none',
-          overflow: 'hidden'
-        }}
-        >
-        <img
-          src={motorino}
-          alt="Motorino"
-          style={{
-            height: '80vh',
-            opacity: 0.15,
-            marginRight: '0.5rem'
-          }}
-        />
-      </Box> */}
-      
-      {/* rimuovere per schermi piccoli */}
-      {/* <Box
-        sx={{
-          position: 'absolute',
-          left: -200,
-          top: '80vh',
-          height: 'auto',
-          zIndex: 0,
-          display: isMobile ? 'none':'flex',
-          alignItems: 'flex-start',
-          pointerEvents: 'none'
-        }}
-      >
-        <img
-          src={bici}
-          alt="bicycle"
-          style={{
-            height: '70vh',
-            opacity: 0.15,
-            marginLeft: '0.5rem'
-          }}
-        />
-      </Box> */}
-      {/* end background images */}
+      <Navbar handleConnect={showConnect} connectMetamask={connectMetamask}/>
 
       <div className="main-div primary-bg-color">
         <Box>
             {appContext.section === Sections.MARKETPLACE &&
-              <Marketplace connectMetamask={connectMetamask} collectionAddresses={appContext.collectionAddresses} showCollection={showCollection}/>
+              <Marketplace handleConnect={showConnect} collectionAddresses={appContext.collectionAddresses} showCollection={showCollection}/>
             }
             {appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY &&
               <Factory showCollection={showCollection}/>
             }
             {appContext.section === Sections.COLLECTION && shownCollection.address !== CollectionDTO.emptyInstance().address && 
-              <Collection collection={shownCollection} connectMetamask={connectMetamask} goBack={back}/>
+              <Collection collection={shownCollection} handleConnect={showConnect} goBack={back}/>
             }
             {appContext.section === Sections.AUCTIONS && appContext.auctions.length > 0 &&
-              <Auctions auctions={appContext.auctions} connectMetamask={connectMetamask} goBack={back}></Auctions>
+              <Auctions auctions={appContext.auctions} connectMetamask={showConnect} goBack={back}></Auctions>
             }
             {appContext.section === Sections.MYNFTS &&
               <MyNFTs connectMetamask={connectMetamask} />

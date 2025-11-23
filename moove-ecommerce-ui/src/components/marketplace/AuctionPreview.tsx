@@ -18,12 +18,13 @@ import TransferToForm from '../forms/TransferToForm';
 import UpdateTokenPriceForm from '../forms/UpdateTokenPriceForm';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
-const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
+export const IPFS_GATEWAY: string = import.meta.env.VITE_IPFS_GATEWAY as string;
+
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
 const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the price suits you.</>
 const tooltipTextEnglishAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
 
-export default function AuctionPreview({auction, connectMetamask}: AuctionPreviewProps) {
+export default function AuctionPreview({auction, handleConnect}: AuctionPreviewProps) {
   const isPhone = useMediaQuery('(max-width: 650px)');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [imageURL, setImageURL] = useState(moove_logo);
@@ -92,7 +93,7 @@ export default function AuctionPreview({auction, connectMetamask}: AuctionPrevie
 
   async function fetchMetadata(tokenURI: string){
       try {
-          const metadataUrl = `${IPFS_gateway}${tokenURI}`;
+          const metadataUrl = `${IPFS_GATEWAY}${tokenURI}`;
           console.log(`📥 [Auction ${auction.tokenId}] Fetching metadata from: ${metadataUrl}`);
           
           const controller = new AbortController();
@@ -108,7 +109,7 @@ export default function AuctionPreview({auction, connectMetamask}: AuctionPrevie
               const imageCID = metadata.cid;
               setTokenMetadata(metadata);
               
-              const url = `${IPFS_gateway}${imageCID}`;
+              const url = `${IPFS_GATEWAY}${imageCID}`;
               console.log(`🔄 [Auction ${auction.tokenId}] Trying: ${url}`);
           
               const success = await loadImageWithTimeout(url, 3000);
@@ -141,8 +142,7 @@ export default function AuctionPreview({auction, connectMetamask}: AuctionPrevie
             metadata={tokenMetadata}
             signerAddress={appContext.signerAddress}
             signer={appContext.signer}
-            connectWC={closeAndConnectWC} 
-            connectMetamask={closeAndConnectMetamask}
+            handleConnect={handleConnect}
             handleBuy={closeAndHandleBuy}
             handleCreateAuction={showCreateAuctionForm}
             handleUpdatePrice={showUpdateTokenPriceForm}
@@ -155,16 +155,6 @@ export default function AuctionPreview({auction, connectMetamask}: AuctionPrevie
             }
         }); 
     }
-  }
-
-  function closeAndConnectMetamask(){
-      MySwal.close();
-      connectMetamask();
-  }
-
-  function closeAndConnectWC(){
-      MySwal.close();
-      open();
   }
 
   async function closeAndHandleBuy(tokenId: number, tokenPrice: number){

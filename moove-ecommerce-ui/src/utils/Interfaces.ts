@@ -5,17 +5,18 @@ import TokenDTO, { Metadata } from "./DTO/TokenDTO";
 
 interface NavbarProps {
     connectMetamask: () => void;
+    handleConnect: () => void;
 }
 
 interface MarketplaceProps {
     collectionAddresses: string[];
     showCollection: (collection: CollectionDTO) => void;
-    connectMetamask: () => void;
+    handleConnect: () => void;
 }
 
 interface CollectionProps{
     collection: CollectionDTO;
-    connectMetamask: () => void;
+    handleConnect: () => void;
     goBack?: () => void;
     showCollection?: (collection: CollectionDTO) => void;
 }
@@ -25,7 +26,7 @@ interface TokenPreviewProps {
     token: TokenDTO;
     isLoading: (isLoading: boolean) => void,
     handleBuy: (tokenId: number, price: number) => void;
-    connectMetamask: () => void;
+    handleConnect: () => void;
 }
 
 interface TokenProps {
@@ -40,13 +41,12 @@ interface TokenProps {
     handleCreateAuction: (tokenId: number) => void;
     handleTransfer: (tokenId: number) => void;
     handleUpdatePrice: (tokenId: number, price: number) => void;
-    connectWC: () => void;
-    connectMetamask: () => void;
+    handleConnect: () => void;
 }
 
 interface AuctionPreviewProps {
     auction: AuctionDTO;
-    connectMetamask: () => void;
+    handleConnect: () => void;
 }
 
 interface TokenAuctionProps {
@@ -61,7 +61,14 @@ interface AuctionsProps {
     goBack: () => void;
     connectMetamask: () => void;
 }
-interface TableCollectionProps {
+
+interface AdminsTableProps {
+    admins: string[];
+    isOwner: boolean;
+    removeAdmin: (address: string) => void;
+}
+
+interface CollectionTableProps {
     collections: CollectionDTO[];
     showCollection: (collection: CollectionDTO) => void;
     handleMint: (collectionAddress: string, tokenURI: string, price: number) => void;
@@ -136,6 +143,11 @@ interface PlaceBidFormProps {
     handleSubmit: (tokenId: number, value: number) => void;
 }
 
+interface AddRemoveAdminFormProps {
+    addressToRemove: string; 
+    handleSubmit: (removeAdmin: boolean, address: string) => void;
+}
+
 //Mettere tutti i metodi dei forms
 interface FormProps {
 }
@@ -145,4 +157,7 @@ interface MyNFTsProps {
     connectMetamask: () => void;
 }
 
-export type { NavbarProps, MarketplaceProps, CollectionProps, TokenAuctionProps, AuctionsProps, AuctionPreviewProps, CreateCollectionFormProps, TableCollectionProps, LoaderProps, MintTokenFormProps, DeleteCollectionFormProps, TokenProps, TokenPreviewProps, UpdateTokenPriceFormProps, TrasferFormProps, CreateAuctionFormProps, PlaceBidFormProps, FactoryActionsButtonProps, TokenActionsButtonProps, AuctionActionsButtonProps, MyNFTsProps};
+
+
+
+export type { NavbarProps, MarketplaceProps, CollectionProps, TokenAuctionProps, AuctionsProps, AuctionPreviewProps, CreateCollectionFormProps, CollectionTableProps, AdminsTableProps, LoaderProps, MintTokenFormProps, DeleteCollectionFormProps, TokenProps, TokenPreviewProps, UpdateTokenPriceFormProps, TrasferFormProps, CreateAuctionFormProps, PlaceBidFormProps, FactoryActionsButtonProps, TokenActionsButtonProps, AuctionActionsButtonProps, MyNFTsProps, AddRemoveAdminFormProps};

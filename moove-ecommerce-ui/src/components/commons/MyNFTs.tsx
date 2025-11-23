@@ -75,7 +75,7 @@ export default function MyNFTs({connectMetamask}: MyNFTsProps) {
                 token={myNFT.token} 
                 isLoading={loadingPropagation}
                 handleBuy={() => {}}
-                connectMetamask={connectMetamask}/>
+                handleConnect={connectMetamask}/>
               </Grid>
           ))}
           </Grid>

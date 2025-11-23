@@ -6,23 +6,19 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { AuctionsProps, TableCollectionProps } from '../../utils/Interfaces';
+import { AuctionsProps } from '../../utils/Interfaces';
 import { useEffect, useState } from 'react';
 import AuctionDTO from '../../utils/DTO/AuctionDTO';
-import { AuctionType, getAuctionStatus, getAuctionTypeDescription } from '../../utils/enums/Auction';
 import auctions_title from "../../assets/auctions_title.svg";
 import moove_logo from "../../assets/moove_logo.svg";
 import { readTokenURI } from '../../utils/bridges/MooveCollectionsBridge';
-import { useAppContext } from '../../Context';
 import Loader from './Loader';
 import Auction from './Auction';
 
-
-const IPFS_gateway = 'https://amber-adverse-llama-592.mypinata.cloud/ipfs/';
+export const IPFS_GATEWAY: string = import.meta.env.VITE_IPFS_GATEWAY as string;
 type AuctionWithImage = {auction: AuctionDTO} & { imageUrl: string };
 
-export default function Auctions({ auctions, connectMetamask, goBack} : AuctionsProps) {
-  const appContext = useAppContext();
+export default function Auctions({ auctions, goBack} : AuctionsProps) {
   const isMobile = useMediaQuery('(max-width: 1400px)');
   const isPhone = useMediaQuery('(max-width: 650px)');
   const [auctionsData, setAuctionsData] = useState<AuctionWithImage[]>(
@@ -66,7 +62,7 @@ useEffect(() => {
 
   async function fetchMetadata(tokenURI: string, auction: AuctionDTO): Promise<string> {
     try {
-      const metadataUrl = `${IPFS_gateway}${tokenURI}`;
+      const metadataUrl = `${IPFS_GATEWAY}${tokenURI}`;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
       const response = await fetch(metadataUrl, { signal: controller.signal });
@@ -75,7 +71,7 @@ useEffect(() => {
       if (!response.ok) throw new Error(`HTTP error ${response.status}`);
       const metadata = await response.json();
       const imageCID = metadata.cid;
-      return imageCID ? `${IPFS_gateway}${imageCID}` : moove_logo;
+      return imageCID ? `${IPFS_GATEWAY}${imageCID}` : moove_logo;
     } catch (error) {
       console.error(`Error fetching metadata for auction ${auction.tokenId}:`, error);
       return moove_logo;

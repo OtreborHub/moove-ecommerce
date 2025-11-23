@@ -20,6 +20,7 @@ import { Sections } from '../../utils/enums/Sections';
 import { formatAddress } from '../../utils/formatValue';
 import metamask_logo from '../../assets/metamask.svg';
 import walletconnect_logo from '../../assets/wallet-connect.svg';
+import GavelIcon from '@mui/icons-material/Gavel';
 
 export default function NavbarActionsButton() {
     const isPhone = useMediaQuery('(max-width: 650px)');
@@ -105,23 +106,29 @@ export default function NavbarActionsButton() {
                                 </Box>
                                 {/* <hr style={{ marginLeft: "10px", marginRight: "10px"}}/> */}
 
-                                <MenuItem>
-                                    <Button onClick={() => changeSection(Sections.MYNFTS)} sx={{ pl:0, pb:0 }} variant='text'>
+                                <MenuItem onClick={() => changeSection(Sections.MYNFTS)}>
+                                    <Button  sx={{ pl:0, pb:0, color: '#f7a642ff'}} variant='text'>
                                         <BackpackIcon sx={{mr: 1}} fontSize='small'/>My NFTs
                                     </Button>
                                 </MenuItem>
 
+                                <MenuItem onClick={() => changeSection(Sections.AUCTIONS)}>
+                                    <Button sx={{ pl:0, pb:0, color: '#000'}} variant='text'>
+                                        <GavelIcon sx={{mr: 1}} fontSize='small'/>Auctions
+                                    </Button>
+                                </MenuItem>
+
                                 { appContext.role === Role.ADMIN && appContext.section !== Sections.FACTORY &&
-                                    <MenuItem>
-                                        <Button onClick={() => changeSection(Sections.FACTORY)} sx={{ pl:0, pb:0, color: '#f7a642ff'}} variant='text'>
-                                            <FactoryIcon sx={{mr: 1}} fontSize='small'/> Visit Factory
+                                    <MenuItem onClick={() => changeSection(Sections.FACTORY)}>
+                                        <Button  sx={{ pl:0, pb:0, color: '#000'}} variant='text'>
+                                            <FactoryIcon sx={{mr: 1}} fontSize='small'/> Factory
                                         </Button>
                                     </MenuItem>
                                 }
 
                                 { appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY &&
                                     <MenuItem>
-                                        <Button onClick={() => changeSection(Sections.MARKETPLACE)} sx={{ pl:0, pb:0, color: '#f7a642ff'}} variant='text'>
+                                        <Button onClick={() => changeSection(Sections.MARKETPLACE)} sx={{ pl:0, pb:0, color: '#000'}} variant='text'>
                                             <MuseumIcon sx={{mr: 1}} fontSize='small'/> Visit Marketplace
                                         </Button>
                                     </MenuItem>

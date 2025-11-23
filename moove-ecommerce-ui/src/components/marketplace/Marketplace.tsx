@@ -14,7 +14,7 @@ import CollectionPreview from "./CollectionsPreview";
 import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
 import { Sections } from "../../utils/enums/Sections";
 
-export function Marketplace({collectionAddresses, connectMetamask, showCollection }: MarketplaceProps) {
+export function Marketplace({collectionAddresses, handleConnect, showCollection }: MarketplaceProps) {
     const isMobile = useMediaQuery('(max-width: 1400px)');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const appContext = useAppContext();
@@ -182,7 +182,7 @@ export function Marketplace({collectionAddresses, connectMetamask, showCollectio
                     {appContext.collections
                     .filter((collection) => collection.active === true)
                     .map((collection, index) => (
-                        <CollectionPreview key={index} idx={index} collection={collection} connectMetamask={connectMetamask} showCollection={handleShowCollection}/>
+                        <CollectionPreview key={index} idx={index} collection={collection} handleConnect={handleConnect} showCollection={handleShowCollection}/>
                     ))}
                     </Slider>
                 }
@@ -199,8 +199,7 @@ export function Marketplace({collectionAddresses, connectMetamask, showCollectio
                     marginRight: isMobile ? "" : "3rem", 
                     margin: isMobile ? "1rem": "",
                     gap: 1, 
-                    maxHeight: isMobile ? '' : '700px', // <-- Limita l’altezza visibile (es. 3 card da 120px)
-                    overflowY: 'auto',   // <-- Attiva lo scroll verticale
+                    maxHeight: isMobile ? '' : '700px',
                     zIndex: 1}}
                 >
                 
@@ -211,7 +210,7 @@ export function Marketplace({collectionAddresses, connectMetamask, showCollectio
                 }
                 
                 {displayedAuctions.map((auction, index) => (
-                    <AuctionPreview key={index} auction={auction} connectMetamask={connectMetamask}/>
+                    <AuctionPreview key={index} auction={auction} handleConnect={handleConnect}/>
                 ))}
                 {appContext.auctions.length > 0 &&
                 <Box textAlign={"right"}>

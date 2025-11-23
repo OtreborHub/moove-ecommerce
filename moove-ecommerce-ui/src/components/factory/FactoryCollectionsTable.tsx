@@ -6,10 +6,11 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { TableCollectionProps } from '../../utils/Interfaces';
+import { CollectionTableProps } from '../../utils/Interfaces';
 import FactoryActionsButton from '../actionsButton/FactoryActionsButton';
+import { formatAddress } from '../../utils/formatValue';
 
-export default function TableCollection({ collections, handleMint, handleDisable, showCollection }: TableCollectionProps) {
+export default function CollectionTable({ collections, handleMint, handleDisable, showCollection }: CollectionTableProps) {
   const isMobile = useMediaQuery('(max-width: 1400px)');
   const isPhone = useMediaQuery('(max-width: 650px)');
 
@@ -40,7 +41,7 @@ export default function TableCollection({ collections, handleMint, handleDisable
               <TableCell align="center">{collection.symbol}</TableCell>
               <TableCell align="center">{collection.totalSupply}</TableCell>
               <TableCell align="center">{collection.tokenIds}</TableCell>
-              <TableCell align="center">{collection.address}</TableCell>
+              <TableCell align="center">{formatAddress(collection.address)}</TableCell>
               <TableCell align="center">{collection.active ? "Yes" : "No"}</TableCell>
               {(!isPhone && !isMobile) &&
               <TableCell align="center"><FactoryActionsButton collection={collection} handleMint={handleMint} handleDisable={handleDisable} showCollection={showCollection}/></TableCell>}
