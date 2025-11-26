@@ -39,15 +39,6 @@ export async function readCollections() {
   }
 }
 
-export async function readAdmins() {
-  try {
-    const contract = getContractInstance();
-    return await contract?.admins();
-  } catch (error: any) {
-    console.log("readCollections action: " + ErrorMessage.RD);
-    swalError(ErrorMessage.RD, Action.RD_DATA, error);
-  }
-}
 
 export async function writeCreateCollection(name: string, symbol: string, maxSupply: number, signer: Signer) {
   try{
@@ -57,6 +48,7 @@ export async function writeCreateCollection(name: string, symbol: string, maxSup
   } catch (error: any) {
     console.log("writeCreateCollection action: " + ErrorMessage.TR);
     swalError(ErrorMessage.TR, Action.WC_DATA, error);
+    return false;
   }
 }
 
@@ -68,6 +60,7 @@ export async function writeAddAdmin(newAdmin: string, signer: Signer) {
   } catch (error: any) {
     console.log("writeAddAdmin action: " + ErrorMessage.TR);
     swalError(ErrorMessage.TR, Action.WC_DATA, error);
+    return false;
   }
 }
 
@@ -79,6 +72,7 @@ export async function writeRemoveAdmin(newAdmin: string, signer: Signer) {
   } catch (error: any) {
     console.log("writeAddAdmin action: " + ErrorMessage.TR);
     swalError(ErrorMessage.TR, Action.WC_DATA, error);
+    return false;
   }
 }
 
@@ -92,6 +86,21 @@ export async function addFactoryContractListeners(signer: Signer) {
       Swal.fire({
         title: "Collection created!",
         text: "Your NFT collection has been successfully created. The app will now reload to update the data.",
+        icon: "success",
+        confirmButtonColor: "#3085d6"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.reload();
+        }
+      });
+    }
+  })
+
+  factory?.on("AlterAdminsPermissions", (admin, created) => {
+    if (admin) {
+      Swal.fire({
+        title: "Admin " + (created ? " Added" : " Removed") + "!",
+        text: "The admin has been successfully " + (created ? "added" : "removed") + ". The app will now reload to update the data.",
         icon: "success",
         confirmButtonColor: "#3085d6"
       }).then((result) => {

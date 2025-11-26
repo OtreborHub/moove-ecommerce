@@ -7,7 +7,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { CollectionTableProps } from '../../utils/Interfaces';
-import FactoryActionsButton from '../actionsButton/FactoryActionsButton';
+import FactoryActionsButton from '../actionsButton/CollectionActionsButton';
 import { formatAddress } from '../../utils/formatValue';
 
 export default function CollectionTable({ collections, handleMint, handleDisable, showCollection }: CollectionTableProps) {

@@ -77,7 +77,7 @@ export default function Token({ collection, token, auction, metadata, signerAddr
                     </Typography>
                     <Typography textAlign="left">{collection.name}</Typography>
                     <Typography textAlign="left">Owner: {formatAddress(token.owner, signerAddress)}</Typography>
-                    <Typography textAlign="left">Current Price: {formatPrice(token.price, 'wei')} wei</Typography>
+                    <Typography textAlign="left">Current Price: {formatPrice(token.price, 'wei')}</Typography>
                     
                     {/* <Grid textAlign="left">URI: {token.URI}</Grid> */}
 
@@ -114,7 +114,6 @@ export default function Token({ collection, token, auction, metadata, signerAddr
                             onClick={() => handleBuy(token.id, token.price)}
                             disabled={auction.tokenId > 0}
                             sx={{ mt: 1, width:"100%", backgroundColor:'#f7a642ff', textTransform: 'none', fontSize: 16}}>
-                            {/* Buy now for {formatPrice(token.price)} wei */}
                             BUY NOW
                         </Button>
                         {auction.tokenId > 0 && 

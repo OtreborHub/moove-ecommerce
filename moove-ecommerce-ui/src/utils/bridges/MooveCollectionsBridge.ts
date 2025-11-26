@@ -243,6 +243,18 @@ export async function writeEndEnglishAuction(collectionAddress: string, tokenId:
   }
 }
 
+export async function writeEndDutchAuction(collectionAddress: string, tokenId: number,signer:Signer){
+  try {
+    const signerContract = getContractInstance(collectionAddress, signer);
+    await signerContract?.endDutchAuction(tokenId);
+    return true;
+  } catch (error: any) {
+    console.log("End dutch action: " + error);
+    swalError(ErrorMessage.TR, Action.WC_DATA, error);
+    return false;
+  }
+}
+
 export async function retrieveBid(collectionAddress: string, tokenId: number, signer:Signer){
   const signerContract = getContractInstance(collectionAddress, signer);
   if(signerContract){

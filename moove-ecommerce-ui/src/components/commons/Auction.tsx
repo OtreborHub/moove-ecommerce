@@ -6,7 +6,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { AuctionStatus, AuctionType, getAuctionStatus, getAuctionTypeDescription } from "../../utils/enums/Auction";
 import AuctionActionsButton from "../actionsButton/AuctionActionsButton";
-import { readCurrentPriceDutch, retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from "../../utils/bridges/MooveCollectionsBridge";
+import { readCurrentPriceDutch, retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndDutchAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from "../../utils/bridges/MooveCollectionsBridge";
 import Loader from "./Loader";
 import PlaceBidForm from "../forms/PlaceBidForm";
 import withReactContent from "sweetalert2-react-content";
@@ -108,6 +108,8 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
           success = await writeEndClassicAuction(auctionWithImage.auction.collection.address, tokenId, appContext.signer);
       } else if (auctionWithImage.auction.auctionType === AuctionType.ENGLISH){
           success = await writeEndEnglishAuction(auctionWithImage.auction.collection.address, tokenId, appContext.signer);
+      } else if (auctionWithImage.auction.auctionType === AuctionType.DUTCH){
+          success = await writeEndDutchAuction(auctionWithImage.auction.collection.address, tokenId, appContext.signer);
       }
       setIsLoading(false);
       if(success){
@@ -165,7 +167,7 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
           <Typography variant='body2'><b> {auctionWithImage.auction.collection.symbol}#{auctionWithImage.auction.tokenId}</b></Typography>
           <Typography variant='body2' sx={{ color: auctionStatus === AuctionStatus.OPEN ? "green" : auctionStatus === AuctionStatus.CLOSED ? "#6f1a1aff" : "grey"}}>{auctionStatus}</Typography>
           <Typography variant='body2'>{getAuctionTypeDescription(auctionWithImage.auction.auctionType)} Auction </Typography>
-          {auctionStatus === AuctionStatus.OPEN && <Typography variant='body2'>{auctionWithImage.auction.auctionType === AuctionType.DUTCH ? "Buy now": "Place a bid"} for {formatPrice(auctionWithImage.auction.currentPrice, 'wei')} wei</Typography>}
+          {auctionStatus === AuctionStatus.OPEN && <Typography variant='body2'>{auctionWithImage.auction.auctionType === AuctionType.DUTCH ? "Buy now": "Place a bid"} for {formatPrice(auctionWithImage.auction.currentPrice, 'wei')}</Typography>}
           <Typography variant='body2'>Ends at {isPhone ? formatToRomeTime(auctionWithImage.auction.endTime).substring(0,10) : formatToRomeTime(auctionWithImage.auction.endTime)}</Typography>
         </Box>
       </TableCell>}
@@ -209,8 +211,8 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
                         </Tooltip>    
                       </Typography>
                       <Typography variant='body2'><b>Seller:</b> {formatAddress(auctionWithImage.auction.seller)}</Typography>
-                      <Typography variant='body2'><b>Start Price:</b> {formatPrice(auctionWithImage.auction.startPrice, 'wei')} wei</Typography>
-                      <Typography variant='body2'><b>Current Price:</b> {formatPrice(auctionWithImage.auction.currentPrice, 'wei')} wei
+                      <Typography variant='body2'><b>Start Price:</b> {formatPrice(auctionWithImage.auction.startPrice, 'wei')} </Typography>
+                      <Typography variant='body2'><b>Current Price:</b> {formatPrice(auctionWithImage.auction.currentPrice, 'wei')}
                               {auctionWithImage.auction.auctionType === AuctionType.DUTCH && 
                               <Box display={"inline-flex"}>
                                 <Button size="small" variant="text" sx={{ml:.5, p:0}} onClick={() => readDutchPrice()}>Update</Button>
@@ -221,10 +223,10 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
                     </Grid>
                     <Grid size={6} textAlign={"left"} marginTop={isMobile? '1rem': ''}>
                       
-                      <Typography variant='body2'><b>Highest Bid:</b> {formatPrice(auctionWithImage.auction.highestBid, 'wei')} wei</Typography>
+                      <Typography variant='body2'><b>Highest Bid:</b> {formatPrice(auctionWithImage.auction.highestBid, 'wei')}</Typography>
                       <Typography variant='body2'><b>Highest Bidder:</b> {formatAddress(auctionWithImage.auction.highestBidder)}</Typography>
                       {auctionWithImage.auction.auctionType === AuctionType.ENGLISH && 
-                        <Typography variant='body2'><b>Min increment:</b> {formatPrice(auctionWithImage.auction.minIncrement, 'wei')} wei</Typography>
+                        <Typography variant='body2'><b>Min increment:</b> {formatPrice(auctionWithImage.auction.minIncrement, 'wei')}</Typography>
                       }
                       <Typography variant='body2'><b>Start Time:</b> {formatToRomeTime(auctionWithImage.auction.startTime)}</Typography>
                       <Typography variant='body2'><b>End Time:</b> {formatToRomeTime(auctionWithImage.auction.endTime)}</Typography>

@@ -272,7 +272,7 @@ export default function TokenPreview({collection, token, handleConnect, isLoadin
           variant="inherit"
           sx={{ color: "text.secondary", mb: 0.5 }}
         >
-          Buy for {formatPrice(token.price, "wei")} wei
+          Buy for {formatPrice(token.price, "wei")}
         </Typography>
         <Typography
           variant="inherit"

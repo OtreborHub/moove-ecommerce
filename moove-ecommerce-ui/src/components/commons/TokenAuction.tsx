@@ -150,22 +150,22 @@ export default function TokenAuction({ auction, signer, signerAddress }: TokenAu
                 </Typography>
                 <Typography textAlign="left"><b>Status:</b> {getAuctionStatus(auction)}</Typography>
                 <Typography textAlign="left"><b>Seller:</b> {formatAddress(auction.seller)}</Typography>
-                <Typography textAlign="left"><b>Start Price:</b> {formatPrice(auction.startPrice, 'wei')} wei</Typography>
+                <Typography textAlign="left"><b>Start Price:</b> {formatPrice(auction.startPrice, 'wei')}</Typography>
                 { (auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH) &&
                 <>
-                    <Typography textAlign="left"><b>Highest bid:</b> {formatPrice(auction.highestBid, 'wei')} wei</Typography>
+                    <Typography textAlign="left"><b>Highest bid:</b> {formatPrice(auction.highestBid, 'wei')}</Typography>
                     <Typography textAlign="left"><b>Highest bidder:</b> {formatAddress(auction.highestBidder, signerAddress)}</Typography>
                 </>
                 }
                 { auction.auctionType === AuctionType.DUTCH &&
-                    <Typography textAlign="left"><b>Current Price: </b> {formatPrice(auction.currentPrice, 'wei')} wei
+                    <Typography textAlign="left"><b>Current Price: </b> {formatPrice(auction.currentPrice, 'wei')}
                         <Button size="small" variant="text" sx={{ml:.5, p:0}} onClick={() => readDutchPrice()}>Update</Button>
                         <Loader loading={isLoadingUpdateDutch}/>
                     </Typography>
                 }
                 { auction.auctionType === AuctionType.ENGLISH &&
                     <>
-                    <Typography textAlign="left"><b>Min increment:</b> {formatPrice(auction.minIncrement,'wei')} wei</Typography>
+                    <Typography textAlign="left"><b>Min increment:</b> {formatPrice(auction.minIncrement,'wei')}</Typography>
                     <Typography textAlign="left"><b>Time extension:</b> 5 minutes</Typography>
                     </>
                 }

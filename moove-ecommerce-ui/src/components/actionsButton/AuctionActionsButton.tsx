@@ -12,10 +12,8 @@ import { useEffect, useRef, useState } from 'react';
 import { AuctionActionsButtonProps } from '../../utils/Interfaces';
 import { emptySigner, useAppContext } from '../../Context';
 import { AuctionStatus, AuctionType, getAuctionStatus } from '../../utils/enums/Auction';
-import Auction from '../commons/Auction';
 
-
-const options = ['Place a Bid', 'Buy now', 'Withdraw', 'Finalize', 'Connect to access', 'No actions available'];
+const options = ['Place a Bid', 'Buy now', 'Withdraw', 'Finalize', 'Connect to enable', 'No actions available'];
 
 export default function AuctionActionsButton({ auction, signer, signerAddress, handleBuyPlaceBid, handleFinalizeAuction, handleWithdrawFunds }: AuctionActionsButtonProps) {
     const [open, setOpen] = useState(false);
@@ -23,7 +21,7 @@ export default function AuctionActionsButton({ auction, signer, signerAddress, h
     const [auctionStatus] = useState<AuctionStatus>(getAuctionStatus(auction));
     const appContext = useAppContext();
     const [menuWidth, setMenuWidth] = useState(0);
-    const usedSignerAddress = appContext.signerAddress ?? signerAddress ?? "";
+    const usedSignerAddress = appContext.signerAddress !== "" ? appContext.signerAddress : (signerAddress ?? "");
     const usedSigner = appContext.signer !== emptySigner ? appContext.signer : signer;
 
     useEffect(() => {
@@ -46,11 +44,7 @@ export default function AuctionActionsButton({ auction, signer, signerAddress, h
         // 🟢 OPEN
         case AuctionStatus.OPEN:
           if (isSeller) {
-            if (isDutch) {
               return 5; // No actions
-            } else {
-              return 3; // Finalize
-            }
           } else {
             // Cliente
             if (isDutch) {
@@ -63,14 +57,10 @@ export default function AuctionActionsButton({ auction, signer, signerAddress, h
         // 🟡 WAITING_FOR_SELLER
         case AuctionStatus.WAITING_FOR_SELLER:
           if (isSeller) {
-            if (isDutch) {
-              return 5; // No actions
-            } else {
               return 3; // Finalize
-            }
           } else {
             // Cliente
-            return 2; // Withdraw - Disabilitato
+            return 5; // No actions
           }
 
         // 🔴 CLOSED
@@ -165,26 +155,32 @@ export default function AuctionActionsButton({ auction, signer, signerAddress, h
                     <ClickAwayListener onClickAway={handleClose}>
                         <MenuList>
 
-                        <MenuItem 
-                            disabled={auction.seller === usedSignerAddress || auctionStatus === AuctionStatus.CLOSED} 
-                            onClick={(() => handleMenuItemClick(auction.auctionType === AuctionType.DUTCH ? 1 : 0))}> 
-                                {auction.auctionType === AuctionType.DUTCH ? options[1]:options[0]}
-                        </MenuItem>
-                        
-                        <MenuItem disabled={
-                          auction.seller === usedSignerAddress ||
-                          auctionStatus === AuctionStatus.WAITING_FOR_SELLER || auctionStatus === AuctionStatus.OPEN} onClick={(() => handleMenuItemClick(2))}> {options[2]} </MenuItem>
-                        
-                        {auction.seller === usedSignerAddress && 
-                         auctionStatus === AuctionStatus.WAITING_FOR_SELLER &&
-                         auction.auctionType !== AuctionType.DUTCH &&
-                            <MenuItem 
-                                disabled={auction.ended} 
-                                sx={{ color: "red" }} 
-                                onClick={(() => handleMenuItemClick(3))}>
-                                    {options[3]}
+                          {/* BID/BUY */}
+                          <MenuItem 
+                              disabled={auction.seller === usedSignerAddress || auctionStatus !== AuctionStatus.OPEN} 
+                              onClick={(() => handleMenuItemClick(auction.auctionType === AuctionType.DUTCH ? 1 : 0))}> 
+                                  {auction.auctionType === AuctionType.DUTCH ? options[1]:options[0]}
+                          </MenuItem>
+
+                          {/* WITHDRAW */}
+                          {auction.auctionType !== AuctionType.DUTCH &&
+                            <MenuItem disabled={
+                              auction.seller === usedSignerAddress ||auctionStatus !== AuctionStatus.CLOSED} 
+                              onClick={(() => handleMenuItemClick(2))}> 
+                              {options[2]} 
                             </MenuItem>
-                        }
+                          }
+
+                          {/* FINALIZE */}
+                          {auction.seller === usedSignerAddress && 
+                          auctionStatus === AuctionStatus.WAITING_FOR_SELLER &&
+                              <MenuItem 
+                                  disabled={auction.ended} 
+                                  sx={{ color: "red" }} 
+                                  onClick={(() => handleMenuItemClick(3))}>
+                                  {options[3]}
+                              </MenuItem>
+                          }
 
                         </MenuList>
                     </ClickAwayListener>

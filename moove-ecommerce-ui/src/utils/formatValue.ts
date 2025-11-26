@@ -21,14 +21,14 @@ export function formatPrice(value: string | number, unit: "wei" | "finney" | "et
   // Assumi che value sia sempre in wei
   const bn =  BigInt(value);
   if (unit === "wei") {
-    return bn.toString();
+    return bn.toString() + ' wei';
   }
   if (unit === "finney") {
     // 1 finney = 10^15 wei
     return (Number(bn) / 1e15).toFixed(6);
   }
   // eth
-  return ethers.formatEther(bn);
+  return ethers.formatEther(bn) + ' ETH';
 }
 
 export function toWei(value: number, unit: string) : string{

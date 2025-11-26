@@ -1,17 +1,16 @@
-import { Box, Button, Card, CardActionArea, CardContent, CardMedia, Tooltip, Typography, useMediaQuery } from '@mui/material';
+import { Box, Card, CardActionArea, CardContent, CardMedia, Tooltip, Typography, useMediaQuery } from '@mui/material';
 import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import moove_logo from "../../assets/moove_logo.svg";
-import { emptySigner, useAppContext } from "../../Context";
-import { payableBuyNFT, readTokenData, readTokenURI, retrieveBid, transferTo, writeBuyDutch, writeCreateAuction, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish, writeTokenPrice } from '../../utils/bridges/MooveCollectionsBridge';
-import { AuctionStatus, AuctionType, getAuctionStatus } from '../../utils/enums/Auction';
+import { useAppContext } from "../../Context";
+import { payableBuyNFT, readTokenData, readTokenURI, transferTo, writeCreateAuction, writeTokenPrice } from '../../utils/bridges/MooveCollectionsBridge';
+import { AuctionType, getAuctionStatus } from '../../utils/enums/Auction';
 import { formatToRomeTime, formatAuctionType, formatPrice } from "../../utils/formatValue";
 import { AuctionPreviewProps } from '../../utils/Interfaces';
 import Loader from '../commons/Loader';
-import PlaceBidForm from '../forms/PlaceBidForm';
 import Token from '../commons/Token';
-import TokenDTO, { Metadata } from '../../utils/DTO/TokenDTO';
+import { Metadata } from '../../utils/DTO/TokenDTO';
 import { useAppKit } from '@reown/appkit/react';
 import CreateAuctionForm from '../forms/CreateAuctionForm';
 import TransferToForm from '../forms/TransferToForm';
@@ -302,9 +301,9 @@ export default function AuctionPreview({auction, handleConnect}: AuctionPreviewP
               </Typography>
               <Typography variant="body2">
                   {!isPhone && auction.auctionType === AuctionType.CLASSIC && <>Highest Bid: {formatPrice(auction.highestBid, 'wei')} wei<br/></>}
-                  {!isPhone && <>Current Price: {formatPrice(auction.currentPrice, 'wei')} wei</>}
+                  {!isPhone && <>Current Price: {formatPrice(auction.currentPrice, 'wei')}</>}
               </Typography>
-              {!isPhone && auction.minIncrement > 0 && <Typography variant="body2">Min. increment: {formatPrice(auction.minIncrement, 'wei')} wei</Typography>}
+              {!isPhone && auction.minIncrement > 0 && <Typography variant="body2">Min. increment: {formatPrice(auction.minIncrement, 'wei')}</Typography>}
               <Typography variant="body2">Ends at: {isPhone ? formatToRomeTime(auction.endTime).substring(0,10) : formatToRomeTime(auction.endTime)}</Typography>
           </CardContent>
 

@@ -144,7 +144,6 @@ interface PlaceBidFormProps {
 }
 
 interface AddRemoveAdminFormProps {
-    addressToRemove: string; 
     handleSubmit: (removeAdmin: boolean, address: string) => void;
 }
 

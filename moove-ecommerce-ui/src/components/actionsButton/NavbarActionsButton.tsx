@@ -21,14 +21,26 @@ import { formatAddress } from '../../utils/formatValue';
 import metamask_logo from '../../assets/metamask.svg';
 import walletconnect_logo from '../../assets/wallet-connect.svg';
 import GavelIcon from '@mui/icons-material/Gavel';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import AddRemoveAdminForm from '../forms/AddRemoveAdminForm';
+import Loader from '../commons/Loader';
+import { writeAddAdmin, writeRemoveAdmin } from '../../utils/bridges/MooveFactoryBridge';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+
+const mooveOwner = import.meta.env.VITE_MOOVE_OWNER as string;
 
 export default function NavbarActionsButton() {
     const isPhone = useMediaQuery('(max-width: 650px)');
-    const [open, setOpen] = useState(false);
-    const anchorRef = useRef<HTMLDivElement>(null);
-    const appContext = useAppContext();
     const { walletProvider } = useAppKitProvider('eip155');
+    const [open, setOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const { disconnect } = useDisconnect();
+
+    const appContext = useAppContext();
+    const anchorRef = useRef<HTMLDivElement>(null);
+    const MySwal = withReactContent(Swal);
+    const isOwner = appContext.signerAddress === mooveOwner;
 
     //ACTIONS
     function changeSection(section: Sections) {
@@ -48,9 +60,7 @@ export default function NavbarActionsButton() {
     };
 
     const handleDisconnect = () => {
-        if(walletProvider){
-            disconnect();
-        }
+        if(walletProvider){ disconnect();}
 
         appContext.updateProvider(infuraProvider);
         appContext.updateSigner(emptySigner);
@@ -60,6 +70,34 @@ export default function NavbarActionsButton() {
         appContext.updateRole(Role.NONE);
         appContext.updateSection(Sections.MARKETPLACE);
         
+    }
+
+    async function showAddRemoveAdminForm(){
+      MySwal.fire({
+        title: 'Manage admin',
+        html: <AddRemoveAdminForm handleSubmit={addRemoveAdmin}/>,
+        showConfirmButton: false,
+        showCloseButton: true,
+      });
+    }
+
+    async function addRemoveAdmin(removingAdmin: boolean, address: string){
+      let success = false;
+      setIsLoading(true);
+      if(removingAdmin){
+        success = await writeRemoveAdmin(address, appContext.signer);
+      } else {
+        success = await writeAddAdmin(address, appContext.signer);
+      }
+      setIsLoading(false);
+      if(success){
+        MySwal.fire({
+          title: "Admin update sent",
+          text: "The admin update request was successful! Reload the page after the transaction confirmation to see the changes.",
+          icon: "success",
+          confirmButtonColor: "#3085d6",
+        });
+      }
     }
 
   return (
@@ -112,12 +150,6 @@ export default function NavbarActionsButton() {
                                     </Button>
                                 </MenuItem>
 
-                                <MenuItem onClick={() => changeSection(Sections.AUCTIONS)}>
-                                    <Button sx={{ pl:0, pb:0, color: '#000'}} variant='text'>
-                                        <GavelIcon sx={{mr: 1}} fontSize='small'/>Auctions
-                                    </Button>
-                                </MenuItem>
-
                                 { appContext.role === Role.ADMIN && appContext.section !== Sections.FACTORY &&
                                     <MenuItem onClick={() => changeSection(Sections.FACTORY)}>
                                         <Button  sx={{ pl:0, pb:0, color: '#000'}} variant='text'>
@@ -129,10 +161,24 @@ export default function NavbarActionsButton() {
                                 { appContext.role === Role.ADMIN && appContext.section === Sections.FACTORY &&
                                     <MenuItem>
                                         <Button onClick={() => changeSection(Sections.MARKETPLACE)} sx={{ pl:0, pb:0, color: '#000'}} variant='text'>
-                                            <MuseumIcon sx={{mr: 1}} fontSize='small'/> Visit Marketplace
+                                            <MuseumIcon sx={{mr: 1}} fontSize='small'/> Marketplace
                                         </Button>
                                     </MenuItem>
                                 }
+
+                                { appContext.role === Role.ADMIN && isOwner &&
+                                    <MenuItem>
+                                        <Button onClick={showAddRemoveAdminForm} sx={{ pl:0, pb:0, color: '#000'}} variant='text'>
+                                            <ManageAccountsIcon sx={{mr: 1}} fontSize='medium'/> Admins
+                                        </Button>
+                                    </MenuItem>
+                                }
+
+                                <MenuItem onClick={() => changeSection(Sections.AUCTIONS)}>
+                                    <Button sx={{ pl:0, pb:0, color: '#000'}} variant='text'>
+                                        <GavelIcon sx={{mr: 1}} fontSize='small'/>Auctions
+                                    </Button>
+                                </MenuItem>
 
                                 {/* Logout */}
                                 <MenuItem>
@@ -146,6 +192,7 @@ export default function NavbarActionsButton() {
                 </Grow>
             )}
         </Popper>
+        <Loader loading={isLoading} />
     </>
   );
 }

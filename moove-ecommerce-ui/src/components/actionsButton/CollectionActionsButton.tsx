@@ -19,7 +19,7 @@ import { useEffect, useRef, useState } from 'react';
 
 const options = ['View', 'Mint', 'Disable'];
 
-export default function FactoryActionsButton({ collection, handleMint, handleDisable, showCollection}: FactoryActionsButtonProps) {
+export default function CollectionActionsButton({ collection, handleMint, handleDisable, showCollection}: FactoryActionsButtonProps) {
     const [open, setOpen] = useState(false);
     const anchorRef = useRef<HTMLDivElement>(null);
     const [selectedIndex, setSelectedIndex] = useState(0);
