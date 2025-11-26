@@ -176,6 +176,16 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
         emit AuctionEnded(tokenId, msg.sender, msg.value);
     }
 
+    function endDutchAuction(uint256 tokenId) public onlyOwner nonReentrant{
+        Auction storage auction = auctions[tokenId];
+        require(auction.auctionType == AuctionType.Dutch, "Not dutch auction");
+        require(block.timestamp >= auction.endTime, "Auction not ended");
+        require(!auction.ended, "Already ended");
+
+        auction.ended = true;
+        emit AuctionEnded(tokenId, address(0), 0);
+    }
+
     // --- ENGLISH AUCTION ---
 
     function placeBidEnglish(uint256 tokenId) public payable nonReentrant{
