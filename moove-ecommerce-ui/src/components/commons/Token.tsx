@@ -5,6 +5,7 @@ import { TokenProps } from "../../utils/Interfaces";
 import { formatAddress, formatPrice } from "../../utils/formatValue";
 import TokenAuction from "./TokenAuction";
 import TokenActionsButton from "../actionsButton/TokenActionsButton";
+import CopyToClipboard from "./CClipboard";
 
 export const IPFS_GATEWAY: string = import.meta.env.VITE_IPFS_GATEWAY as string;
 export default function Token({ collection, token, auction, metadata, signerAddress, signer, handleConnect, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice}: TokenProps) {
@@ -76,7 +77,7 @@ export default function Token({ collection, token, auction, metadata, signerAddr
                      {/* • {collection?.name}  */}
                     </Typography>
                     <Typography textAlign="left">{collection.name}</Typography>
-                    <Typography textAlign="left">Owner: {formatAddress(token.owner, signerAddress)}</Typography>
+                    <Typography textAlign="left">Owner: {formatAddress(token.owner, signerAddress)}<CopyToClipboard text={token.owner} /></Typography>
                     <Typography textAlign="left">Current Price: {formatPrice(token.price, 'wei')}</Typography>
                     
                     {/* <Grid textAlign="left">URI: {token.URI}</Grid> */}

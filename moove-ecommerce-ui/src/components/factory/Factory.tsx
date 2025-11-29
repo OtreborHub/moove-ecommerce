@@ -1,11 +1,11 @@
 import { Box, Button, useMediaQuery } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAppContext } from "../../Context";
 import collections_title from "../../assets/collections_title.svg";
 import { writeDisableCollection, writeMintNFT } from "../../utils/bridges/MooveCollectionsBridge";
-import { writeAddAdmin, writeCreateCollection, writeRemoveAdmin } from "../../utils/bridges/MooveFactoryBridge";
+import { writeCreateCollection } from "../../utils/bridges/MooveFactoryBridge";
 import Loader from "../commons/Loader";
 import CreateCollectionForm from "../forms/CreateCollectionForm";
 import CollectionTable from "./FactoryCollectionsTable";

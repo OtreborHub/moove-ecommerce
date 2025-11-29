@@ -54,7 +54,7 @@ export default function AddRemoveAdminForm({handleSubmit} : AddRemoveAdminFormPr
               
               {!showDeleteVerification && <Button onClick={() => addRemoveAdmin(true)} variant="contained" fullWidth>Add</Button>}
               {showDeleteVerification && <Button onClick={() => setShowDeleteVerification(false)} variant="contained" fullWidth>Back</Button>}
-              <Button onClick={() => addRemoveAdmin(false)} variant="contained" color="error" fullWidth>Delete</Button>
+              <Button onClick={() => addRemoveAdmin(false)} variant="contained" color="error" fullWidth>Remove</Button>
             </Box>
         </Box>
     );

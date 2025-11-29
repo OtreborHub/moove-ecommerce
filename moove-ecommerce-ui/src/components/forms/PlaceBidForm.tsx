@@ -70,7 +70,6 @@ const [formData, setFormData] = useState({
                         onChange={handleChange}
                         >
                         <MenuItem value="ETH">ETH</MenuItem>
-                        <MenuItem value="Finney">Finney</MenuItem>
                         <MenuItem value="Wei">Wei</MenuItem>
                         </Select>
                     </FormControl>

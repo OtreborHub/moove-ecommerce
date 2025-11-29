@@ -149,7 +149,6 @@ export default function TokenAuction({ auction, signer, signerAddress }: TokenAu
                         </Tooltip>    
                 </Typography>
                 <Typography textAlign="left"><b>Status:</b> {getAuctionStatus(auction)}</Typography>
-                <Typography textAlign="left"><b>Seller:</b> {formatAddress(auction.seller)}</Typography>
                 <Typography textAlign="left"><b>Start Price:</b> {formatPrice(auction.startPrice, 'wei')}</Typography>
                 { (auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH) &&
                 <>

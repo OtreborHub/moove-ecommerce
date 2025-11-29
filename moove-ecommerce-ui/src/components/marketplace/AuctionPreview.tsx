@@ -300,7 +300,7 @@ export default function AuctionPreview({auction, handleConnect}: AuctionPreviewP
                   
               </Typography>
               <Typography variant="body2">
-                  {!isPhone && auction.auctionType === AuctionType.CLASSIC && <>Highest Bid: {formatPrice(auction.highestBid, 'wei')} wei<br/></>}
+                  {!isPhone && auction.auctionType === AuctionType.CLASSIC && <>Highest Bid: {formatPrice(auction.highestBid, 'wei')}<br/></>}
                   {!isPhone && <>Current Price: {formatPrice(auction.currentPrice, 'wei')}</>}
               </Typography>
               {!isPhone && auction.minIncrement > 0 && <Typography variant="body2">Min. increment: {formatPrice(auction.minIncrement, 'wei')}</Typography>}

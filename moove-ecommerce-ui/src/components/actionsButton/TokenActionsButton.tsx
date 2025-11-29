@@ -95,7 +95,7 @@ export default function TokenActionsButton({ token, auctionTokenId, handleCreate
                             <MenuList>
                             <MenuItem onClick={(() => handleMenuItemClick(0))}> {options[0]} </MenuItem>
                             <MenuItem disabled={auctionTokenId>0} onClick={(() => handleMenuItemClick(1))}> {options[1]} </MenuItem>
-                            <MenuItem onClick={(() => handleMenuItemClick(2))}> {options[2]} </MenuItem>
+                            <MenuItem disabled={auctionTokenId>0} onClick={(() => handleMenuItemClick(2))}> {options[2]} </MenuItem>
                             </MenuList>
                         </ClickAwayListener>
                     </Paper>

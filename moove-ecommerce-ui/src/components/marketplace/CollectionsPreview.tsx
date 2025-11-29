@@ -46,7 +46,7 @@ export default function CollectionPreview({collection, idx, showCollection} : Co
                         {collection.name}
                     </Typography>
                     <Typography variant="body2">
-                        {isPhone? formatAddress(collection.address): collection.address}
+                        {formatAddress(collection.address)}
                     </Typography>
                     <Typography sx={{mb: 1.5 }}>{collection.tokenIds} {collection.symbol}</Typography>
                     <Button sx={{ marginTop: 0.5, width: isPhone ? '70%': '30%' }}variant="contained" fullWidth size="small" onClick={handleShowCollection}>

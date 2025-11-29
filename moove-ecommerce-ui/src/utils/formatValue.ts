@@ -17,37 +17,29 @@ export function formatAddress(address: string, signer?: string) {
     
 }
 
-export function formatPrice(value: string | number, unit: "wei" | "finney" | "eth" = "wei") {
+export function formatPrice(value: string | number, unit: "wei" | "eth" = "wei") {
   // Assumi che value sia sempre in wei
   const bn =  BigInt(value);
   if (unit === "wei") {
     return bn.toString() + ' wei';
   }
-  if (unit === "finney") {
-    // 1 finney = 10^15 wei
-    return (Number(bn) / 1e15).toFixed(6);
-  }
+  
   // eth
   return ethers.formatEther(bn) + ' ETH';
 }
 
-export function toWei(value: number, unit: string) : string{
+export function convertUnit(value: number, unit: string) : string{
   // Assumi che value sia sempre in wei
   const strValue =  value.toString();
   if(!strValue) {return "0"};
   
   if (unit === "wei") {
     return BigInt(strValue).toString();
-  }
-  let wei: bigint
-  if (unit === "finney") {
-      // 1 finney = 10^-3 eth → quindi parse come eth e moltiplica per 1e3
-      wei = ethers.parseUnits(strValue, "finney");
-    } else {
-      wei = ethers.parseEther(strValue); // parseUnits(value, 18)
-    }
+  } 
+  
+  // eth  
+  return ethers.parseEther(strValue).toString(); // parseUnits(value, 18)
 
-  return wei.toString();
 }
 
 export function formatToRomeTime(unixTimestamp: number): string {

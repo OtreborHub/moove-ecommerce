@@ -11,6 +11,8 @@ import { CollectionProps } from "../../utils/Interfaces";
 import MintTokenForm from "../forms/MintTokenForm";
 import Loader from "./Loader";
 import TokenPreview from "./TokenPreview";
+import CopyToClipboard from "./CClipboard";
+
 
 export default function Collection({collection, handleConnect, goBack} : CollectionProps) {
   const [tokens, setTokens] = useState<TokenDTO[]>([]);
@@ -81,7 +83,7 @@ export default function Collection({collection, handleConnect, goBack} : Collect
       });
     }
   }
-
+  
   function back(){
     if(goBack) goBack();
   }
@@ -99,7 +101,9 @@ export default function Collection({collection, handleConnect, goBack} : Collect
         
         <Box textAlign={"left"} display={"flex"} flexDirection={"column"} ml={2}>
           <Typography variant="h5" color="#f7a642ff"> <b>{collection.name.toUpperCase()}</b> </Typography>
-          <Typography variant="body2" color="#f7a642ff"> {formatAddress(collection.address)} </Typography>
+          <Typography variant="body1" color="#f7a642ff"> Collection Address: {formatAddress(collection.address)} 
+            <CopyToClipboard text={collection.address} />
+          </Typography>
         </Box>
 
         {/* <Box display={"flex"} justifyContent={"left"} margin={2}> */}

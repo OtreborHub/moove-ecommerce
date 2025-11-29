@@ -81,19 +81,19 @@ export default function NavbarActionsButton() {
       });
     }
 
-    async function addRemoveAdmin(removingAdmin: boolean, address: string){
+    async function addRemoveAdmin(addAdmin: boolean, address: string){
       let success = false;
       setIsLoading(true);
-      if(removingAdmin){
-        success = await writeRemoveAdmin(address, appContext.signer);
-      } else {
+      if(addAdmin){
         success = await writeAddAdmin(address, appContext.signer);
+      } else {
+        success = await writeRemoveAdmin(address, appContext.signer);
       }
       setIsLoading(false);
       if(success){
         MySwal.fire({
           title: "Admin update sent",
-          text: "The admin update request was successful! Reload the page after the transaction confirmation to see the changes.",
+          text: "The admin update request was successful! Wait for the transaction to be confirmed.",
           icon: "success",
           confirmButtonColor: "#3085d6",
         });
@@ -139,7 +139,7 @@ export default function NavbarActionsButton() {
                         <ClickAwayListener onClickAway={handleClose}>
                             <MenuList>
                                 <Box border={"1px solid #000"} ml={1} mr={1}>
-                                    <MenuItem sx={{ pb: 0, cursor: 'default'}}> Address {formatAddress(appContext.signerAddress)} </MenuItem>
+                                    <MenuItem sx={{ pb: 0, cursor: 'default'}}> {appContext.role === Role.ADMIN ? "Admin" : "Address"} {formatAddress(appContext.signerAddress)} </MenuItem>
                                     <MenuItem sx={{  cursor: 'default'}}> {appContext.balance.toFixed(4).toString()} ETH </MenuItem>
                                 </Box>
                                 {/* <hr style={{ marginLeft: "10px", marginRight: "10px"}}/> */}

@@ -13,6 +13,7 @@ import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
 import { useAppContext } from "../../Context";
 import moove_logo from "../../assets/moove_logo.svg";
+import CopyToClipboard from "./CClipboard";
 
 type AuctionWithImage = {auction: AuctionDTO} & { imageUrl: string };
 const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
@@ -210,7 +211,7 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
                           >?</Box>
                         </Tooltip>    
                       </Typography>
-                      <Typography variant='body2'><b>Seller:</b> {formatAddress(auctionWithImage.auction.seller)}</Typography>
+                      <Typography variant='body2'><b>Seller:</b> {formatAddress(auctionWithImage.auction.seller)}<CopyToClipboard text={auctionWithImage.auction.seller} /></Typography>
                       <Typography variant='body2'><b>Start Price:</b> {formatPrice(auctionWithImage.auction.startPrice, 'wei')} </Typography>
                       <Typography variant='body2'><b>Current Price:</b> {formatPrice(auctionWithImage.auction.currentPrice, 'wei')}
                               {auctionWithImage.auction.auctionType === AuctionType.DUTCH && 
@@ -226,8 +227,7 @@ export default function Auction({ auctionWithImage }: { auctionWithImage: Auctio
                       <Typography variant='body2'><b>Highest Bid:</b> {formatPrice(auctionWithImage.auction.highestBid, 'wei')}</Typography>
                       <Typography variant='body2'><b>Highest Bidder:</b> {formatAddress(auctionWithImage.auction.highestBidder)}</Typography>
                       {auctionWithImage.auction.auctionType === AuctionType.ENGLISH && 
-                        <Typography variant='body2'><b>Min increment:</b> {formatPrice(auctionWithImage.auction.minIncrement, 'wei')}</Typography>
-                      }
+                        <Typography variant='body2'><b>Min increment:</b> {formatPrice(auctionWithImage.auction.minIncrement, 'wei')}</Typography>}
                       <Typography variant='body2'><b>Start Time:</b> {formatToRomeTime(auctionWithImage.auction.startTime)}</Typography>
                       <Typography variant='body2'><b>End Time:</b> {formatToRomeTime(auctionWithImage.auction.endTime)}</Typography>
                       {/* <Typography variant='body2'><b>Status:</b> {auctionStatus}</Typography> */}

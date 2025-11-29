@@ -74,6 +74,25 @@ export const FACTORY_ABI = [
 			{
 				"indexed": true,
 				"internalType": "address",
+				"name": "admin",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "isCreated",
+				"type": "bool"
+			}
+		],
+		"name": "AlterAdminsPermissions",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
 				"name": "collection",
 				"type": "address"
 			},
@@ -184,4 +203,4 @@ export const FACTORY_ABI = [
 		"stateMutability": "view",
 		"type": "function"
 	}
-];
+]

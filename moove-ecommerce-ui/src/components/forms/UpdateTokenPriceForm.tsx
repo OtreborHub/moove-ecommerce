@@ -1,9 +1,7 @@
 import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { UpdateTokenPriceFormProps } from "../../utils/Interfaces";
-import { ethers } from "ethers";
-import { toWei } from "../../utils/formatValue";
-import { ErrorMessage, swalError } from "../../utils/enums/Errors";
+import { convertUnit } from "../../utils/formatValue";
 
 export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}: UpdateTokenPriceFormProps) {
     const [formData, setFormData] = useState({
@@ -11,38 +9,15 @@ export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}
         unit: "Wei"
     });
     
-    //Passare unit - per ora fixed con wei
-    const weiTokenPrice = toWei(tokenPrice, 'wei');
-
-    const [error, setError]=useState<string>("");
 
     const handleChange = (event: any) => {
         const { name, value } = event.target;
         setFormData({...formData, [name]: value < 0 ? 0 : value });
-
-        try {
-            var newWeiValue: string = "";    
-            if (name === "price") {
-                newWeiValue = toWei(value, formData.unit.toLowerCase());
-            } else if (name === "unit"){
-                newWeiValue = toWei(formData.price, value.toLowerCase());
-            }
-
-            if (BigInt(newWeiValue) >= BigInt(weiTokenPrice)) {
-                setError("");
-            }
-
-        } catch (err){
-            swalError(ErrorMessage.IO);
-        }
-        
-
     };
 
     function submit() {
-        let priceInWei = toWei(formData.price, formData.unit.toLowerCase());
-        if(BigInt(priceInWei) < BigInt(tokenPrice)) { setError("New price has to be greater then the current price")}
-        else { handleSubmit(tokenId, BigInt(priceInWei)) }
+        let priceInWei = convertUnit(formData.price, formData.unit.toLowerCase());
+        handleSubmit(tokenId, BigInt(priceInWei));
     };
 
 
@@ -61,7 +36,6 @@ export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}
                         id="price"
                         name="price"
                         label="New Price"
-                        error={BigInt(toWei(formData.price, formData.unit.toLowerCase())) < BigInt(weiTokenPrice)}
                         value={formData.price}
                         onChange={handleChange}
                         />
@@ -79,7 +53,6 @@ export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}
                             onChange={handleChange}
                         >
                             <MenuItem value="ETH">ETH</MenuItem>
-                            <MenuItem value="Finney">Finney</MenuItem>
                             <MenuItem value="Wei">Wei</MenuItem>
                         </Select>
                 </FormControl>
@@ -87,7 +60,6 @@ export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}
                 </Grid>
             </Grid>
         </Box>
-            <Typography align="left" variant="subtitle2" color="error"> {error} </Typography>    
             <Button onClick={submit} variant="contained" fullWidth sx={{mt: 2, backgroundColor:'#f7a642ff'}}>
                 CONFIRM
             </Button>

@@ -613,6 +613,19 @@ export const COLLECTION_ABI = [
 				"type": "uint256"
 			}
 		],
+		"name": "endDutchAuction",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
 		"name": "endEnglishAuction",
 		"outputs": [],
 		"stateMutability": "nonpayable",
@@ -1019,4 +1032,4 @@ export const COLLECTION_ABI = [
 		"stateMutability": "nonpayable",
 		"type": "function"
 	}
-];
+]
