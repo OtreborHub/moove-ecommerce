@@ -1,46 +1,53 @@
-# Getting Started with Create React App
+# Moove Marketplace
+<h3>Moove Marketplace per Start2Impact University</h3>
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+> Si immagina lo scenario in cui una compagnia di trasporti Moove, richieda un applicativo web3 come ecommerce dei propri NFT. Si immagina che vengano utilizzate un massimo di 5 colleciton attive alla volta (è possibile disabilitare ma non riattivare le collection). 
 
-## Available Scripts
+>Si opera in una rete di test (Sepolia Testnet) pertanto tutti gli importi saranno inizialmente in wei per evitare sprechi. 
+E' possibile configurare l'applicativo utilizzando gli ETH come unità base invece dei wei.
+Per farlo modificare unitManager.ts l'enumerato DEFAULT settandolo ad ETH. Tutto l'applicativo mostrerà la conversione dei valori in ETH.
 
-In the project directory, you can run:
+>Il progetto **moove-ecommerce-ui** è l'interfaccia grafica dei contratti sotto **moove-contracts** nella cartella precedente. <br>
+L'applicativo prevede la creazione e la vendita di collezioni NFT, sui quali singoli NFT sarà possibile operare con delle aste, effettuando puntate o comprando direttamente il token (o NFT).
 
-### `npm start`
+Di seguito la struttura del progetto a partire da **/src**:
+><br>
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+> - **/abi**: (folder): cartella contenente gli abi dei contratti <br>
+> - **/asset** (folder): cartella contenente le immagini statiche ddell'applicazione <br>
+> - **/utils** (folder): cartella contenente file di utility dell'applicazione tra cui: unitManager, bridges verso il contratti, DTOs e Interfacce <br>
+> - **/components** (folder): cartella contenente i componenti front-end dell'applicazione suddivisi per: Forms, ActionButtons, componenti del Marketplace, componenti della Factory, e componenti comuni <br>
+> - **package.json** (file): dipendenze del progetto <br>
+><br>
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+<br>
 
-### `npm test`
+Nota: per evitare di sovraccaricare i contratti alle collection viene associata una copertina presentata nello slider della prima pagina dell'applicativo. Per comodità si suppone che ad ogni nuova collezione uscita, si contatti lo sviluppatore per modificare leggermente il file Cover.ts (/src/utils/Cover.ts) aggiungendo l'import all'immagine creata per la collezione e definendo nello switch la visualizzazione dell'immagine.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+<h3> Compilazione </h3>
 
-### `npm run build`
+```shell
+npm run build
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+<h3> Avvio locale </h3>
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```shell
+>*npm run start*
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Per l'avvio locale è previsto che si aggiunga un file .env con le seguenti proprietà:
 
-### `npm run eject`
+><br>
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+> - VITE_FACTORY_ADDRESS= [recuperabile dal deploy del contratto]
+> - VITE_MOOVE_OWNER= [il wallet che ha deployato il contratto]
+> - VITE_IPFS_GATEWAY= [URL gateway di Pinata]
+> - VITE_INFURA_API_KEY= [apikey di Metamask (ex Infura) per letture RPC]
+> - VITE_PROJECT_ID= [Wallet Connect projectID]
+> - VITE_AUCTION_LIMIT= [massimo numero di secondi disponibili per la creazione di un'asta]
+><br>
+><br>
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
