@@ -3,11 +3,12 @@ import { PlaceBidFormProps } from "../../utils/Interfaces";
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { AuctionType } from "../../utils/enums/Auction";
+import { convertUnit, Unit } from "../../utils/unitManager";
 
 export default function PlaceBidForm({auction, handleSubmit}: PlaceBidFormProps) {
 const [formData, setFormData] = useState({
         bid: auction.currentPrice + auction.minIncrement,
-        unit: 'Wei'
+        unit: Unit.DEFAULT
     });
 
     const handleChange = (event: any) => {
@@ -24,16 +25,17 @@ const [formData, setFormData] = useState({
                 text = canSubmit ? "" : "It should be at more than the current price or highest bid.";
                 break;
             case AuctionType.ENGLISH:
-                canSubmit = formData.bid > auction.currentPrice + auction.minIncrement;
-                text = canSubmit ? "" : "It should be at least the current price added to minimun increment.";
+                canSubmit = formData.bid >= auction.currentPrice + auction.minIncrement;
+                text = canSubmit ? "" : "It should be at least the current price added to minimum increment.";
                 break;
         }
 
         if(canSubmit){
-            handleSubmit(auction.tokenId, formData.bid);
+            let bidInWei = convertUnit(formData.bid, formData.unit);
+            handleSubmit(auction.tokenId, bidInWei);
         } else {
             Swal.fire({
-                title: "Check you bid",
+                title: "Check your bid",
                 text: text,
                 icon: "warning",
                 confirmButtonColor: "#3085d6",
@@ -69,8 +71,8 @@ const [formData, setFormData] = useState({
                         value={formData.unit}
                         onChange={handleChange}
                         >
-                        <MenuItem value="ETH">ETH</MenuItem>
-                        <MenuItem value="Wei">Wei</MenuItem>
+                        <MenuItem value={Unit.ETH}>ETH</MenuItem>
+                        <MenuItem value={Unit.WEI}>Wei</MenuItem>
                         </Select>
                     </FormControl>
                 </Grid>

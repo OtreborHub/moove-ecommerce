@@ -5,17 +5,15 @@ import withReactContent from "sweetalert2-react-content";
 import { TokenAuctionProps } from "../../utils/Interfaces";
 import { readCurrentPriceDutch, retrieveBid, writeBuyDutch, writeEndClassicAuction, writeEndEnglishAuction, writePlaceBidClassic, writePlaceBidEnglish } from "../../utils/bridges/MooveCollectionsBridge";
 import { AuctionType, getAuctionStatus, getAuctionTypeDescription } from "../../utils/enums/Auction";
-import { formatAddress, formatPrice, formatToRomeTime } from "../../utils/formatValue";
+import { formatAddress, formatToRomeTime } from "../../utils/formatValue";
 import AuctionActionsButton from "../actionsButton/AuctionActionsButton";
 import PlaceBidForm from "../forms/PlaceBidForm";
 import Loader from "./Loader";
-
-const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
-const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the price suits you.</>
-const tooltipTextEnglishAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
+import { formatPrice, Unit } from "../../utils/unitManager";
+import { tooltipTextClassicAuction, tooltipTextDutchAuction, tooltipTextEnglishAuction } from "../../utils/tooltip";
 
 export default function TokenAuction({ auction, signer, signerAddress }: TokenAuctionProps){
-    const [isLoadingUpdateDutch, setIsLoading] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const MySwal = withReactContent(Swal);
 
     useEffect(() => {
@@ -38,21 +36,24 @@ export default function TokenAuction({ auction, signer, signerAddress }: TokenAu
     }
 
     function buyPlaceBid(){
+
       if(auction.auctionType === AuctionType.DUTCH){
-          buyDutch(auction.tokenId, auction.currentPrice);
+        setIsLoading(true);
+        buyDutch(auction.tokenId, auction.currentPrice);
+        setIsLoading(false);
       } else {
-          MySwal.fire({
-              title: "Place a bid",
-              html: <PlaceBidForm auction={auction} handleSubmit={closeAndHandlePlaceBid}/>,
-              showConfirmButton: false,
-              showCloseButton: true,
-          });
+        MySwal.fire({
+            title: "Place a bid",
+            html: <PlaceBidForm auction={auction} handleSubmit={closeAndHandlePlaceBid}/>,
+            showConfirmButton: false,
+            showCloseButton: true,
+        });
       }
     }
   
     async function buyDutch(tokenId: number, price: number){
         setIsLoading(true);
-        const success = await writeBuyDutch(auction.collection.address, tokenId, price, signer);
+        const success = await writeBuyDutch(auction.collection.address, tokenId, BigInt(price), signer);
         setIsLoading(false);
         if(success){
             MySwal.fire({
@@ -64,16 +65,14 @@ export default function TokenAuction({ auction, signer, signerAddress }: TokenAu
         }
     }
   
-    async function closeAndHandlePlaceBid(tokenId: number, bid: number){
-        MySwal.close();
+    async function closeAndHandlePlaceBid(tokenId: number, bid: string){
+        //MySwal.close();
         let success = false;
-        setIsLoading(true);
         if(auction.auctionType === AuctionType.CLASSIC){
-            success = await writePlaceBidClassic(auction.collection.address, tokenId, bid, signer);
+            success = await writePlaceBidClassic(auction.collection.address, tokenId, BigInt(bid), signer);
         } else if (auction.auctionType === AuctionType.ENGLISH){
-            success = await writePlaceBidEnglish(auction.collection.address, tokenId, bid, signer);
+            success = await writePlaceBidEnglish(auction.collection.address, tokenId, BigInt(bid), signer);
         }
-        setIsLoading(false);
         if(success){
             MySwal.fire({
                 title: "Place Bid",
@@ -125,6 +124,7 @@ export default function TokenAuction({ auction, signer, signerAddress }: TokenAu
     }
 
     return (
+        <>
         <Grid container spacing={3} mt={2} ml={2} >
             <>
             <Grid size={9}>
@@ -149,32 +149,33 @@ export default function TokenAuction({ auction, signer, signerAddress }: TokenAu
                         </Tooltip>    
                 </Typography>
                 <Typography textAlign="left"><b>Status:</b> {getAuctionStatus(auction)}</Typography>
-                <Typography textAlign="left"><b>Start Price:</b> {formatPrice(auction.startPrice, 'wei')}</Typography>
+                <Typography textAlign="left"><b>Start Price:</b> {formatPrice(auction.startPrice, Unit.DEFAULT)}</Typography>
                 { (auction.auctionType === AuctionType.CLASSIC || auction.auctionType === AuctionType.ENGLISH) &&
                 <>
-                    <Typography textAlign="left"><b>Highest bid:</b> {formatPrice(auction.highestBid, 'wei')}</Typography>
+                    <Typography textAlign="left"><b>Highest bid:</b> {formatPrice(auction.highestBid, Unit.DEFAULT)}</Typography>
                     <Typography textAlign="left"><b>Highest bidder:</b> {formatAddress(auction.highestBidder, signerAddress)}</Typography>
                 </>
                 }
                 { auction.auctionType === AuctionType.DUTCH &&
-                    <Typography textAlign="left"><b>Current Price: </b> {formatPrice(auction.currentPrice, 'wei')}
+                    <Typography textAlign="left"><b>Current Price: </b> {formatPrice(auction.currentPrice, Unit.DEFAULT)}
                         <Button size="small" variant="text" sx={{ml:.5, p:0}} onClick={() => readDutchPrice()}>Update</Button>
-                        <Loader loading={isLoadingUpdateDutch}/>
+                        <Loader loading={isLoading}/>
                     </Typography>
                 }
                 { auction.auctionType === AuctionType.ENGLISH &&
                     <>
-                    <Typography textAlign="left"><b>Min increment:</b> {formatPrice(auction.minIncrement,'wei')}</Typography>
+                    <Typography textAlign="left"><b>Min increment:</b> {formatPrice(auction.minIncrement,Unit.DEFAULT)}</Typography>
                     <Typography textAlign="left"><b>Time extension:</b> 5 minutes</Typography>
                     </>
                 }
                 <Typography textAlign="left"><b>Ends at</b> {formatToRomeTime(auction.endTime)}</Typography>
             </Grid>
             <Grid size={12} alignSelf="center">
-                <AuctionActionsButton auction={auction} signer={signer} signerAddress={signerAddress} handleBuyPlaceBid={buyPlaceBid} handleFinalizeAuction={endAuction} handleWithdrawFunds={withdraw}/>
+                <AuctionActionsButton auction={auction} signer={signer} signerAddress={signerAddress} handleBuyPlaceBid={() => buyPlaceBid()} handleFinalizeAuction={endAuction} handleWithdrawFunds={withdraw}/>
                 {/* {choseButtonsToShow()} */}
             </Grid>
             </>
         </Grid>
+        </>
     );
 }

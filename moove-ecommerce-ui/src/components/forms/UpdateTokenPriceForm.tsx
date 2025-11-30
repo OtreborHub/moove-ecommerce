@@ -1,12 +1,12 @@
 import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { UpdateTokenPriceFormProps } from "../../utils/Interfaces";
-import { convertUnit } from "../../utils/formatValue";
+import { convertUnit, Unit } from "../../utils/unitManager";
 
 export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}: UpdateTokenPriceFormProps) {
     const [formData, setFormData] = useState({
         price: tokenPrice,
-        unit: "Wei"
+        unit: Unit.DEFAULT
     });
     
 
@@ -16,8 +16,8 @@ export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}
     };
 
     function submit() {
-        let priceInWei = convertUnit(formData.price, formData.unit.toLowerCase());
-        handleSubmit(tokenId, BigInt(priceInWei));
+        let priceInWei = convertUnit(formData.price, formData.unit);
+        handleSubmit(tokenId, priceInWei);
     };
 
 
@@ -52,8 +52,8 @@ export default function UpdateTokenPriceForm({tokenId, tokenPrice, handleSubmit}
                             label="Unit"
                             onChange={handleChange}
                         >
-                            <MenuItem value="ETH">ETH</MenuItem>
-                            <MenuItem value="Wei">Wei</MenuItem>
+                            <MenuItem value={Unit.ETH}>ETH</MenuItem>
+                            <MenuItem value={Unit.WEI}>Wei</MenuItem>
                         </Select>
                 </FormControl>
 

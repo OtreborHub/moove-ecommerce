@@ -2,10 +2,11 @@ import { Box, Button, ButtonGroup, CardMedia, Grid, Typography, useMediaQuery } 
 import { useEffect, useState } from "react";
 import moove_logo from "../../assets/moove_logo.svg";
 import { TokenProps } from "../../utils/Interfaces";
-import { formatAddress, formatPrice } from "../../utils/formatValue";
+import { formatAddress } from "../../utils/formatValue";
 import TokenAuction from "./TokenAuction";
 import TokenActionsButton from "../actionsButton/TokenActionsButton";
 import CopyToClipboard from "./CClipboard";
+import { convertUnit, formatPrice, Unit } from "../../utils/unitManager";
 
 export const IPFS_GATEWAY: string = import.meta.env.VITE_IPFS_GATEWAY as string;
 export default function Token({ collection, token, auction, metadata, signerAddress, signer, handleConnect, handleBuy, handleCreateAuction, handleTransfer, handleUpdatePrice}: TokenProps) {
@@ -78,7 +79,7 @@ export default function Token({ collection, token, auction, metadata, signerAddr
                     </Typography>
                     <Typography textAlign="left">{collection.name}</Typography>
                     <Typography textAlign="left">Owner: {formatAddress(token.owner, signerAddress)}<CopyToClipboard text={token.owner} /></Typography>
-                    <Typography textAlign="left">Current Price: {formatPrice(token.price, 'wei')}</Typography>
+                    <Typography textAlign="left">Current Price: {formatPrice(token.price, Unit.DEFAULT)}</Typography>
                     
                     {/* <Grid textAlign="left">URI: {token.URI}</Grid> */}
 
@@ -112,7 +113,7 @@ export default function Token({ collection, token, auction, metadata, signerAddr
                         <>
                         <Button 
                             variant="contained" 
-                            onClick={() => handleBuy(token.id, token.price)}
+                            onClick={() => handleBuy(token.id, convertUnit(token.price, Unit.WEI))}
                             disabled={auction.tokenId > 0}
                             sx={{ mt: 1, width:"100%", backgroundColor:'#f7a642ff', textTransform: 'none', fontSize: 16}}>
                             BUY NOW

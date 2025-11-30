@@ -47,9 +47,9 @@ export default function Collection({collection, handleConnect, goBack} : Collect
     setIsLoading(value);
   }
 
-  async function handleBuy(tokenId: number, tokenPrice: number){
+  async function handleBuy(tokenId: number, tokenPrice: string){
     setIsLoading(true)
-    var success = await payableBuyNFT(collection.address, tokenId, tokenPrice, appContext.signer);
+    var success = await payableBuyNFT(collection.address, tokenId, BigInt(tokenPrice), appContext.signer);
     setIsLoading(false);
     if(success){
       MySwal.fire({
@@ -101,7 +101,7 @@ export default function Collection({collection, handleConnect, goBack} : Collect
         
         <Box textAlign={"left"} display={"flex"} flexDirection={"column"} ml={2}>
           <Typography variant="h5" color="#f7a642ff"> <b>{collection.name.toUpperCase()}</b> </Typography>
-          <Typography variant="body1" color="#f7a642ff"> Collection Address: {formatAddress(collection.address)} 
+          <Typography variant="body1" color="#f7a642ff">Collection: {formatAddress(collection.address)} 
             <CopyToClipboard text={collection.address} />
           </Typography>
         </Box>

@@ -6,12 +6,12 @@ import withReactContent from "sweetalert2-react-content";
 import moove_logo from "../../assets/moove_logo.svg";
 import { useAppContext } from "../../Context";
 import { transferTo, writeCreateAuction, writeTokenPrice } from "../../utils/bridges/MooveCollectionsBridge";
-import { formatPrice } from "../../utils/formatValue";
 import { TokenPreviewProps } from "../../utils/Interfaces";
 import CreateAuctionForm from "../forms/CreateAuctionForm";
 import TransferToForm from "../forms/TransferToForm";
 import UpdateTokenPriceForm from "../forms/UpdateTokenPriceForm";
 import Token from "./Token";
+import { formatPrice, Unit } from "../../utils/unitManager";
 
 export const IPFS_GATEWAY: string = import.meta.env.VITE_IPFS_GATEWAY as string;
 
@@ -138,9 +138,9 @@ export default function TokenPreview({collection, token, handleConnect, isLoadin
     });
   }
 
-  async function handleCreateAuction(tokenId: number, auctionType: number, startPrice: number, duration: number, minIncrement: number){
+  async function handleCreateAuction(tokenId: number, auctionType: number, startPrice: string, duration: number, minIncrement: string){
     isLoading(true);
-    const success = await writeCreateAuction(collection.address, tokenId, auctionType, startPrice, duration, minIncrement, appContext.signer);
+    const success = await writeCreateAuction(collection.address, tokenId, auctionType, BigInt(startPrice), duration, BigInt(minIncrement), appContext.signer);
     isLoading(false);
     if(success){
       MySwal.fire({
@@ -166,9 +166,9 @@ export default function TokenPreview({collection, token, handleConnect, isLoadin
     }
   }
 
-  async function handleUpdateTokenPrice(tokenId: number, price: BigInt){
+  async function handleUpdateTokenPrice(tokenId: number, price: string){
     isLoading(true);
-    var success = await writeTokenPrice(collection.address, tokenId, price, appContext.signer);
+    var success = await writeTokenPrice(collection.address, tokenId, BigInt(price), appContext.signer);
     isLoading(false);
     if(success){
       MySwal.fire({
@@ -272,7 +272,7 @@ export default function TokenPreview({collection, token, handleConnect, isLoadin
           variant="inherit"
           sx={{ color: "text.secondary", mb: 0.5 }}
         >
-          Buy for {formatPrice(token.price, "wei")}
+          Buy for {formatPrice(token.price, Unit.DEFAULT)}
         </Typography>
         <Typography
           variant="inherit"

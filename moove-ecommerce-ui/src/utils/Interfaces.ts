@@ -25,7 +25,7 @@ interface TokenPreviewProps {
     collection: CollectionDTO;
     token: TokenDTO;
     isLoading: (isLoading: boolean) => void,
-    handleBuy: (tokenId: number, price: number) => void;
+    handleBuy: (tokenId: number, price: string) => void;
     handleConnect: () => void;
 }
 
@@ -37,10 +37,10 @@ interface TokenProps {
     signerAddress: string;
     signer: Signer;
     isLoading: (isLoading: boolean) => void,
-    handleBuy: (tokenId: number, price: number) => void;
+    handleBuy: (tokenId: number, price: string) => void;
     handleCreateAuction: (tokenId: number) => void;
     handleTransfer: (tokenId: number) => void;
-    handleUpdatePrice: (tokenId: number, price: number) => void;
+    handleUpdatePrice: (tokenId: number, price: string) => void;
     handleConnect: () => void;
 }
 
@@ -86,7 +86,7 @@ interface TokenActionsButtonProps {
     token: TokenDTO;
     auctionTokenId: number;
     handleCreateAuction: (tokenId: number) => void;
-    handleUpdatePrice: (tokenId: number, price: number) => void;
+    handleUpdatePrice: (tokenId: number, price: string) => void;
     handleTransfer: (tokenId: number) => void;
 }
 
@@ -94,9 +94,13 @@ interface AuctionActionsButtonProps {
     auction: AuctionDTO;
     signer?: Signer;
     signerAddress?: string;
-    handleBuyPlaceBid: (tokenId: number, price: number) => void;
+    handleBuyPlaceBid: (tokenId: number, price: string) => void;
     handleFinalizeAuction: (tokenId: number) => void;
     handleWithdrawFunds: (tokenId: number) => void;
+}
+
+interface MyNFTsProps {
+    connectMetamask: () => void;
 }
 
 interface LoaderProps {
@@ -112,7 +116,6 @@ interface MintTokenFormProps {
     collectionAddress: string,
     signer: string;
     handleSubmit: (collectionAddress: string, tokenURI: string, price: number) => void;
-    // role: Role;
 }
 
 interface DeleteCollectionFormProps {
@@ -124,7 +127,7 @@ interface DeleteCollectionFormProps {
 interface UpdateTokenPriceFormProps {
     tokenId: number,
     tokenPrice: number,
-    handleSubmit: (tokenId: number, price: BigInt) => void;
+    handleSubmit: (tokenId: number, price: string) => void;
 }
 
 interface TrasferFormProps {
@@ -135,28 +138,18 @@ interface TrasferFormProps {
 interface CreateAuctionFormProps {
     collectionSymbol: string,
     tokenId: number,
-    handleSubmit: (tokenId: number, auctionType: number, startPrice: number, duration: number, minIncrement: number) => void
+    handleSubmit: (tokenId: number, auctionType: number, startPrice: string, duration: number, minIncrement: string) => void
 }
 
 interface PlaceBidFormProps {
     auction: AuctionDTO;
-    handleSubmit: (tokenId: number, value: number) => void;
+    handleSubmit: (tokenId: number, value: string) => void;
 }
 
 interface AddRemoveAdminFormProps {
     handleSubmit: (removeAdmin: boolean, address: string) => void;
 }
 
-//Mettere tutti i metodi dei forms
-interface FormProps {
-}
 // END FORMS ----------------------------------
-
-interface MyNFTsProps {
-    connectMetamask: () => void;
-}
-
-
-
 
 export type { NavbarProps, MarketplaceProps, CollectionProps, TokenAuctionProps, AuctionsProps, AuctionPreviewProps, CreateCollectionFormProps, CollectionTableProps, AdminsTableProps, LoaderProps, MintTokenFormProps, DeleteCollectionFormProps, TokenProps, TokenPreviewProps, UpdateTokenPriceFormProps, TrasferFormProps, CreateAuctionFormProps, PlaceBidFormProps, FactoryActionsButtonProps, TokenActionsButtonProps, AuctionActionsButtonProps, MyNFTsProps, AddRemoveAdminFormProps};

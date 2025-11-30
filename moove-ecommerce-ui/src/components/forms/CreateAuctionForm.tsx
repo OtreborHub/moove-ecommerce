@@ -3,29 +3,11 @@ import { Box, Button, TextField, Typography, Select, MenuItem, InputLabel, FormC
 import { CreateAuctionFormProps } from "../../utils/Interfaces";
 import { formatInSeconds } from "../../utils/formatValue";
 import { AuctionType } from "../../utils/enums/Auction";
+import { convertUnit, Unit } from "../../utils/unitManager";
+import { tooltipTextClassicAuction, tooltipTextDutchAuction, tooltipTextEnglishAuction } from "../../utils/tooltip";
 
 const AUCTION_LIMIT = import.meta.env.VITE_AUCTION_LIMIT as string;
 
-const tooltipTextClassicAuction = (
-  <>
-    Place a bid at your chosen price.<br />
-    The highest offer at the end of the auction wins the NFT.
-  </>
-);
-
-const tooltipTextDutchAuction = (
-  <>
-    The auction starts at a high price that decreases over time.<br />
-    Buy instantly when the price matches your expectations.
-  </>
-);
-
-const tooltipTextEnglishAuction = (
-  <>
-    Each new bid must be higher than the previous one.<br />
-    The highest valid bid when the auction ends wins the NFT.
-  </>
-);
 
 export default function CreateAuctionForm({ tokenId, collectionSymbol, handleSubmit }: CreateAuctionFormProps) {
   const [durationError, setDurationError] = useState<boolean>(false);
@@ -33,12 +15,12 @@ export default function CreateAuctionForm({ tokenId, collectionSymbol, handleSub
   const [formData, setFormData] = useState({
     auctionType: -1, // 0: Classic, 1: Dutch, 2: English
     startPrice: 0,
-    unitStartPrice: 'Wei',
+    unitStartPrice: Unit.DEFAULT,
     duration: 0,
     durationUnit: 'days',
     durationInSeconds: 0,
     minIncrement: 0,
-    unitIncrement: 'Wei'
+    unitIncrement: Unit.DEFAULT
   });
 
   const handleChange = (event: any) => {
@@ -71,9 +53,9 @@ export default function CreateAuctionForm({ tokenId, collectionSymbol, handleSub
       handleSubmit(
         Number(tokenId),
         Number(formData.auctionType),
-        Number(formData.startPrice),
+        convertUnit(formData.startPrice, formData.unitStartPrice),
         Number(formData.durationInSeconds),
-        Number(formData.minIncrement)
+        convertUnit(formData.minIncrement, formData.unitIncrement)
       );
     }
   };
@@ -204,8 +186,8 @@ export default function CreateAuctionForm({ tokenId, collectionSymbol, handleSub
                 label="Unit"
                 onChange={handleChange}
                 >
-                <MenuItem value="ETH">ETH</MenuItem>
-                <MenuItem value="Wei">Wei</MenuItem>
+                <MenuItem value={Unit.ETH}>ETH</MenuItem>
+                <MenuItem value={Unit.WEI}>Wei</MenuItem>
                 </Select>
             </FormControl>
         </Grid>
@@ -271,8 +253,8 @@ export default function CreateAuctionForm({ tokenId, collectionSymbol, handleSub
                 disabled={formData.auctionType !== 2}
                 onChange={handleChange}
                 >
-                <MenuItem value="ETH">ETH</MenuItem>
-                <MenuItem value="Wei">Wei</MenuItem>
+                <MenuItem value={Unit.ETH}>ETH</MenuItem>
+                <MenuItem value={Unit.WEI}>Wei</MenuItem>
                 </Select>
             </FormControl>
         </Grid>

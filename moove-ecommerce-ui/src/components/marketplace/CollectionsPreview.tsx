@@ -1,7 +1,7 @@
 import { Box, Button, Card, CardMedia, Typography, useMediaQuery } from "@mui/material"
 import { CollectionProps } from "../../utils/Interfaces"
-import getCoverImage from "../../utils/Cover"
 import { formatAddress } from "../../utils/formatValue";
+import getCoverImage from "../../utils/Cover";
 
 export default function CollectionPreview({collection, idx, showCollection} : CollectionProps & { idx: number}) {
     const isMobile = useMediaQuery('(max-width: 1400px)');

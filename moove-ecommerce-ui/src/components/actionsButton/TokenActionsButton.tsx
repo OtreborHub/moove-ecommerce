@@ -9,6 +9,7 @@ import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
 import { useEffect, useRef, useState } from 'react';
 import { TokenActionsButtonProps } from '../../utils/Interfaces';
+import { convertUnit, Unit } from '../../utils/unitManager';
 
 
 const options = ['Update Price', 'Start Auction', 'Transfer'];
@@ -29,7 +30,7 @@ export default function TokenActionsButton({ token, auctionTokenId, handleCreate
     //HANDLERS
     const handleClick = () => {
         if(selectedIndex === 0){
-            handleUpdatePrice(token.id, token.price);
+            handleUpdatePrice(token.id, convertUnit(token.price, Unit.WEI));
         } else if(selectedIndex === 1){
             handleCreateAuction(token.id);
         } else {

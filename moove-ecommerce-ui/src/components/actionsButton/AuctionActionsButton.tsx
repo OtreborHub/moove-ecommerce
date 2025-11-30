@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AuctionActionsButtonProps } from '../../utils/Interfaces';
 import { emptySigner, useAppContext } from '../../Context';
 import { AuctionStatus, AuctionType, getAuctionStatus } from '../../utils/enums/Auction';
+import { convertUnit, Unit } from '../../utils/unitManager';
 
 const options = ['Place a Bid', 'Buy now', 'Withdraw', 'Finalize', 'Connect to enable', 'No actions available'];
 
@@ -68,7 +69,11 @@ export default function AuctionActionsButton({ auction, signer, signerAddress, h
           if (isSeller) {
             return 5; // No actions
           } else {
-            return 2; // Withdraw
+            if(isDutch){
+              return 5; // No actions
+            } else {
+              return 2; // Withdraw
+            }
           }
 
         // Stato non riconosciuto
@@ -82,8 +87,10 @@ export default function AuctionActionsButton({ auction, signer, signerAddress, h
     //HANDLERS
     const handleClick = () => {
       if(selectedIndex === 0 || selectedIndex === 1){
-          // se English o Classic, si apre il form, non serve settare il prezzo a cui stiamo comprando
-          handleBuyPlaceBid(auction.tokenId, auction.auctionType === AuctionType.DUTCH ? auction.currentPrice : 0);
+          // se English o Classic, quando si apre il form, non serve settare il prezzo a cui stiamo comprando
+          // altrimenti compriamo direttamente per auction.currentPrice
+          let price = convertUnit(auction.auctionType === AuctionType.DUTCH ? auction.currentPrice : 0, Unit.WEI);
+          handleBuyPlaceBid(auction.tokenId, price);
       } else if(selectedIndex === 2){
           handleWithdrawFunds(auction.tokenId);
       } else {

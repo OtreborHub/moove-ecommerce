@@ -149,7 +149,7 @@ export function Marketplace({collectionAddresses, handleConnect, showCollection 
       return aEnd - bEnd;
     });
 
-    const displayedAuctions = isMobile ? sortedAuctions.slice(0, 5) : sortedAuctions;
+    const displayedAuctions = sortedAuctions.slice(0, 4);
 
 
     return (

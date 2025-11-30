@@ -122,10 +122,10 @@ export async function writeMintNFT(collectionAddress: string, tokenURI: string, 
   }
 }
 
-export async function payableBuyNFT(collectionAddress: string, tokenId: number, price: number, signer: Signer) {
+export async function payableBuyNFT(collectionAddress: string, tokenId: number, price: BigInt, signer: Signer) {
   try {
     const signerContract = getContractInstance(collectionAddress, signer);
-    await signerContract?.buyNFT(tokenId, { value: BigInt(price) });
+    await signerContract?.buyNFT(tokenId, { value: price });
     return true;
   } catch (error: any) {
     console.log("Buy NFT action: " + ErrorMessage.TR);
@@ -134,7 +134,7 @@ export async function payableBuyNFT(collectionAddress: string, tokenId: number, 
   }
 }
 
-export async function writeCreateAuction(collectionAddress: string, tokenId: number, auctionType: number, startPrice: number, duration: number, minIncrement: number, signer: Signer) {
+export async function writeCreateAuction(collectionAddress: string, tokenId: number, auctionType: number, startPrice: BigInt, duration: number, minIncrement: BigInt, signer: Signer) {
   try {
     const signerContract = getContractInstance(collectionAddress, signer);
     // Assicurati che startPrice e minIncrement siano in wei!
@@ -183,10 +183,10 @@ export async function readCurrentPriceDutch(collectionAddress: string, tokenId: 
     }
 }
 
-export async function writePlaceBidClassic(collectionAddress: string, tokenId: number, bid: number, signer: Signer){
+export async function writePlaceBidClassic(collectionAddress: string, tokenId: number, bid: BigInt, signer: Signer){
    try {
     const signerContract = getContractInstance(collectionAddress, signer);
-    await signerContract?.placeBidClassic(tokenId, { value: ethers.parseUnits(bid.toString(), "wei") });
+    await signerContract?.placeBidClassic(tokenId, { value: bid });
     return true;
   } catch (error: any) {
     console.log("Place Bid Classic action: " + error);
@@ -195,10 +195,10 @@ export async function writePlaceBidClassic(collectionAddress: string, tokenId: n
   }
 }
 
-export async function writeBuyDutch(collectionAddress: string, tokenId: number, bid: number, signer:Signer){
+export async function writeBuyDutch(collectionAddress: string, tokenId: number, bid: BigInt, signer:Signer){
    try {
     const signerContract = getContractInstance(collectionAddress, signer);
-    await signerContract?.buyDutch(tokenId, { value: ethers.parseUnits(bid.toString(), "wei") });
+    await signerContract?.buyDutch(tokenId, { value: bid });
     return true;
   } catch (error: any) {
     console.log("Buy dutch action: " + error);
@@ -207,10 +207,10 @@ export async function writeBuyDutch(collectionAddress: string, tokenId: number, 
   }
 }
 
-export async function writePlaceBidEnglish(collectionAddress: string, tokenId: number, bid: number, signer:Signer){
+export async function writePlaceBidEnglish(collectionAddress: string, tokenId: number, bid: BigInt, signer:Signer){
    try {
     const signerContract = getContractInstance(collectionAddress, signer);
-    await signerContract?.placeBidEnglish(tokenId, { value: ethers.parseUnits(bid.toString(), "wei") });
+    await signerContract?.placeBidEnglish(tokenId, { value: bid });
     return true;
   } catch (error: any) {
     console.log("Place Bid English action: " + error);

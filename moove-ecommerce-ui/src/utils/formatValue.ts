@@ -1,4 +1,3 @@
-import { ethers } from "ethers";
 
 const mooveOwner = import.meta.env.VITE_MOOVE_OWNER as string;
 
@@ -15,31 +14,6 @@ export function formatAddress(address: string, signer?: string) {
     }
   }  
     
-}
-
-export function formatPrice(value: string | number, unit: "wei" | "eth" = "wei") {
-  // Assumi che value sia sempre in wei
-  const bn =  BigInt(value);
-  if (unit === "wei") {
-    return bn.toString() + ' wei';
-  }
-  
-  // eth
-  return ethers.formatEther(bn) + ' ETH';
-}
-
-export function convertUnit(value: number, unit: string) : string{
-  // Assumi che value sia sempre in wei
-  const strValue =  value.toString();
-  if(!strValue) {return "0"};
-  
-  if (unit === "wei") {
-    return BigInt(strValue).toString();
-  } 
-  
-  // eth  
-  return ethers.parseEther(strValue).toString(); // parseUnits(value, 18)
-
 }
 
 export function formatToRomeTime(unixTimestamp: number): string {

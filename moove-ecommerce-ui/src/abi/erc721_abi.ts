@@ -1032,4 +1032,4 @@ export const COLLECTION_ABI = [
 		"stateMutability": "nonpayable",
 		"type": "function"
 	}
-]
+];

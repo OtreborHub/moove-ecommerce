@@ -1,27 +1,25 @@
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { Box, Card, CardActionArea, CardContent, CardMedia, Tooltip, Typography, useMediaQuery } from '@mui/material';
+import { useAppKit } from '@reown/appkit/react';
 import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import moove_logo from "../../assets/moove_logo.svg";
 import { useAppContext } from "../../Context";
 import { payableBuyNFT, readTokenData, readTokenURI, transferTo, writeCreateAuction, writeTokenPrice } from '../../utils/bridges/MooveCollectionsBridge';
+import { Metadata } from '../../utils/DTO/TokenDTO';
 import { AuctionType, getAuctionStatus } from '../../utils/enums/Auction';
-import { formatToRomeTime, formatAuctionType, formatPrice } from "../../utils/formatValue";
+import { formatAuctionType, formatToRomeTime } from "../../utils/formatValue";
 import { AuctionPreviewProps } from '../../utils/Interfaces';
+import { tooltipTextClassicAuction, tooltipTextDutchAuction, tooltipTextEnglishAuction } from "../../utils/tooltip";
+import { formatPrice, Unit } from '../../utils/unitManager';
 import Loader from '../commons/Loader';
 import Token from '../commons/Token';
-import { Metadata } from '../../utils/DTO/TokenDTO';
-import { useAppKit } from '@reown/appkit/react';
 import CreateAuctionForm from '../forms/CreateAuctionForm';
 import TransferToForm from '../forms/TransferToForm';
 import UpdateTokenPriceForm from '../forms/UpdateTokenPriceForm';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 export const IPFS_GATEWAY: string = import.meta.env.VITE_IPFS_GATEWAY as string;
-
-const tooltipTextClassicAuction = <>Place a bid.<br/>The highest offer wins when the auction ends.</>
-const tooltipTextDutchAuction = <>The price drops over time.<br/>Buy now if the price suits you.</>
-const tooltipTextEnglishAuction = <>Bids must increase.<br/>Highest bid wins when the auction ends.</>
 
 export default function AuctionPreview({auction, handleConnect}: AuctionPreviewProps) {
   const isPhone = useMediaQuery('(max-width: 650px)');
@@ -156,10 +154,10 @@ export default function AuctionPreview({auction, handleConnect}: AuctionPreviewP
     }
   }
 
-  async function closeAndHandleBuy(tokenId: number, tokenPrice: number){
+  async function closeAndHandleBuy(tokenId: number, tokenPrice: string){
     // MySwal.close();
     setIsLoading(true)
-    var success = await payableBuyNFT(auction.collection.address, tokenId, tokenPrice, appContext.signer);
+    var success = await payableBuyNFT(auction.collection.address, tokenId, BigInt(tokenPrice), appContext.signer);
     setIsLoading(false);
     if(success){
         MySwal.fire({
@@ -180,9 +178,9 @@ export default function AuctionPreview({auction, handleConnect}: AuctionPreviewP
     });
   }
 
-  async function handleCreateAuction(tokenId: number, auctionType: number, startPrice: number, duration: number, minIncrement: number){
+  async function handleCreateAuction(tokenId: number, auctionType: number, startPrice: string, duration: number, minIncrement: string){
     setIsLoading(true);
-    const success = await writeCreateAuction(auction.collection.address, tokenId, auctionType, startPrice, duration, minIncrement, appContext.signer);
+    const success = await writeCreateAuction(auction.collection.address, tokenId, auctionType, BigInt(startPrice), duration, BigInt(minIncrement), appContext.signer);
     setIsLoading(false);
     if(success){
       MySwal.fire({
@@ -194,18 +192,18 @@ export default function AuctionPreview({auction, handleConnect}: AuctionPreviewP
     }
   }
 
-  function showUpdateTokenPriceForm(tokenId: number, tokenPrice: number){
+  function showUpdateTokenPriceForm(tokenId: number, tokenPrice: string){
     MySwal.fire({
         title: "Update Price",
-        html: <UpdateTokenPriceForm tokenId={tokenId} tokenPrice={tokenPrice} handleSubmit={handleUpdateTokenPrice} />,
+        html: <UpdateTokenPriceForm tokenId={tokenId} tokenPrice={Number(tokenPrice)} handleSubmit={handleUpdateTokenPrice} />,
         showConfirmButton: false,
         showCloseButton: true,
     });
   }
 
-  async function handleUpdateTokenPrice(tokenId: number, price: BigInt){
+  async function handleUpdateTokenPrice(tokenId: number, price: string){
     setIsLoading(true);
-    var success = await writeTokenPrice(auction.collection.address, tokenId, price, appContext.signer);
+    var success = await writeTokenPrice(auction.collection.address, tokenId, BigInt(price), appContext.signer);
     setIsLoading(false);
     if(success){
       MySwal.fire({
@@ -300,10 +298,10 @@ export default function AuctionPreview({auction, handleConnect}: AuctionPreviewP
                   
               </Typography>
               <Typography variant="body2">
-                  {!isPhone && auction.auctionType === AuctionType.CLASSIC && <>Highest Bid: {formatPrice(auction.highestBid, 'wei')}<br/></>}
-                  {!isPhone && <>Current Price: {formatPrice(auction.currentPrice, 'wei')}</>}
+                  {!isPhone && auction.auctionType === AuctionType.CLASSIC && <>Highest Bid: {formatPrice(auction.highestBid, Unit.DEFAULT)}<br/></>}
+                  {!isPhone && <>Current Price: {formatPrice(auction.currentPrice, Unit.DEFAULT)}</>}
               </Typography>
-              {!isPhone && auction.minIncrement > 0 && <Typography variant="body2">Min. increment: {formatPrice(auction.minIncrement, 'wei')}</Typography>}
+              {!isPhone && auction.minIncrement > 0 && <Typography variant="body2">Min. increment: {formatPrice(auction.minIncrement, Unit.DEFAULT)}</Typography>}
               <Typography variant="body2">Ends at: {isPhone ? formatToRomeTime(auction.endTime).substring(0,10) : formatToRomeTime(auction.endTime)}</Typography>
           </CardContent>
 

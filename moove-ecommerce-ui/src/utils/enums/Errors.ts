@@ -5,10 +5,6 @@ export enum ErrorMessage {
 
     //WALLET FRONTEND ERRORS
     WALLET_ERROR="Please connect your wallet. Be sure is operating on the Sepolia Testnet.",
-    //NO_DNA_TOKEN="Il tuo portafoglio non contiene DNA.]Acquista Token DNA per avere accesso alla governance!",
-    NOT_MEMBER="Il tuo portafoglio non appartiene al registro dei membri.]Acquista parte delle shares DnA ed inizia la tua avventura con noi!",
-    APPROVE_ISTRUCTION="Per prima cosa approva una quantità di DNA Token che DNA Administration potrà usare per l'acquisto degli share,]successivamente puoi spenderli per acquistare Shares.",
-    DELETE_ERROR = "Non puoi eliminare una collezione che contiene NFT. ]Per favore trasferisci o distruggi tutti gli NFT prima di procedere.",
     DELETE_CONFIRM_ERROR = "Please write the name of the collection correctly to confirm.",
     CREATE_COLL_CONFIRM_ERROR = "Please write the collection data correctly to confirm.",
     
@@ -20,14 +16,6 @@ export enum ErrorMessage {
     // Contract Messages
     IF="Insufficient funds",
     AE="Auction ended",
-
-    SENDER_NOT_OWNER="Sender must be the owner",
-    SENDER_NOT_MEMBER="Sender must be a member",
-    ADDRESS_NOT_MEMBER="Address not owned by a member",
-    SENDER_IS_OWNER="Sender can't be the owner",
-    EMPTY_TITLE="Empty title",
-    EMPTY_DESC="Empty description",
-    PROP_TRANSFER="Token transfer failed",
 
 }
 
@@ -70,32 +58,20 @@ export function swalError(errorMessage: ErrorMessage, action?: Action, error?: a
             title = "Saldo Insufficiente!";
             break;
 
-        case ErrorMessage.SENDER_IS_OWNER:
-            title = "Operazione non permessa";
-            break;
+        // case ErrorMessage.OPERATION_NOT_ALLOWED:
+        //     title = "Operazione non permessa";
+        //     break;
 
-        case ErrorMessage.SENDER_NOT_OWNER:
-        case ErrorMessage.SENDER_NOT_MEMBER:
-            title = "Utente non autorizzato alla funzionalità";
-            break;
+        // case ErrorMessage.UNAUTHORIZED_USER:
+        //     title = "Utente non autorizzato alla funzionalità";
+        //     break;
 
-
-        case ErrorMessage.EMPTY_TITLE:
-            title = "Titolo vuoto: scegli un titolo per la tua proposta.";
-            break;
-
-        case ErrorMessage.EMPTY_DESC:
-            title = "Descrizione vuota: scegli una descrizione per la tua proposta";
-            break;
 
         case ErrorMessage.IO:
             title = "Parametri di input non validi";
             break;
 
-        case ErrorMessage.PROP_TRANSFER: 
-            title = "Errore durante il trasferimento di ether nell'esecuzione della proposta";
-            break;
-
+       
         case ErrorMessage.DELETE_CONFIRM_ERROR:
             title = "Collection name mismatch";
             text = outputMessage;
