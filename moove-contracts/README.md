@@ -31,17 +31,23 @@ I contratti sono stati testati e deployati per mezzo di Remix IDE:
 
 <h3> Compilazione </h3>
 
->*npx hardhat compile*
+```shell
+npx hardhat compile*
+```
 
 <h3> Test </h3>
 
->*npx hardhat test test\tst_\<nomeContratto>.ts*
+```shell
+npx hardhat test test\tst_\--nomeContratto--.ts
+```
 
 <h3> Deploy </h3>
 
 La rete di testnet configurata è Sepolia, è possibile configurare un'altra rete nel file hardhat.config.ts. Per il deploy su Sepolia Testnet eseguire
 
->npx hardhat ignition deploy ./ignition/modules/\<NomeContratto>.ts --network sepolia --reset
+```shell
+npx hardhat ignition deploy ./ignition/modules/\--NomeContratto--.ts --network sepolia --reset
+```
 
 <h3> Contratto </h3>
-Factory: https://sepolia.etherscan.io/address/0x02702614dE7248D33A22FC9a5e5c1dFbbbB885ba
+Factory: https://sepolia.etherscan.io/address/0x9804227d244824e671f4a8123f1a7bb7E50dc797
