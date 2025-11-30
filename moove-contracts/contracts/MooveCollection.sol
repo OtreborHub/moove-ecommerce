@@ -135,6 +135,7 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
 
     function endClassicAuction(uint256 tokenId) public nonReentrant{
         Auction storage auction = auctions[tokenId];
+        require(msg.sender == auction.seller, "Only seller can end auctions");
         require(auction.auctionType == AuctionType.Classic, "Not classic auction");
         require(block.timestamp >= auction.endTime, "Auction not ended");
         require(!auction.ended, "Already ended");
@@ -176,8 +177,9 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
         emit AuctionEnded(tokenId, msg.sender, msg.value);
     }
 
-    function endDutchAuction(uint256 tokenId) public onlyOwner nonReentrant{
+    function endDutchAuction(uint256 tokenId) public nonReentrant{
         Auction storage auction = auctions[tokenId];
+        require(msg.sender == auction.seller, "Only seller can end auctions");
         require(auction.auctionType == AuctionType.Dutch, "Not dutch auction");
         require(block.timestamp >= auction.endTime, "Auction not ended");
         require(!auction.ended, "Already ended");
@@ -210,6 +212,7 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
 
     function endEnglishAuction(uint256 tokenId) public nonReentrant{
         Auction storage auction = auctions[tokenId];
+        require(msg.sender == auction.seller, "Only seller can end auctions");
         require(auction.auctionType == AuctionType.English, "Not english auction");
         require(block.timestamp >= auction.endTime, "Auction not ended");
         require(!auction.ended, "Already ended");
