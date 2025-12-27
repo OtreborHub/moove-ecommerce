@@ -37,6 +37,7 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
     event BidPlaced(uint256 indexed tokenId, address bidder, uint256 amount);
     event AuctionEnded(uint256 indexed tokenId, address winner, uint256 amount);
     event RefundWithdrawn(address receiver, uint256 amount); 
+    event PriceUpdated(uint256 indexed tokenId, address owner, uint256 newPrice);
 
     constructor(string memory name, string memory symbol, uint maxSupply, address initialOwner)
         Ownable(initialOwner)
@@ -69,6 +70,7 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
 
     function transfer(address to, uint256 tokenId) public {
         require(ownerOf(tokenId) == msg.sender, "Caller is not the owner of the token");
+        require(auctions[tokenId].endTime == 0 || auctions[tokenId].ended == true, "Auction exists for this token");
         _transfer(msg.sender, to, tokenId);
     }
 
@@ -76,6 +78,7 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
         require(ownerOf(tokenId) != address(0), "Token does not exist");
         require(msg.sender == ownerOf(tokenId), "Can set price only for owned tokens");
         tokenPrices[tokenId] = price;
+        emit PriceUpdated(tokenId, msg.sender, price);
     }
 
     function buyNFT(uint256 tokenId) isActive public payable {
@@ -84,11 +87,12 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
         require(!auctions[tokenId].ended, "Token is in auction");
 
         address seller = ownerOf(tokenId);
+        (bool sent, ) = payable(seller).call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
         _transfer(seller, msg.sender, tokenId);
-        payable(seller).transfer(msg.value);
     }
 
-    //Classic: base d'asta Start Price - l'offerta più alta vince (al buio?)
+    //Classic: base d'asta Start Price - l'offerta più alta vince
     //Dutch: base d'asta start price - price diminuisce con il tempo - il primo che compra vince
     //English: base d'asta start price - offerta start price + min increment - l'ultimo che compra vince
     function createAuction(
@@ -142,8 +146,9 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
 
         auction.ended = true;
         if (auction.highestBidder != address(0)) {
+            (bool sent, ) = payable(auction.seller).call{value: auction.highestBid}("");
+            require(sent, "Failed to send Ether");
             _transfer(auction.seller, auction.highestBidder, tokenId);
-            payable(auction.seller).transfer(auction.highestBid);
         }
     
         emit AuctionEnded(tokenId, auction.highestBidder, auction.highestBid);
@@ -172,8 +177,9 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
         auction.highestBid = msg.value;
         auction.ended = true;
         
+        (bool sent, ) = payable(auction.seller).call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
         _transfer(auction.seller, msg.sender, tokenId);
-        payable(auction.seller).transfer(msg.value);
         emit AuctionEnded(tokenId, msg.sender, msg.value);
     }
 
@@ -198,7 +204,8 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
 
         if (auction.highestBidder != address(0)) {
             // Refund previous highest
-            payable(auction.highestBidder).transfer(auction.highestBid);
+            (bool sent, ) = payable(auction.highestBidder).call{value: auction.highestBid}("");
+            require(sent, "Failed to send Ether");
         }
         auction.highestBidder = msg.sender;
         auction.highestBid = msg.value;
@@ -219,8 +226,9 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
 
         auction.ended = true;
         if (auction.highestBidder != address(0)) {
+            (bool sent, ) = payable(auction.seller).call{value: auction.highestBid}("");
+            require(sent, "Failed to send Ether");
             _transfer(auction.seller, auction.highestBidder, tokenId);
-            payable(auction.seller).transfer(auction.highestBid);
         }
         emit AuctionEnded(tokenId, auction.highestBidder, auction.highestBid);
     }
@@ -228,6 +236,7 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
     function withdrawBid(uint256 tokenId) public {
         Auction storage auction = auctions[tokenId];
         require(auction.highestBidder != msg.sender, "highestBidder can't withdraw");
+        require(auction.auctionType == AuctionType.Classic, "Withdrawals only in classic auction");
         uint256 amount = auction.bids[msg.sender];
         require(amount > 0, "Nothing to withdraw");
         auction.bids[msg.sender] = 0;
@@ -235,4 +244,5 @@ contract MooveCollection is ERC721URIStorage, Ownable, ReentrancyGuard {
         require(sent, "Failed to send Ether");
         emit RefundWithdrawn(msg.sender, amount);
     }
+
 }
