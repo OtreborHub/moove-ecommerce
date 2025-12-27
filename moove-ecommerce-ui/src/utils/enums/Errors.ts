@@ -7,7 +7,7 @@ export enum ErrorMessage {
     WALLET_ERROR="Please connect your wallet. Be sure is operating on the Sepolia Testnet.",
     DELETE_CONFIRM_ERROR = "Please write the name of the collection correctly to confirm.",
     CREATE_COLL_CONFIRM_ERROR = "Please write the collection data correctly to confirm.",
-    CREATE_AUCTION_CONFIRM_ERROR = "Please check price and duration chosen for the auction.",
+    CREATE_AUCTION_CONFIRM_ERROR = "Please check type, price and duration chosen for the auction.",
     
     //GENERIC ERRORS
     RD="Error reading contract data",
