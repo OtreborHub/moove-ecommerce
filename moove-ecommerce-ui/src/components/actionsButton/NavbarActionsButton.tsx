@@ -174,11 +174,11 @@ export default function NavbarActionsButton() {
                                     </MenuItem>
                                 }
 
-                                <MenuItem onClick={() => changeSection(Sections.AUCTIONS)}>
+                                {/* <MenuItem onClick={() => changeSection(Sections.AUCTIONS)}>
                                     <Button sx={{ pl:0, pb:0, color: '#000'}} variant='text'>
                                         <GavelIcon sx={{mr: 1}} fontSize='small'/>Auctions
                                     </Button>
-                                </MenuItem>
+                                </MenuItem> */}
 
                                 {/* Logout */}
                                 <MenuItem>

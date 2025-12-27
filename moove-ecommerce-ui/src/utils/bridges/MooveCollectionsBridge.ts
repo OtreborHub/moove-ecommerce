@@ -301,6 +301,22 @@ export async function addCollectionsContractListeners(collectionAddresses: strin
       }
     });
 
+    collection?.on("PriceUpdated", (tokenId, owner, newPrice) => {
+      if (tokenId && signer.getAddress() === owner) {
+        Swal.fire({
+          title: "Price Updated!",
+          text: "Your NFT price has been successfully updated. The app will now reload to refresh the data.",
+          icon: "success",
+          confirmButtonColor: "#3085d6"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload();
+          }
+        });
+      }
+    });
+
+
     collection?.on("BidPlaced", (tokenId, bidder, amount) => {
       if (tokenId && signer.getAddress() === bidder) {
         Swal.fire({

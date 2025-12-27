@@ -4,7 +4,6 @@ import { useAppKit, useAppKitAccount, useAppKitProvider } from "@reown/appkit/re
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import './App.css';
-import Collection from './components/commons/Collection';
 import Navbar from './components/commons/Navbar';
 import { Factory } from './components/factory/Factory';
 import { Marketplace } from './components/marketplace/Marketplace';
@@ -21,6 +20,7 @@ import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import metamask_logo from './assets/metamask.svg';
 import walletconnect_logo from './assets/wallet-connect.svg';
+import Collection from './components/marketplace/Collection';
 
 function App() {
   const appContext = useAppContext();
@@ -34,7 +34,7 @@ function App() {
   
   useEffect(() => {
     if(appStarting){
-      handleDisconnect();
+      connectMetamask();
     } else if(walletProvider && isConnected && appContext.signer === emptySigner){
       activateWCHooks();
     } else {
@@ -125,9 +125,14 @@ function App() {
             } 
             addCollectionsContractListeners(appContext.collectionAddresses, signer);
           }
-          // else {
-          // Swal.error()  
-          //}
+          else {
+          Swal.fire({
+            title: 'Wrong Network',
+            text: 'Please switch your wallet to the Sepolia network and try again.',
+          }).then((result) => {
+            handleDisconnect();
+          });
+          }
 
   
           //Events

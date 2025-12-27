@@ -5,6 +5,8 @@ import { formatInSeconds } from "../../utils/formatValue";
 import { AuctionType } from "../../utils/enums/Auction";
 import { convertUnit, Unit } from "../../utils/unitManager";
 import { tooltipTextClassicAuction, tooltipTextDutchAuction, tooltipTextEnglishAuction } from "../../utils/tooltip";
+import { ErrorMessage } from "../../utils/enums/Errors";
+import Swal from "sweetalert2";
 
 const AUCTION_LIMIT = import.meta.env.VITE_AUCTION_LIMIT as string;
 
@@ -57,6 +59,11 @@ export default function CreateAuctionForm({ tokenId, collectionSymbol, handleSub
         Number(formData.durationInSeconds),
         convertUnit(formData.minIncrement, formData.unitIncrement)
       );
+    } else {
+      Swal.fire({
+        title: '...Ops!',
+        text: ErrorMessage.CREATE_AUCTION_CONFIRM_ERROR,
+      });
     }
   };
 

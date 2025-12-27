@@ -9,10 +9,11 @@ import { Role } from "../../utils/enums/Role";
 import { formatAddress } from "../../utils/formatValue";
 import { CollectionProps } from "../../utils/Interfaces";
 import MintTokenForm from "../forms/MintTokenForm";
-import Loader from "./Loader";
-import TokenPreview from "./TokenPreview";
-import CopyToClipboard from "./CClipboard";
+import TokenPreview from "../commons/TokenPreview";
+import CopyToClipboard from "../commons/CClipboard";
+import Loader from "../commons/Loader";
 
+const mooveOwner = import.meta.env.VITE_MOOVE_OWNER as string;
 
 export default function Collection({collection, handleConnect, goBack} : CollectionProps) {
   const [tokens, setTokens] = useState<TokenDTO[]>([]);
@@ -101,7 +102,7 @@ export default function Collection({collection, handleConnect, goBack} : Collect
         
         <Box textAlign={"left"} display={"flex"} flexDirection={"column"} ml={2}>
           <Typography variant="h5" color="#f7a642ff"> <b>{collection.name.toUpperCase()}</b> </Typography>
-          <Typography variant="body1" color="#f7a642ff">Collection: {formatAddress(collection.address)} 
+          <Typography variant="body1" color="#f7a642ff">{collection.owner === mooveOwner ? "Moove" : "Custom"} Collection: {formatAddress(collection.address)} 
             <CopyToClipboard text={collection.address} />
           </Typography>
         </Box>

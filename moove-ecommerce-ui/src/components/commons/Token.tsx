@@ -125,13 +125,24 @@ export default function Token({ collection, token, auction, metadata, signerAddr
                     }
                     
                     {signerAddress && signerAddress === token.owner &&
-                    <Box display="flex" justifyContent="center" mt={2}>
-                        <TokenActionsButton 
-                            token={token}
-                            auctionTokenId={auction.tokenId}
-                            handleCreateAuction={handleCreateAuction}
-                            handleUpdatePrice={handleUpdatePrice}
-                            handleTransfer={handleTransfer}/>
+                    <Box display="flex" justifyContent="left" flexDirection={"column"} mt={2}>
+                            {auction.tokenId === 0 && 
+                            <>
+                                <Button variant="contained" onClick={() => handleCreateAuction(token.id)}>Create auction</Button>
+                                <Button size="small" onClick={() => handleUpdatePrice(token.id, convertUnit(token.price, Unit.WEI))}>Update price</Button>    
+                                <Button size="small" onClick={() => handleTransfer(token.id)}>Transfer</Button>  
+                            </>                                 
+                            }
+                            {auction.tokenId > 0 &&
+                                <Button variant="contained" onClick={() => handleUpdatePrice(token.id, convertUnit(token.price, Unit.WEI))}>Update price</Button>
+                            }
+                            
+                        {/* <TokenActionsButton 
+                        token={token}
+                        auctionTokenId={auction.tokenId}
+                        handleCreateAuction={handleCreateAuction}
+                        handleUpdatePrice={handleUpdatePrice}
+                        handleTransfer={handleTransfer}/>  */}
                     </Box>
                     }
                 </Grid>
