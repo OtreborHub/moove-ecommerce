@@ -284,6 +284,7 @@ export async function writeDisableCollection(collectionAddress: string, signer: 
 export async function addCollectionsContractListeners(collectionAddresses: string[], signer: Signer) {
 
   //const signer = await browserProvider.getSigner();
+  const signerAddress = await signer.getAddress();
   for(const collectionAddress of collectionAddresses){
     const collection = getContractInstance(collectionAddress, signer);
     collection?.on("AuctionCreated", (tokenId, auctionType, startPrice, endTime) => {
@@ -302,7 +303,7 @@ export async function addCollectionsContractListeners(collectionAddresses: strin
     });
 
     collection?.on("PriceUpdated", (tokenId, owner, newPrice) => {
-      if (tokenId && signer.getAddress() === owner) {
+      if (tokenId && signerAddress === owner) {
         Swal.fire({
           title: "Price Updated!",
           text: "Your NFT price has been successfully updated. The app will now reload to refresh the data.",
@@ -318,7 +319,7 @@ export async function addCollectionsContractListeners(collectionAddresses: strin
 
 
     collection?.on("BidPlaced", (tokenId, bidder, amount) => {
-      if (tokenId && signer.getAddress() === bidder) {
+      if (tokenId && signerAddress === bidder) {
         Swal.fire({
           title: "Bid placed!",
           text: "Your bid has been successfully placed. The app will now reload to update the data.",
@@ -333,7 +334,7 @@ export async function addCollectionsContractListeners(collectionAddresses: strin
     });
 
     collection?.on("AuctionEnded", (tokenId, winner, amount) => {
-      if (tokenId && signer.getAddress() === winner) {
+      if (tokenId && signerAddress === winner) {
         Swal.fire({
           title: "Auction ended!",
           text: "You have won the auction! The app will now reload to update the data.",
@@ -348,7 +349,7 @@ export async function addCollectionsContractListeners(collectionAddresses: strin
     });
     
     collection?.on("RefundWithdrawn", (tokenId, winner, amount) => {
-      if (tokenId && signer.getAddress() === winner) {
+      if (tokenId && signerAddress === winner) {
         Swal.fire({
           title: "Refund withdrawn!",
           text: "You have successfully withdrawn your refund!",

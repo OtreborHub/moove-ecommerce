@@ -140,7 +140,7 @@ export default function AuctionActionsButton({ auction, signer, signerAddress, h
             aria-label="select merge strategy"
             aria-haspopup="menu"
             onClick={handleToggle}>
-            {appContext.signerAddress ? <ArrowDropDownIcon/> : <ArrowDropUpIcon/>}
+            {<ArrowDropDownIcon/>}
           </Button>}
 
       </ButtonGroup>
@@ -150,7 +150,7 @@ export default function AuctionActionsButton({ auction, signer, signerAddress, h
         anchorEl={anchorRef.current}
         role={undefined}
         transition
-        placement={appContext.signerAddress ? "bottom": "top"}
+        placement={"bottom"}
         disablePortal
         modifiers={[
           { name: "flip", enabled: false }

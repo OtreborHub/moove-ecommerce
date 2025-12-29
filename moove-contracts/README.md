@@ -50,4 +50,4 @@ npx hardhat ignition deploy ./ignition/modules/\--NomeContratto--.ts --network s
 ```
 
 <h3> Contratto </h3>
-Factory: https://sepolia.etherscan.io/address/0x9804227d244824e671f4a8123f1a7bb7E50dc797
+Factory: https://sepolia.etherscan.io/address/0x764a838ed26F4a868574e176B97dBB44aD62aedb

@@ -33,17 +33,15 @@ function App() {
   const { open, close } = useAppKit();
   
   useEffect(() => {
-    if(appStarting){
+    if(appStarting && !(walletProvider && isConnected)){
       connectMetamask();
-    } else if(walletProvider && isConnected && appContext.signer === emptySigner){
+    } else if(appStarting && walletProvider && isConnected && appContext.signer === emptySigner){
+      connectWCKitApp();
       activateWCHooks();
     } else {
       handleDisconnect();
     }
     
-    if(appContext.collectionAddresses.length === 0){
-      initCollections();
-    }
   }, [isConnected, walletProvider]);
 
  //------------------ Wallet Connect KitApp
@@ -71,7 +69,14 @@ function App() {
       if (isAdmin) {
         addFactoryContractListeners(signer);
       }
-      addCollectionsContractListeners(appContext.collectionAddresses, signer);
+
+      if(appContext.collectionAddresses.length === 0){
+          const collections = await readCollections();
+          appContext.updateCollectionAddresses(collections ? collections : []);
+          addCollectionsContractListeners(collections, signer);
+      }
+
+      setAppStarting(false);
       
     } catch (error) {
       console.error("Init session error:", error);
@@ -88,10 +93,10 @@ function App() {
   const handleChainChanged = async (chainId: string) => {
     console.log(`🔗 Chain changed: ${chainId}`);
     if (Number(chainId) === sepolia.id) {
-      console.log("✅ Sei ora su Sepolia, inizializzo la sessione...");
+      console.log("Sei ora su Sepolia, inizializzo la sessione...");
       await connectWCKitApp();
     } else {
-      console.warn(`⚠️ Sei su una rete diversa (${Number(chainId)}). Attendi switch manuale a Sepolia.`);
+      console.warn(`Sei su una rete diversa (${Number(chainId)}). Attendi switch manuale a Sepolia.`);
     }
   };
 
@@ -100,6 +105,7 @@ function App() {
       try {
         if(window.ethereum && !walletProvider){
           const provider = new ethers.BrowserProvider(window.ethereum as any);
+
           appContext.updateProvider(provider);
           const signer = await provider.getSigner();
           appContext.updateSigner(signer);
@@ -108,24 +114,24 @@ function App() {
   
           const network = await provider.getNetwork();
           if(Number(network.chainId) === sepolia.id){
+            
             appContext.updateChainId(Number(network.chainId));
             const balanceWei = await provider.getBalance(signer);
             const balanceEth = Number(ethers.formatEther(balanceWei));
             console.log(`Balance di ${signer}: ${balanceEth} ETH`);
             appContext.updateBalance(balanceEth);
             
-    
             const isAdmin = await readIsAdmin(signer);
             appContext.updateRole(isAdmin ? Role.ADMIN : Role.MEMBER);
             if(appContext.section === Sections.MYNFTS || appContext.section === Sections.FACTORY){
               appContext.updateSection(Sections.MARKETPLACE);
             }
+
             if(isAdmin){
               addFactoryContractListeners(signer);
             } 
-            addCollectionsContractListeners(appContext.collectionAddresses, signer);
-          }
-          else {
+
+          } else {
           Swal.fire({
             title: 'Wrong Network',
             text: 'Please switch your wallet to the Sepolia network and try again.',
@@ -134,7 +140,13 @@ function App() {
           });
           }
 
-  
+          if(appContext.collectionAddresses.length === 0){
+              const collections = await readCollections();
+              appContext.updateCollectionAddresses(collections ? collections : []);
+              addCollectionsContractListeners(collections, signer);
+            }
+          setAppStarting(false);
+
           //Events
           (window.ethereum as any)?.on('chainChanged', handleChainChanges);
           (window.ethereum as any)?.on('accountsChanged', handleAccountChanges);
@@ -228,7 +240,7 @@ function App() {
               startIcon={<img src={metamask_logo} alt="MetaMask" style={{ width: 20, height: 20 }} />}
               sx={{ justifyContent: 'flex-start', py: 1.5 }}
             >
-              MetaMask (Browser)
+              MetaMask (Browser) - recommended
             </Button>
 
             <Button
